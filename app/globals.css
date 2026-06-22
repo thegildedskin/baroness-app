@@ -1,0 +1,25 @@
+:root{
+  --cream:#F5E9D3; --cream-deep:#ece0c6;
+  --gold:#B8924A; --gold-light:#D4B574; --gold-dark:#8B6F35;
+  --black:#1A1A1A; --rose:#C8959A; --pistache:#A8C4A2; --grey:#5A5A5A;
+  --velvet:#161210; --velvet-2:#241c16;
+  --display:'Cormorant Garamond',Georgia,serif;
+  --body:'EB Garamond',Georgia,serif;
+  --caps:'Cinzel',serif;
+  --blackletter:'UnifrakturCook',serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{font-family:var(--body);color:var(--black);background:var(--cream);-webkit-font-smoothing:antialiased}
+a{color:var(--gold-dark)}
+.wrap{max-width:1080px;margin:0 auto;padding:48px 28px}
+.caps{font-family:var(--caps);letter-spacing:.16em;text-transform:uppercase}
+.btn{display:inline-block;font-family:var(--caps);letter-spacing:.16em;text-transform:uppercase;font-size:12px;
+  color:var(--black);background:linear-gradient(180deg,var(--gold-light),var(--gold));border:1px solid var(--gold-dark);
+  padding:13px 26px;border-radius:2px;cursor:pointer;text-decoration:none}
+.btn.ghost{background:transparent;color:var(--gold-dark)}
+h1,h2,h3{font-family:var(--display);font-weight:700;color:var(--black)}
+.field{display:block;margin:0 0 14px}
+.field span{font-family:var(--caps);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--black);display:block;margin-bottom:5px}
+.field input{width:100%;padding:11px 13px;border:1px solid var(--gold-dark);border-radius:3px;background:#fdf6e7;font-family:var(--body);font-size:16px}
+.card{background:linear-gradient(180deg,#fdf6e7,var(--cream-deep));border:1px solid var(--gold);border-radius:8px;padding:32px 34px}
