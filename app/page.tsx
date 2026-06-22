@@ -1,115 +1,66 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import ProfileEditor from "./ProfileEditor";
 
 export const dynamic = "force-dynamic";
 
-export default async function Dashboard({
-  searchParams,
-}: {
-  searchParams: { id?: string };
-}) {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+type Artist = {
+  id: string;
+  slug: string;
+  display_name: string;
+  specialty: string | null;
+  is_published: boolean;
+};
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-  const isOwner = profile?.role === "owner";
-
-  // Which artist are we editing?
-  let artistId = searchParams.id;
-  if (!artistId && !isOwner) {
-    const { data: own } = await supabase
+export default async function Home() {
+  let artists: Artist[] = [];
+  try {
+    const supabase = createClient();
+    const { data } = await supabase
       .from("artists")
-      .select("id")
-      .eq("user_id", user.id)
-      .maybeSingle();
-    artistId = own?.id;
-  }
-
-  // Owner with no selection → show the roster to pick from.
-  if (isOwner && !artistId) {
-    const { data: artists } = await supabase
-      .from("artists")
-      .select("id, display_name, slug, is_published")
+      .select("id,slug,display_name,specialty,is_published")
+      .eq("is_published", true)
       .order("sort_order");
-    return (
-      <main className="wrap" style={{ maxWidth: 720 }}>
-        <h1 style={{ fontSize: 44 }}>Artists&rsquo; Quarters</h1>
-        <p className="caps" style={{ fontSize: 10, color: "var(--gold-dark)", margin: "6px 0 20px" }}>
-          Signed in as {user.email} · House Owner
-        </p>
-        <div className="card">
-          <h3 style={{ fontSize: 22, marginBottom: 14 }}>Choose an artist to edit</h3>
-          <ul style={{ listStyle: "none", display: "grid", gap: 10 }}>
-            {(artists ?? []).map((a) => (
-              <li key={a.id}>
-                <Link href={`/dashboard?id=${a.id}`} style={{ textDecoration: "none" }}>
-                  <strong>{a.display_name}</strong>{" "}
-                  <span style={{ color: "var(--grey)" }}>
-                    — {a.is_published ? "published" : "unpublished"}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <form action="/auth/signout" method="post" style={{ marginTop: 24 }}>
-          <button className="btn ghost" type="submit">Sign out</button>
-        </form>
-      </main>
-    );
-  }
-
-  if (!artistId) {
-    return (
-      <main className="wrap" style={{ maxWidth: 640 }}>
-        <h1 style={{ fontSize: 40 }}>Artists&rsquo; Quarters</h1>
-        <div className="card" style={{ marginTop: 16 }}>
-          <p>
-            Your login isn&rsquo;t linked to an artist profile yet. Ask the House
-            Owner to link your profile.
-          </p>
-        </div>
-        <form action="/auth/signout" method="post" style={{ marginTop: 24 }}>
-          <button className="btn ghost" type="submit">Sign out</button>
-        </form>
-      </main>
-    );
-  }
-
-  const { data: artist } = await supabase
-    .from("artists")
-    .select("*")
-    .eq("id", artistId)
-    .single();
-  const { data: flash } = await supabase
-    .from("flash")
-    .select("id, image_url, caption, sort_order")
-    .eq("artist_id", artistId)
-    .order("sort_order");
-
-  if (!artist) {
-    return (
-      <main className="wrap">
-        <p>Artist not found.</p>
-      </main>
-    );
+    artists = data ?? [];
+  } catch {
+    // Supabase not configured yet — render the shell anyway.
   }
 
   return (
-    <ProfileEditor
-      artist={artist}
-      flash={flash ?? []}
-      isOwner={!!isOwner}
-      email={user.email!}
-    />
+    <main className="wrap">
+      <p className="caps" style={{ fontSize: 12, color: "var(--gold-light)" }}>
+        By Appointment of Her Grace · Garland, Texas
+      </p>
+      <h1 style={{ fontFamily: "var(--blackletter)", fontSize: 64, color: "var(--gold-dark)" }}>
+        Baroness Tattoo
+      </h1>
+      <p style={{ fontStyle: "italic", fontSize: 20, color: "var(--gold-dark)" }}>
+        &ldquo;Wear your crown.&rdquo;
+      </p>
+
+      <p style={{ margin: "24px 0", color: "var(--grey)" }}>
+        This is the new app foundation. The full rococo estate experience will be
+        ported here next. For now, you can sign in to the Artists&rsquo; Quarters.
+      </p>
+
+      <p style={{ display: "flex", gap: 12 }}>
+        <Link className="btn" href="/login">
+          Artists&rsquo; Quarters · Login
+        </Link>
+      </p>
+
+      {artists.length > 0 && (
+        <section style={{ marginTop: 40 }}>
+          <h2>Hall of Portraits</h2>
+          <ul>
+            {artists.map((a) => (
+              <li key={a.id}>
+                <strong>{a.display_name}</strong>
+                {a.specialty ? ` — ${a.specialty}` : ""}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </main>
   );
 }
