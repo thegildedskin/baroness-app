@@ -1,5 +1,6 @@
 # Baroness App — Setup Guide
 
+
 This is the new Next.js application that will replace the static prototype. It's
 wired to Supabase for logins (magic link), artist profiles, media, and messaging.
 
