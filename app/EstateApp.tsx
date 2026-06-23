@@ -83,6 +83,7 @@ export default function EstateApp({ artists }: { artists: Artist[] }) {
   const [butlerTarget, setButlerTarget] = useState(LINES.entrance);
   const [butlerText, setButlerText] = useState("");
   const [motes, setMotes] = useState<{ left: number; size: number; dur: number; delay: number }[]>([]);
+  const [navOpen, setNavOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -116,6 +117,14 @@ export default function EstateApp({ artists }: { artists: Artist[] }) {
     }, 700);
     return () => { clearTimeout(id); obs.disconnect(); };
   }, [scene, artists.length]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const h = window.location.hash.replace("#", "");
+    if (["foyer", "artists", "gallery", "booking", "boutique", "salon"].includes(h)) {
+      setDoorsOpen(true); setScene(h as Scene); setButlerTarget(LINES[h as Scene]);
+    }
+  }, []);
 
   function go(s: Scene) {
     if (transit) return;
@@ -175,6 +184,7 @@ export default function EstateApp({ artists }: { artists: Artist[] }) {
             <div className="room-card reveal" onClick={() => go("boutique")}><span className="room-emblem">👛</span><div className="room-name">The Boudoir</div><div className="room-desc">Maison Baroness</div></div>
             <div className="room-card reveal" onClick={() => go("salon")}><span className="room-emblem">📜</span><div className="room-name">Drawing Room</div><div className="room-desc">The house &amp; how to call</div></div>
           </div>
+          <a className="btn" href="/explore" style={{ marginTop: 26 }}>Stroll the Grounds · 3D (beta)</a>
         </div>
       </section>
 
@@ -290,9 +300,25 @@ export default function EstateApp({ artists }: { artists: Artist[] }) {
         <div className="dv left" /><div className="dv right" />
       </div>
 
-      {/* BUTLER */}
+      {/* BUTLER + NAV */}
       <div className="butler">
-        <div className="avatar">🧑‍✈️</div>
+        <div className="butlerdock" onMouseEnter={() => setNavOpen(true)} onMouseLeave={() => setNavOpen(false)}>
+          {navOpen && (
+            <div className="butlernav">
+              <div className="bn-h">Navigate the Estate</div>
+              <button onClick={() => { setNavOpen(false); go("foyer"); }}>The Foyer</button>
+              <button onClick={() => { setNavOpen(false); go("artists"); }}>Portrait Salon</button>
+              <button onClick={() => { setNavOpen(false); go("gallery"); }}>The Gallery</button>
+              <button onClick={() => { setNavOpen(false); go("booking"); }}>Appointment Parlor</button>
+              <button onClick={() => { setNavOpen(false); go("boutique"); }}>Maison Baroness</button>
+              <button onClick={() => { setNavOpen(false); go("salon"); }}>Drawing Room</button>
+              <div className="bn-div" />
+              <a href="/explore">Stroll the Grounds · 3D</a>
+              <a href="/dashboard">Artists&rsquo; Quarters</a>
+            </div>
+          )}
+          <div className="avatar" title="Hover for the map" onClick={() => setNavOpen((o) => !o)}>🧑‍✈️<span className="navtag">map ▾</span></div>
+        </div>
         <div className="bubble"><div className="who">Reynard · Butler to Her Grace</div><div className="say">{butlerText}</div></div>
       </div>
 
@@ -481,6 +507,16 @@ const CSS = `
 .estate .bubble{background:rgba(245,233,211,.97);border:1px solid var(--gold);border-radius:12px;padding:11px 20px;max-width:760px;box-shadow:0 8px 22px rgba(0,0,0,.4)}
 .estate .bubble .who{font-family:var(--caps);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:3px}
 .estate .bubble .say{font-family:var(--display);font-size:19px;font-style:italic;color:var(--black);min-height:1.4em}
+.estate .butlerdock{position:relative;pointer-events:auto}
+.estate .avatar{cursor:pointer;position:relative;transition:transform .25s,box-shadow .25s}
+.estate .butlerdock:hover .avatar{transform:translateY(-2px);box-shadow:0 0 0 3px rgba(212,181,116,.5),0 8px 20px rgba(0,0,0,.5)}
+.estate .avatar .navtag{position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font-family:var(--caps);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-light);white-space:nowrap;opacity:.85}
+.estate .butlernav{position:absolute;bottom:74px;left:0;display:flex;flex-direction:column;gap:1px;background:rgba(18,11,8,.96);border:1px solid var(--gold);border-radius:10px;padding:8px;min-width:220px;box-shadow:0 14px 34px rgba(0,0,0,.55);animation:navIn .22s ease both}
+@keyframes navIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.estate .butlernav .bn-h{font-family:var(--caps);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-light);padding:4px 10px 7px}
+.estate .butlernav .bn-div{height:1px;background:linear-gradient(90deg,transparent,var(--gold-dark),transparent);margin:5px 6px}
+.estate .butlernav button,.estate .butlernav a{font-family:var(--display);font-size:17px;color:#f5e9d3;background:transparent;border:none;text-align:left;padding:7px 11px;border-radius:6px;cursor:pointer;text-decoration:none;display:block;width:100%}
+.estate .butlernav button:hover,.estate .butlernav a:hover{background:rgba(184,146,74,.28);color:#fff}
 .estate .motes{position:absolute;inset:0;z-index:50;pointer-events:none;overflow:hidden}
 .estate .mote{position:absolute;bottom:-12px;border-radius:50%;background:radial-gradient(circle,rgba(255,238,190,.9),rgba(255,238,190,0));animation:erise linear infinite}
 @keyframes erise{0%{transform:translateY(0) translateX(0);opacity:0}10%{opacity:.8}90%{opacity:.5}100%{transform:translateY(-105vh) translateX(40px);opacity:0}}
