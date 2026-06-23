@@ -104,6 +104,7 @@ export default function EstateApp({ artists }: { artists: Artist[] }) {
     <div className="estate">
       <style>{CSS}</style>
       <div className="giltframe" />
+      <a className="quarters" href="/dashboard">Artists&rsquo; Quarters</a>
 
       {/* ENTRANCE */}
       <section className={`scene ${scene === "entrance" ? "active" : ""} ${doorsOpen ? "doors-open" : ""}`} id="entrance">
@@ -305,6 +306,8 @@ export default function EstateApp({ artists }: { artists: Artist[] }) {
 const CSS = `
 .estate{position:fixed;inset:0;overflow:hidden;font-family:var(--body);color:var(--black);background:#0c0a08}
 .estate .giltframe{position:absolute;inset:14px;border:1.5px solid var(--gold);box-shadow:inset 0 0 0 4px rgba(0,0,0,.12),inset 0 0 0 6px var(--gold-dark);pointer-events:none;border-radius:3px;z-index:60}
+.estate .quarters{position:fixed;top:22px;right:30px;z-index:62;font-family:var(--caps);letter-spacing:.14em;text-transform:uppercase;font-size:10px;color:var(--black);background:linear-gradient(180deg,var(--gold-light),var(--gold));border:1px solid var(--gold-dark);padding:8px 14px;border-radius:2px;text-decoration:none;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.estate .quarters:hover{filter:brightness(1.08)}
 .estate .cream-bg{position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 0%,#fbf3e2 0%,var(--cream) 45%,var(--cream-deep) 100%)}
 .estate .grain{position:absolute;inset:0;opacity:.5;pointer-events:none;background-image:radial-gradient(circle at 50% 50%,rgba(184,146,74,.07) 0 1.5px,transparent 2px);background-size:46px 46px}
 .estate .vignette{position:absolute;inset:0;box-shadow:inset 0 0 230px rgba(12,10,8,.6);pointer-events:none}
