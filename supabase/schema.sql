@@ -180,7 +180,6 @@ insert into public.artists (slug, display_name, specialty, instagram_url, is_pub
   ('alejandra','Alejandra','Custom tattoo artist','https://www.instagram.com/alejandrra.art/',false,2),
   ('caroline','Caroline','Custom tattoo artist','https://www.instagram.com/stinky.inky666',false,3),
   ('daniel','Daniel','Custom tattoo artist','https://www.instagram.com/danramir3zinks/',false,4),
-  ('danny','Danny','Custom tattoo artist','https://www.instagram.com/dann.inkz/',false,5),
   ('katherine','Katherine','Custom tattoo artist','https://www.instagram.com/baroness_katherine/',false,6),
   ('mayra','Mayra','Custom tattoo artist','https://mayrastattoostudio.square.site/',false,7),
   ('mikey','Mikey','Custom tattoo artist','https://www.instagram.com/yikesmikestattoos/',false,8)

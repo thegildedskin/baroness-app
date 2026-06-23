@@ -2,12 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import ArtistMessageForm from "./ArtistMessageForm";
+import { AvatarRender, type AvatarConfig } from "./avatar/AvatarRender";
 
 export type Flash = { id: string; image_url: string };
 export type Artist = {
   id: string; slug: string; display_name: string; specialty: string | null;
   bio: string | null; public_note: string | null; portrait_url: string | null;
   instagram_url: string | null; venue_url: string | null; flash: Flash[];
+  avatar?: Partial<AvatarConfig> | null;
 };
 
 const STUDIO_VENUE = "https://venue.ink/";
@@ -193,6 +195,8 @@ export default function EstateApp({ artists }: { artists: Artist[] }) {
                     {a.portrait_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={a.portrait_url} alt={a.display_name} className="pimg" />
+                    ) : a.avatar ? (
+                      <AvatarRender config={a.avatar} size={220} />
                     ) : (<span className="initials">{initials(a.display_name)}</span>)}
                   </div>
                   <div className="pmeta"><div className="pname">{a.display_name}</div><div className="pspec">{a.specialty}</div></div>
@@ -306,6 +310,8 @@ export default function EstateApp({ artists }: { artists: Artist[] }) {
               {active.portrait_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={active.portrait_url} alt={active.display_name} className="heroimg" />
+              ) : active.avatar ? (
+                <AvatarRender config={active.avatar} size={200} />
               ) : (<span className="initials">{initials(active.display_name)}</span>)}
             </div>
             <div className="body">
