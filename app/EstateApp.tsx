@@ -167,7 +167,7 @@ export default function EstateApp({ artists }: { artists: Artist[] }) {
           <div className="section-kicker reveal">Choose a door, and I shall escort you through.</div>
           <div className="filigree reveal"><span>❦</span></div>
           <div className="rooms">
-            <div className="room-card reveal" onClick={() => go("artists")}><span className="room-emblem">🎨</span><div className="room-name">Portrait Salon</div><div className="room-desc">Her Grace&rsquo;s artists</div></div>
+            <div className="room-card reveal" onClick={() => go("artists")}><span className="room-emblem"><svg viewBox="0 0 40 40" width="38" height="38" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="14" y="4" width="12" height="15" rx="4" /><path d="M20 19 V30 M20 30 V37 M14 9 H10 a3 3 0 0 0 -3 3 V15" /><circle cx="20" cy="9" r="1.6" fill="currentColor" /></svg></span><div className="room-name">Portrait Salon</div><div className="room-desc">Her Grace&rsquo;s artists</div></div>
             <div className="room-card reveal" onClick={() => go("gallery")}><span className="room-emblem">🖼</span><div className="room-name">The Gallery</div><div className="room-desc">Works upon the skin</div></div>
             <div className="room-card reveal" onClick={() => go("booking")}><span className="room-emblem">✉</span><div className="room-name">Writing Parlor</div><div className="room-desc">Request your sitting</div></div>
             <div className="room-card reveal" onClick={() => go("boutique")}><span className="room-emblem">👛</span><div className="room-name">The Boudoir</div><div className="room-desc">Maison Baroness</div></div>
@@ -352,17 +352,17 @@ const CSS = `
 .estate .reveal.in{opacity:1;transform:none}
 /* ===== ROCOCO ROOM ===== */
 .estate .room{position:absolute;inset:0;z-index:0;overflow:hidden;transform:translate(calc(var(--px)*-10px),calc(var(--py)*-7px));transition:transform .25s ease-out}
-.estate .room-foyer{--wall:#e6d4a9;--wall2:#f4e9cc}
-.estate .room-gallery-hall{--wall:#c7d4c0;--wall2:#dde7d2}
-.estate .room-gallery{--wall:#c4d3dc;--wall2:#dde8ee}
-.estate .room-parlor{--wall:#e3c6c1;--wall2:#f1ddd7}
-.estate .room-boudoir{--wall:#e7c3cb;--wall2:#f3d9dd}
-.estate .room-salon{--wall:#ccd8be;--wall2:#e0e8d1}
-.estate .wall{position:absolute;inset:0;background:linear-gradient(180deg,var(--wall2) 0%,var(--wall) 55%,color-mix(in srgb,var(--wall) 80%,#7a5e2e) 100%)}
+.estate .room-foyer{--wall:#a9c4d4;--wall2:#d6e6ef}
+.estate .room-gallery-hall{--wall:#a6c1d2;--wall2:#d2e2ed}
+.estate .room-gallery{--wall:#9fbccf;--wall2:#cee0ec}
+.estate .room-parlor{--wall:#b2cad9;--wall2:#dae8f0}
+.estate .room-boudoir{--wall:#ccb2c3;--wall2:#ecd8e1}
+.estate .room-salon{--wall:#aac6d1;--wall2:#d6e6ec}
+.estate .wall{position:absolute;inset:0;background:linear-gradient(180deg,var(--wall2) 0%,var(--wall) 55%,color-mix(in srgb,var(--wall) 76%,#33506a) 100%)}
 .estate .wall::after{content:"";position:absolute;inset:0;background-image:${"" /*damask*/}var(--damask);background-size:90px 130px;opacity:.85;mix-blend-mode:multiply}
 .estate .boiserie{position:absolute;left:0;right:0;top:9%;height:48%;display:flex;gap:3vw;justify-content:center;padding:0 5vw;z-index:0;opacity:.9}
 .estate .panel{flex:1;max-width:210px;border:2px solid var(--gold);border-radius:90px 90px 6px 6px;box-shadow:inset 0 0 0 4px rgba(255,255,255,.18),inset 0 0 0 6px var(--gold-dark),0 0 16px rgba(184,146,74,.18);background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(184,146,74,.05))}
-.estate .floor{position:absolute;left:-20%;right:-20%;bottom:0;height:30%;background:repeating-linear-gradient(45deg,#6b4a2a 0 26px,#5a3d22 26px 52px),repeating-linear-gradient(-45deg,rgba(0,0,0,.05) 0 26px,transparent 26px 52px);transform:perspective(420px) rotateX(60deg);transform-origin:bottom;opacity:.42;z-index:0;box-shadow:0 -30px 50px 30px var(--wall)}
+.estate .floor{position:absolute;left:-30%;right:-30%;bottom:0;height:34%;background-color:#e9e4d8;background-image:conic-gradient(#15110d 90deg,#efeadf 0 180deg,#15110d 0 270deg,#efeadf 0);background-size:64px 64px;transform:perspective(440px) rotateX(63deg);transform-origin:bottom;opacity:.5;z-index:0;box-shadow:0 -34px 56px 34px var(--wall)}
 .estate .chandelier{position:absolute;top:2px;left:50%;transform:translateX(-50%);z-index:1;filter:drop-shadow(0 0 26px rgba(255,200,110,.55));animation:sway 6s ease-in-out infinite;transform-origin:top center}
 @keyframes sway{0%,100%{transform:translateX(-50%) rotate(-1.1deg)}50%{transform:translateX(-50%) rotate(1.1deg)}}
 .estate .chandelier .flames{animation:eflick 2.2s ease-in-out infinite}

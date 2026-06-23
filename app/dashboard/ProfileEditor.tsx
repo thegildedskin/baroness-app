@@ -6,21 +6,16 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import SetPassword from "./SetPassword";
 import Messages from "./Messages";
+import AvatarBuilder from "./AvatarBuilder";
+import type { AvatarConfig } from "../avatar/AvatarRender";
 
 type Msg = { id: string; sender: string; body: string | null; created_at: string };
-type Thread = {
-  id: string;
-  client_name: string;
-  client_email: string | null;
-  created_at: string;
-  last_message_at: string;
-  messages: Msg[];
-};
-
+type Thread = { id: string; client_name: string; client_email: string | null; created_at: string; last_message_at: string; messages: Msg[] };
 type Artist = {
   id: string; slug: string; display_name: string; specialty: string | null;
   bio: string | null; public_note: string | null; portrait_url: string | null;
   accent: string | null; instagram_url: string | null; venue_url: string | null; is_published: boolean;
+  avatar?: Partial<AvatarConfig> | null; premium?: boolean | null;
 };
 type Flash = { id: string; image_url: string; caption: string | null; sort_order: number };
 
@@ -36,9 +31,7 @@ export default function ProfileEditor({ artist, flash, threads, isOwner, email }
   });
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
-
   function set<K extends keyof typeof form>(k: K, v: (typeof form)[K]) { setForm((f) => ({ ...f, [k]: v })); }
-
   async function save() {
     setBusy(true); setStatus("");
     const { error } = await supabase.from("artists").update(form).eq("id", artist.id);
@@ -68,7 +61,6 @@ export default function ProfileEditor({ artist, flash, threads, isOwner, email }
     const { error } = await supabase.from("flash").delete().eq("id", id);
     setBusy(false); setStatus(error ? `Error: ${error.message}` : "Removed."); router.refresh();
   }
-
   return (
     <main className="wrap" style={{ maxWidth: 760 }}>
       <p style={{ marginBottom: 12, display: "flex", gap: 18 }}>
@@ -76,34 +68,28 @@ export default function ProfileEditor({ artist, flash, threads, isOwner, email }
         {isOwner && <Link href="/dashboard" className="caps" style={{ fontSize: 11, color: "var(--gold-dark)" }}>↑ All artists</Link>}
       </p>
       <h1 style={{ fontSize: 44 }}>Editing: {artist.display_name}</h1>
-      <p className="caps" style={{ fontSize: 10, color: "var(--gold-dark)", margin: "6px 0 22px" }}>
-        Signed in as {email} {isOwner ? "· House Owner" : ""}
-      </p>
+      <p className="caps" style={{ fontSize: 10, color: "var(--gold-dark)", margin: "6px 0 22px" }}>Signed in as {email} {isOwner ? "· House Owner" : ""}</p>
+
+      <AvatarBuilder artistId={artist.id} initial={artist.avatar ?? null} entitled={!!(artist.premium || isOwner)} />
 
       <div className="card" style={{ marginBottom: 22 }}>
-        <h3 style={{ fontSize: 24, marginBottom: 14 }}>Your portrait</h3>
+        <h3 style={{ fontSize: 24, marginBottom: 14 }}>Your portrait photo</h3>
         {artist.portrait_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={artist.portrait_url} alt="portrait" style={{ width: 140, height: 140, objectFit: "cover", borderRadius: 6, border: "1px solid var(--gold)" }} />
         ) : (<p style={{ color: "var(--grey)", marginBottom: 10 }}>No portrait yet.</p>)}
-        <p style={{ marginTop: 12 }}>
-          <input type="file" accept="image/*" disabled={busy} onChange={(e) => e.target.files?.[0] && uploadPortrait(e.target.files[0])} />
-        </p>
+        <p style={{ marginTop: 12 }}><input type="file" accept="image/*" disabled={busy} onChange={(e) => e.target.files?.[0] && uploadPortrait(e.target.files[0])} /></p>
       </div>
 
       <div className="card" style={{ marginBottom: 22 }}>
         <h3 style={{ fontSize: 24, marginBottom: 14 }}>Details</h3>
         <label className="field"><span>Display name</span><input value={form.display_name} onChange={(e) => set("display_name", e.target.value)} /></label>
         <label className="field"><span>Specialty</span><input value={form.specialty} onChange={(e) => set("specialty", e.target.value)} /></label>
-        <label className="field"><span>Bio</span>
-          <textarea rows={4} value={form.bio} onChange={(e) => set("bio", e.target.value)} style={{ width: "100%", padding: 11, border: "1px solid var(--gold-dark)", borderRadius: 3, fontFamily: "var(--body)", fontSize: 16, background: "#fdf6e7" }} /></label>
+        <label className="field"><span>Bio</span><textarea rows={4} value={form.bio} onChange={(e) => set("bio", e.target.value)} style={{ width: "100%", padding: 11, border: "1px solid var(--gold-dark)", borderRadius: 3, fontFamily: "var(--body)", fontSize: 16, background: "#fdf6e7" }} /></label>
         <label className="field"><span>Note to clients</span><input value={form.public_note} onChange={(e) => set("public_note", e.target.value)} /></label>
         <label className="field"><span>Instagram / profile link</span><input value={form.instagram_url} onChange={(e) => set("instagram_url", e.target.value)} /></label>
         <label className="field"><span>venue.ink booking link</span><input value={form.venue_url} onChange={(e) => set("venue_url", e.target.value)} /></label>
-        <label style={{ display: "flex", alignItems: "center", gap: 8, margin: "8px 0 4px" }}>
-          <input type="checkbox" checked={form.is_published} onChange={(e) => set("is_published", e.target.checked)} />
-          <span className="caps" style={{ fontSize: 11 }}>Published (visible to visitors)</span>
-        </label>
+        <label style={{ display: "flex", alignItems: "center", gap: 8, margin: "8px 0 4px" }}><input type="checkbox" checked={form.is_published} onChange={(e) => set("is_published", e.target.checked)} /><span className="caps" style={{ fontSize: 11 }}>Published (visible to visitors)</span></label>
       </div>
 
       <div className="card" style={{ marginBottom: 22 }}>
@@ -117,9 +103,7 @@ export default function ProfileEditor({ artist, flash, threads, isOwner, email }
             </div>
           ))}
         </div>
-        <p style={{ marginTop: 12 }}>
-          <input type="file" accept="image/*" disabled={busy} onChange={(e) => e.target.files?.[0] && addFlash(e.target.files[0])} />
-        </p>
+        <p style={{ marginTop: 12 }}><input type="file" accept="image/*" disabled={busy} onChange={(e) => e.target.files?.[0] && addFlash(e.target.files[0])} /></p>
       </div>
 
       <Messages threads={threads} />
@@ -128,11 +112,8 @@ export default function ProfileEditor({ artist, flash, threads, isOwner, email }
         <button className="btn" onClick={save} disabled={busy}>{busy ? "Working…" : "Save changes"}</button>
         {status && <span style={{ color: status.startsWith("Error") ? "#a33" : "var(--gold-dark)" }}>{status}</span>}
       </div>
-
       <div style={{ marginTop: 30 }}><SetPassword /></div>
-      <form action="/auth/signout" method="post" style={{ marginTop: 6 }}>
-        <button className="btn ghost" type="submit">Sign out</button>
-      </form>
+      <form action="/auth/signout" method="post" style={{ marginTop: 6 }}><button className="btn ghost" type="submit">Sign out</button></form>
     </main>
   );
 }
