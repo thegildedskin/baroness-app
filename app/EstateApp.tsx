@@ -152,7 +152,7 @@ export default function EstateApp({ artists }: { artists: Artist[] }) {
     <div className="estate" ref={rootRef}>
       <style>{CSS}</style>
       <div className="giltframe" />
-      <a className="quarters" href="/dashboard">Artists&rsquo; Quarters</a>
+      <a className="quarters" href="/dashboard">My Quarters</a>
 
       {/* ENTRANCE */}
       <section className={`scene ${scene === "entrance" ? "active" : ""} ${doorsOpen ? "doors-open" : ""}`} id="entrance">
@@ -319,7 +319,7 @@ export default function EstateApp({ artists }: { artists: Artist[] }) {
             <button onClick={() => go("salon")}>Drawing Room</button>
             <div className="bn-div" />
             <a href="/explore">Stroll the Grounds · 3D</a>
-            <a href="/dashboard">Artists&rsquo; Quarters</a>
+            <a href="/dashboard">My Quarters · Profile</a>
           </div>
           <div className="avatar">🧑‍✈️</div>
         </div>

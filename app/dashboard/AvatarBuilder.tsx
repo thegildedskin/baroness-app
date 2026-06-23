@@ -13,8 +13,8 @@ const CATS: { key: keyof AvatarConfig; label: string }[] = [
   { key: "outfit", label: "Attire" }, { key: "bg", label: "Backdrop" },
 ];
 
-export default function AvatarBuilder({ artistId, initial, entitled }: {
-  artistId: string; initial: Partial<AvatarConfig> | null; entitled: boolean;
+export default function AvatarBuilder({ artistId, initial, entitled, table = "artists", canUnlock = true }: {
+  artistId: string; initial: Partial<AvatarConfig> | null; entitled: boolean; table?: string; canUnlock?: boolean;
 }) {
   const supabase = createClient();
   const router = useRouter();
@@ -24,13 +24,13 @@ export default function AvatarBuilder({ artistId, initial, entitled }: {
   const [status, setStatus] = useState("");
 
   function pick(key: keyof AvatarConfig, opt: { id: string; premium?: boolean }) {
-    if (opt.premium && !entitled) { setStatus("That's a premium look — unlock coming soon."); return; }
+    if (opt.premium && !entitled) { setStatus("That's a premium look — unlock to use it."); return; }
     setStatus("");
     setCfg((c) => ({ ...c, [key]: opt.id }));
   }
   async function save() {
     setBusy(true); setStatus("");
-    const { error } = await supabase.from("artists").update({ avatar: cfg }).eq("id", artistId);
+    const { error } = await supabase.from(table).update({ avatar: cfg }).eq("id", artistId);
     setBusy(false);
     setStatus(error ? `Error: ${error.message}` : "Avatar saved.");
     if (!error) router.refresh();
@@ -55,8 +55,7 @@ export default function AvatarBuilder({ artistId, initial, entitled }: {
         <div style={{ flex: 1, minWidth: 260 }}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
             {CATS.map((cc) => (
-              <button key={cc.key} onClick={() => setCat(cc.key)}
-                className="caps"
+              <button key={cc.key} onClick={() => setCat(cc.key)} className="caps"
                 style={{ fontSize: 9, letterSpacing: ".12em", padding: "6px 9px", borderRadius: 2, cursor: "pointer",
                   border: "1px solid var(--gold-dark)", background: cat === cc.key ? "var(--gold)" : "transparent", color: cat === cc.key ? "var(--black)" : "var(--gold-dark)" }}>
                 {cc.label}
@@ -81,12 +80,14 @@ export default function AvatarBuilder({ artistId, initial, entitled }: {
             <button className="btn" onClick={save} disabled={busy}>{busy ? "Saving…" : "Save avatar"}</button>
             {status && <span style={{ color: status.startsWith("Error") ? "#a33" : "var(--gold-dark)", fontSize: 14 }}>{status}</span>}
           </div>
-          {!entitled && (
+          {!entitled && (canUnlock ? (
             <div style={{ marginTop: 10 }}>
               <button className="btn ghost" onClick={unlock} disabled={busy}>★ Unlock premium looks — $12</button>
               <p style={{ fontSize: 12, color: "var(--grey)", marginTop: 6 }}>Secure checkout via Stripe. Unlocks all premium hair, eyes, attire &amp; backdrops.</p>
             </div>
-          )}
+          ) : (
+            <p style={{ fontSize: 13, color: "var(--grey)", marginTop: 8 }}>★ Premium looks unlock with a membership (coming soon).</p>
+          ))}
         </div>
       </div>
     </div>

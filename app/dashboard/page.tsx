@@ -1,10 +1,14 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import ProfileEditor from "./ProfileEditor";
 import SetPassword from "./SetPassword";
+import ClientQuarters from "./ClientQuarters";
 
 export const dynamic = "force-dynamic";
+
+type Convo = { id: string; artist_id: string; last_message_at: string; artists: { display_name: string } | { display_name: string }[] | null };
 
 export default async function Dashboard({ searchParams }: { searchParams: { id?: string } }) {
   const supabase = createClient();
@@ -31,8 +35,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { id?:
           <h3 style={{ fontSize: 22, marginBottom: 14 }}>Choose an artist to edit</h3>
           <ul style={{ listStyle: "none", display: "grid", gap: 10 }}>
             {(artists ?? []).map((a) => (
-              <li key={a.id}><Link href={`/dashboard?id=${a.id}`} style={{ textDecoration: "none" }}>
-                <strong>{a.display_name}</strong> <span style={{ color: "var(--grey)" }}>— {a.is_published ? "published" : "unpublished"}</span></Link></li>
+              <li key={a.id}><Link href={`/dashboard?id=${a.id}`}>{a.display_name} — {a.is_published ? "published" : "unpublished"}</Link></li>
             ))}
           </ul>
         </div>
@@ -43,14 +46,26 @@ export default async function Dashboard({ searchParams }: { searchParams: { id?:
   }
 
   if (!artistId) {
-    return (
-      <main className="wrap" style={{ maxWidth: 640 }}>
-        <p style={{ marginBottom: 12 }}><Link href="/" className="caps" style={{ fontSize: 11, color: "var(--gold-dark)" }}>← The Estate</Link></p>
-        <h1 style={{ fontSize: 40 }}>Artists&rsquo; Quarters</h1>
-        <div className="card" style={{ marginTop: 16 }}><p>Your login isn&rsquo;t linked to an artist profile yet. Ask the House Owner to link your profile.</p></div>
-        <form action="/auth/signout" method="post" style={{ marginTop: 24 }}><button className="btn ghost" type="submit">Sign out</button></form>
-      </main>
-    );
+    // Client Quarters (clients + any not-yet-linked user)
+    const { data: cprofile } = await supabase
+      .from("profiles")
+      .select("display_name, avatar, credits, total_spent_cents, premium")
+      .eq("id", user.id)
+      .single();
+    let convos: Convo[] = [];
+    try {
+      const admin = createAdminClient();
+      const { data } = await admin
+        .from("threads")
+        .select("id, artist_id, last_message_at, artists(display_name)")
+        .eq("client_email", user.email)
+        .order("last_message_at", { ascending: false })
+        .limit(20);
+      convos = (data ?? []) as unknown as Convo[];
+    } catch {
+      /* threads optional */
+    }
+    return <ClientQuarters userId={user.id} email={user.email!} profile={cprofile ?? null} convos={convos} />;
   }
 
   const { data: artist } = await supabase.from("artists").select("*").eq("id", artistId).single();
