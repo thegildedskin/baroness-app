@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { replyToThread } from "@/app/actions";
 
 type Message = { id: string; sender: string; body: string | null; created_at: string };
 type Thread = {
@@ -15,7 +15,6 @@ type Thread = {
 };
 
 export default function Messages({ threads }: { threads: Thread[] }) {
-  const supabase = createClient();
   const router = useRouter();
   const [reply, setReply] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string>("");
@@ -24,9 +23,8 @@ export default function Messages({ threads }: { threads: Thread[] }) {
     const body = (reply[threadId] || "").trim();
     if (!body) return;
     setBusy(threadId);
-    const { error } = await supabase.from("messages").insert({ thread_id: threadId, sender: "artist", body });
-    if (!error) {
-      await supabase.from("threads").update({ last_message_at: new Date().toISOString() }).eq("id", threadId);
+    const res = await replyToThread(threadId, body);
+    if (!res?.error) {
       setReply((r) => ({ ...r, [threadId]: "" }));
       router.refresh();
     }

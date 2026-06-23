@@ -65,7 +65,10 @@ export default async function Dashboard({ searchParams }: { searchParams: { id?:
     } catch {
       /* threads optional */
     }
-    return <ClientQuarters userId={user.id} email={user.email!} profile={cprofile ?? null} convos={convos} />;
+    const { data: passport } = await supabase.from("ink_passport").select("id, title, artist_name, inked_on, notes, image_url").eq("user_id", user.id).order("created_at", { ascending: false });
+    const { data: achRows } = await supabase.from("user_achievements").select("key").eq("user_id", user.id);
+    const achievements = (achRows ?? []).map((r: { key: string }) => r.key);
+    return <ClientQuarters userId={user.id} email={user.email!} profile={cprofile ?? null} convos={convos} passport={passport ?? []} achievements={achievements} />;
   }
 
   const { data: artist } = await supabase.from("artists").select("*").eq("id", artistId).single();
