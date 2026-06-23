@@ -49,7 +49,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { id?:
     // Client Quarters (clients + any not-yet-linked user)
     const { data: cprofile } = await supabase
       .from("profiles")
-      .select("display_name, avatar, credits, total_spent_cents, premium")
+      .select("display_name, avatar, credits, total_spent_cents, premium, rpm_url")
       .eq("id", user.id)
       .single();
     let convos: Convo[] = [];

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { AvatarRender, OPTIONS, DEFAULT_AVATAR, type AvatarConfig } from "../avatar/AvatarRender";
 
@@ -13,8 +14,8 @@ const CATS: { key: keyof AvatarConfig; label: string }[] = [
   { key: "outfit", label: "Attire" }, { key: "bg", label: "Backdrop" },
 ];
 
-export default function AvatarBuilder({ artistId, initial, entitled, table = "artists", canUnlock = true }: {
-  artistId: string; initial: Partial<AvatarConfig> | null; entitled: boolean; table?: string; canUnlock?: boolean;
+export default function AvatarBuilder({ artistId, initial, entitled, table = "artists", canUnlock = true, rpmUrl = null }: {
+  artistId: string; initial: Partial<AvatarConfig> | null; entitled: boolean; table?: string; canUnlock?: boolean; rpmUrl?: string | null;
 }) {
   const supabase = createClient();
   const router = useRouter();
@@ -88,6 +89,19 @@ export default function AvatarBuilder({ artistId, initial, entitled, table = "ar
           ) : (
             <p style={{ fontSize: 13, color: "var(--grey)", marginTop: 8 }}>★ Premium looks unlock with a membership (coming soon).</p>
           ))}
+          <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(139,111,53,.3)" }}>
+            <div className="caps" style={{ fontSize: 10, color: "var(--gold-dark)", marginBottom: 6 }}>Full-body 3D avatar</div>
+            {rpmUrl ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={rpmUrl.replace(".glb", ".png")} alt="3D avatar" style={{ width: 64, height: 64, borderRadius: 8, border: "1px solid var(--gold)", objectFit: "cover", background: "#241c16" }} />
+                <Link className="btn ghost" href="/avatar/create">Update 3D avatar</Link>
+              </div>
+            ) : (
+              <Link className="btn ghost" href="/avatar/create">Create a 3D avatar</Link>
+            )}
+            <p style={{ fontSize: 12, color: "var(--grey)", marginTop: 6 }}>Used as your character in the 3D estate.</p>
+          </div>
         </div>
       </div>
     </div>

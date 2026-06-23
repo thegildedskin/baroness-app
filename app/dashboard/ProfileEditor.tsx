@@ -16,7 +16,7 @@ type Artist = {
   id: string; slug: string; display_name: string; specialty: string | null;
   bio: string | null; public_note: string | null; portrait_url: string | null;
   accent: string | null; instagram_url: string | null; venue_url: string | null; is_published: boolean;
-  avatar?: Partial<AvatarConfig> | null; premium?: boolean | null;
+  avatar?: Partial<AvatarConfig> | null; premium?: boolean | null; rpm_url?: string | null;
 };
 type Flash = { id: string; image_url: string; caption: string | null; sort_order: number };
 type Product = { id: string; title: string; description: string | null; price_cents: number; kind: string; preview_url: string | null; is_active: boolean };
@@ -72,7 +72,7 @@ export default function ProfileEditor({ artist, flash, threads, products, isOwne
       <h1 style={{ fontSize: 44 }}>Editing: {artist.display_name}</h1>
       <p className="caps" style={{ fontSize: 10, color: "var(--gold-dark)", margin: "6px 0 22px" }}>Signed in as {email} {isOwner ? "· House Owner" : ""}</p>
 
-      <AvatarBuilder artistId={artist.id} initial={artist.avatar ?? null} entitled={!!(artist.premium || isOwner)} />
+      <AvatarBuilder artistId={artist.id} initial={artist.avatar ?? null} entitled={!!(artist.premium || isOwner)} rpmUrl={artist.rpm_url ?? null} />
 
       <div className="card" style={{ marginBottom: 22 }}>
         <h3 style={{ fontSize: 24, marginBottom: 14 }}>Your portrait photo</h3>

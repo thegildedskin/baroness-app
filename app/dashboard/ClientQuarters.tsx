@@ -9,7 +9,7 @@ import SetPassword from "./SetPassword";
 import { AvatarRender, type AvatarConfig } from "../avatar/AvatarRender";
 
 type Convo = { id: string; artist_id: string; last_message_at: string; artists: { display_name: string } | { display_name: string }[] | null };
-type Profile = { display_name: string | null; avatar: Partial<AvatarConfig> | null; credits: number | null; total_spent_cents: number | null; premium: boolean | null };
+type Profile = { display_name: string | null; avatar: Partial<AvatarConfig> | null; credits: number | null; total_spent_cents: number | null; premium: boolean | null; rpm_url: string | null };
 
 function artistName(c: Convo): string {
   const a = c.artists;
@@ -75,7 +75,7 @@ export default function ClientQuarters({ userId, email, profile, convos }: {
         </div>
       </div>
 
-      <AvatarBuilder artistId={userId} table="profiles" canUnlock={false} initial={profile?.avatar ?? null} entitled={!!profile?.premium} />
+      <AvatarBuilder artistId={userId} table="profiles" canUnlock={false} initial={profile?.avatar ?? null} entitled={!!profile?.premium} rpmUrl={profile?.rpm_url ?? null} />
 
       <div className="card" style={{ marginBottom: 22 }}>
         <h3 style={{ fontSize: 22, marginBottom: 12 }}>Your likeness in the estate</h3>

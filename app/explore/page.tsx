@@ -3,12 +3,29 @@
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useEffect, useRef, useState, type MutableRefObject } from "react";
 import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 type Keys = Record<string, boolean>;
 
-function Player({ keys }: { keys: MutableRefObject<Keys> }) {
+function Player({ keys, rpmUrl }: { keys: MutableRefObject<Keys>; rpmUrl: string | null }) {
   const ref = useRef<THREE.Group>(null);
+  const [model, setModel] = useState<THREE.Object3D | null>(null);
+
+  useEffect(() => {
+    if (!rpmUrl) return;
+    let alive = true;
+    const loader = new GLTFLoader();
+    loader.load(rpmUrl, (gltf) => {
+      if (!alive) return;
+      const m = gltf.scene;
+      m.traverse((o) => { o.castShadow = true; });
+      setModel(m);
+    }, undefined, () => { /* keep capsule on error */ });
+    return () => { alive = false; };
+  }, [rpmUrl]);
+
   useFrame((state, dt) => {
     const g = ref.current;
     if (!g) return;
@@ -32,11 +49,18 @@ function Player({ keys }: { keys: MutableRefObject<Keys> }) {
     cam.position.lerp(new THREE.Vector3(g.position.x, 5.2, g.position.z + 9), 0.08);
     cam.lookAt(g.position.x, 1.4, g.position.z);
   });
+
   return (
     <group ref={ref} position={[0, 0, 5]}>
-      <mesh position={[0, 1.1, 0]} castShadow><cylinderGeometry args={[0.4, 0.55, 1.5, 18]} /><meshStandardMaterial color="#9fbccf" /></mesh>
-      <mesh position={[0, 2.05, 0]} castShadow><sphereGeometry args={[0.42, 22, 22]} /><meshStandardMaterial color="#f0c8a8" /></mesh>
-      <mesh position={[0, 2.22, -0.04]}><sphereGeometry args={[0.45, 22, 22, 0, Math.PI * 2, 0, Math.PI / 1.7]} /><meshStandardMaterial color="#4a3324" /></mesh>
+      {model ? (
+        <primitive object={model} />
+      ) : (
+        <>
+          <mesh position={[0, 1.1, 0]} castShadow><cylinderGeometry args={[0.4, 0.55, 1.5, 18]} /><meshStandardMaterial color="#9fbccf" /></mesh>
+          <mesh position={[0, 2.05, 0]} castShadow><sphereGeometry args={[0.42, 22, 22]} /><meshStandardMaterial color="#f0c8a8" /></mesh>
+          <mesh position={[0, 2.22, -0.04]}><sphereGeometry args={[0.45, 22, 22, 0, Math.PI * 2, 0, Math.PI / 1.7]} /><meshStandardMaterial color="#4a3324" /></mesh>
+        </>
+      )}
     </group>
   );
 }
@@ -57,16 +81,12 @@ function Door({ position, rotation, color, href }: { position: [number, number, 
 }
 
 function Room() {
-  const walls: [number, number, number, number][] = [
-    [0, 3, -10, 0], [0, 3, 10, Math.PI], [-10, 3, 0, Math.PI / 2], [10, 3, 0, -Math.PI / 2],
-  ];
+  const walls: [number, number, number, number][] = [[0, 3, -10, 0], [0, 3, 10, Math.PI], [-10, 3, 0, Math.PI / 2], [10, 3, 0, -Math.PI / 2]];
   return (
     <group>
       <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow><planeGeometry args={[20, 20]} /><meshStandardMaterial color="#e7eaec" /></mesh>
       <gridHelper args={[20, 10, "#7a7a7a", "#b9b9b9"]} position={[0, 0.02, 0]} />
-      {walls.map((w, i) => (
-        <mesh key={i} position={[w[0], w[1], w[2]]} rotation={[0, w[3], 0]} receiveShadow><boxGeometry args={[20, 6, 0.4]} /><meshStandardMaterial color="#a9c4d4" /></mesh>
-      ))}
+      {walls.map((w, i) => (<mesh key={i} position={[w[0], w[1], w[2]]} rotation={[0, w[3], 0]} receiveShadow><boxGeometry args={[20, 6, 0.4]} /><meshStandardMaterial color="#a9c4d4" /></mesh>))}
       <mesh position={[0, 6, 0]}><sphereGeometry args={[0.6, 16, 16]} /><meshStandardMaterial color="#caa24e" emissive="#ffcf7a" emissiveIntensity={0.8} /></mesh>
     </group>
   );
@@ -74,10 +94,22 @@ function Room() {
 
 export default function Explore() {
   const keys = useRef<Keys>({});
+  const [rpmUrl, setRpmUrl] = useState<string | null>(null);
+
   useEffect(() => {
     const d = (e: KeyboardEvent) => { keys.current[e.key.toLowerCase()] = true; };
     const u = (e: KeyboardEvent) => { keys.current[e.key.toLowerCase()] = false; };
     window.addEventListener("keydown", d); window.addEventListener("keyup", u);
+    (async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data } = await supabase.from("profiles").select("rpm_url").eq("id", user.id).single();
+          if (data?.rpm_url) setRpmUrl(data.rpm_url as string);
+        }
+      } catch { /* anon — use capsule */ }
+    })();
     return () => { window.removeEventListener("keydown", d); window.removeEventListener("keyup", u); };
   }, []);
 
@@ -88,17 +120,16 @@ export default function Explore() {
         <pointLight position={[0, 6, 0]} intensity={60} distance={40} color="#ffe6b0" castShadow />
         <directionalLight position={[6, 12, 6]} intensity={1.1} />
         <Room />
-        <Player keys={keys} />
+        <Player keys={keys} rpmUrl={rpmUrl} />
         <Door position={[0, 0, -9.7]} rotation={[0, 0, 0]} color="#7c5a86" href="/#artists" />
         <Door position={[9.7, 0, 0]} rotation={[0, -Math.PI / 2, 0]} color="#5a6f8c" href="/#gallery" />
         <Door position={[0, 0, 9.7]} rotation={[0, Math.PI, 0]} color="#9c6b72" href="/#boutique" />
         <Door position={[-9.7, 0, 0]} rotation={[0, Math.PI / 2, 0]} color="#6f8a7e" href="/#salon" />
       </Canvas>
-
       <div style={{ position: "fixed", top: 18, left: 18, right: 18, display: "flex", justifyContent: "space-between", alignItems: "flex-start", pointerEvents: "none", fontFamily: "var(--body)" }}>
-        <div style={{ background: "rgba(20,12,8,.72)", border: "1px solid #b8924a", borderRadius: 8, padding: "12px 16px", color: "#f5e9d3", maxWidth: 320, pointerEvents: "auto" }}>
+        <div style={{ background: "rgba(20,12,8,.72)", border: "1px solid #b8924a", borderRadius: 8, padding: "12px 16px", color: "#f5e9d3", maxWidth: 330, pointerEvents: "auto" }}>
           <div style={{ fontFamily: "var(--blackletter)", color: "#e8cf86", fontSize: 22, lineHeight: 1 }}>The Estate Grounds</div>
-          <div style={{ fontSize: 14, opacity: 0.9, margin: "6px 0 8px" }}>Beta · walk with <strong>W A S D</strong> or arrow keys. Click a gilded door to enter that room.</div>
+          <div style={{ fontSize: 14, opacity: 0.9, margin: "6px 0 8px" }}>Beta · walk with <strong>W A S D</strong> / arrows. Click a gilded door to enter that room.{rpmUrl ? " You're walking as your 3D avatar." : " Create a 3D avatar in your Quarters to walk as yourself."}</div>
           <div style={{ fontSize: 13, lineHeight: 1.5 }}>
             <span style={{ color: "#b79ac6" }}>■</span> North → Portrait Salon &nbsp; <span style={{ color: "#8aa0c0" }}>■</span> East → Gallery<br />
             <span style={{ color: "#c69aa0" }}>■</span> South → Boudoir &nbsp; <span style={{ color: "#9ab8a8" }}>■</span> West → Drawing Room
