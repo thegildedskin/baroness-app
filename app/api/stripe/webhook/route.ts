@@ -21,10 +21,12 @@ export async function POST(req: NextRequest) {
   }
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
-    const artistId = session.metadata?.artistId;
-    if (artistId) {
-      const admin = createAdminClient();
-      await admin.from("artists").update({ premium: true }).eq("id", artistId);
+    const md = session.metadata || {};
+    const admin = createAdminClient();
+    if (md.type === "product" && md.productId) {
+      await admin.from("purchases").insert({ product_id: md.productId, artist_id: md.artistId ?? null, buyer_email: session.customer_details?.email ?? null, amount_cents: session.amount_total ?? null, stripe_session: session.id });
+    } else if (md.artistId) {
+      await admin.from("artists").update({ premium: true }).eq("id", md.artistId);
     }
   }
   return NextResponse.json({ received: true });

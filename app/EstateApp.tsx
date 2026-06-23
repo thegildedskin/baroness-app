@@ -11,9 +11,18 @@ export type Artist = {
   bio: string | null; public_note: string | null; portrait_url: string | null;
   instagram_url: string | null; venue_url: string | null; flash: Flash[];
   avatar?: Partial<AvatarConfig> | null;
+  products?: { id: string; title: string; description: string | null; price_cents: number; kind: string; preview_url: string | null }[];
 };
 
 const STUDIO_VENUE = "https://venue.ink/";
+const CONTACT = {
+  address: "315 Coneflower Drive, Garland, TX",
+  mapUrl: "https://maps.google.com/?q=315+Coneflower+Drive+Garland+TX",
+  phone: "469-246-7217",
+  email: "hello@baronesstattoo.com",
+  instagram: "https://www.instagram.com/baronesstattoo",
+  facebook: "https://www.facebook.com/baronesstattoo",
+};
 const FALLBACK_PHOTOS = [
   "https://img1.wsimg.com/isteam/ip/b35cdeff-49dc-4837-9cdc-dfead84f5d5f/686041825_18399724834146430_853037633092867592.jpg/:/cr=t:0%25,l:0%25,w:100%25,h:100%25/rs=w:640",
   "https://img1.wsimg.com/isteam/ip/b35cdeff-49dc-4837-9cdc-dfead84f5d5f/670986604_18396522550146430_246446864300278330.jpg/:/cr=t:0%25,l:0%25,w:100%25,h:100%25/rs=w:640",
@@ -40,6 +49,63 @@ const WARES = [
 ];
 
 function openLink(url: string | null | undefined) { if (url) window.open(url, "_blank", "noopener"); }
+
+function playChime() {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const AC = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AC) return;
+    const ctx = new AC();
+    [784, 1175, 1568].forEach((freq, i) => {
+      const o = ctx.createOscillator(); const g = ctx.createGain();
+      o.type = "sine"; o.frequency.value = freq;
+      o.connect(g); g.connect(ctx.destination);
+      const t = ctx.currentTime + i * 0.05;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.22 / (i + 1), t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 1.8);
+      o.start(t); o.stop(t + 1.9);
+    });
+  } catch { /* audio optional */ }
+}
+
+function GateHalf() {
+  const bars = [16, 46, 76, 106, 136];
+  return (
+    <svg viewBox="0 0 152 600" preserveAspectRatio="none" className="gate-svg" aria-hidden="true">
+      <defs><linearGradient id="iron" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#43434a" /><stop offset="0.5" stopColor="#15151a" /><stop offset="1" stopColor="#43434a" /></linearGradient></defs>
+      <rect x="0" y="116" width="152" height="8" fill="url(#iron)" />
+      <rect x="0" y="300" width="152" height="8" fill="url(#iron)" />
+      <rect x="0" y="470" width="152" height="8" fill="url(#iron)" />
+      {bars.map((x, i) => (
+        <g key={i}>
+          <rect x={x - 2.5} y="30" width="5" height="556" fill="url(#iron)" />
+          <path d={`M${x - 6} 32 L${x} 12 L${x + 6} 32 Z`} fill="#caa24e" />
+          <circle cx={x} cy="120" r="4" fill="#caa24e" />
+        </g>
+      ))}
+      <g fill="none" stroke="#caa24e" strokeWidth="3">
+        <path d="M30 210 C30 182 74 182 74 210 C74 238 30 238 30 210 Z" />
+        <path d="M78 210 C78 182 122 182 122 210 C122 238 78 238 78 210 Z" />
+        <path d="M30 388 C30 360 74 360 74 388 C74 416 30 416 30 388 Z" />
+        <path d="M78 388 C78 360 122 360 122 388 C122 416 78 416 78 388 Z" />
+      </g>
+    </svg>
+  );
+}
+
+function ContactBar() {
+  const ph = CONTACT.phone.replace(/[^0-9]/g, "");
+  return (
+    <div className="contactbar">
+      <a className="cbtn" href={CONTACT.mapUrl} target="_blank" rel="noopener noreferrer" aria-label="Address" title={CONTACT.address}><svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z" fill="currentColor" /></svg></a>
+      <a className="cbtn" href={`tel:${ph}`} aria-label="Phone" title={CONTACT.phone}><svg viewBox="0 0 24 24" width="16" height="16"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.24 11 11 0 0 0 3.5.56 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11 11 0 0 0 .56 3.5 1 1 0 0 1-.24 1z" fill="currentColor" /></svg></a>
+      <a className="cbtn" href={`mailto:${CONTACT.email}`} aria-label="Email" title={CONTACT.email}><svg viewBox="0 0 24 24" width="16" height="16"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm0 2v.4l8 5 8-5V6H4zm16 12V8.9l-8 5-8-5V18h16z" fill="currentColor" /></svg></a>
+      <a className="cbtn" href={CONTACT.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 3.3.15 4.8 1.7 4.95 4.95.06 1.3.07 1.7.07 4.9s0 3.6-.07 4.9c-.15 3.25-1.65 4.8-4.95 4.95-1.3.06-1.7.07-4.9.07s-3.6 0-4.9-.07c-3.3-.15-4.8-1.7-4.95-4.95C2.2 15.6 2.2 15.2 2.2 12s0-3.6.07-4.9C2.42 3.85 3.92 2.32 7.1 2.27 8.4 2.2 8.8 2.2 12 2.2zm0 3.05a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5zm0 2.4a4.35 4.35 0 1 1 0 8.7 4.35 4.35 0 0 1 0-8.7zm6.95-.9a1.58 1.58 0 1 0 0 3.16 1.58 1.58 0 0 0 0-3.16z" fill="currentColor" /></svg></a>
+      <a className="cbtn" href={CONTACT.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M14 9h3V6h-3c-2.2 0-4 1.8-4 4v2H7v3h3v7h3v-7h3l1-3h-4v-2c0-.6.4-1 1-1z" fill="currentColor" /></svg></a>
+    </div>
+  );
+}
 
 function Chandelier() {
   return (
@@ -89,6 +155,7 @@ export default function EstateApp({ artists, gallery = [] }: { artists: Artist[]
   const [butlerTarget, setButlerTarget] = useState(LINES.entrance);
   const [butlerText, setButlerText] = useState("");
   const [motes, setMotes] = useState<{ left: number; size: number; dur: number; delay: number }[]>([]);
+  const [ringing, setRinging] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -138,11 +205,17 @@ export default function EstateApp({ artists, gallery = [] }: { artists: Artist[]
     window.setTimeout(() => setTransit(false), 1180);
   }
   function ring() {
-    setDoorsOpen(true);
+    if (doorsOpen || ringing) return;
+    setRinging(true);
+    playChime();
     setButlerTarget("Ah — a guest! Do come in. Allow me to take your coat...");
-    setTimeout(() => { setScene("foyer"); setButlerTarget(LINES.foyer); }, 1750);
+    window.setTimeout(() => setDoorsOpen(true), 650);
+    window.setTimeout(() => { setScene("foyer"); setButlerTarget(LINES.foyer); }, 2100);
   }
   function openArtist(a: Artist) { setActive(a); setButlerTarget(`May I present ${a.display_name}. When ready, I shall book your sitting.`); }
+  async function buyProduct(id: string) {
+    try { const r = await fetch("/api/checkout-product", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ productId: id }) }); const d = await r.json(); if (d.url) { window.location.href = d.url; } } catch { /* noop */ }
+  }
 
   const galleryPhotos = artists.flatMap((a) => a.flash?.map((f) => f.image_url) ?? []).slice(0, 24);
   const photos = gallery.length ? gallery : (galleryPhotos.length ? galleryPhotos : FALLBACK_PHOTOS);
@@ -153,23 +226,33 @@ export default function EstateApp({ artists, gallery = [] }: { artists: Artist[]
       <style>{CSS}</style>
       <div className="giltframe" />
       <a className="quarters" href="/dashboard">My Quarters</a>
+      <ContactBar />
 
-      {/* ENTRANCE */}
-      <section className={`scene ${scene === "entrance" ? "active" : ""} ${doorsOpen ? "doors-open" : ""}`} id="entrance">
-        <div className="approach" />
-        <div className="doorwrap">
-          <div className="door left"><span className="knob" /></div>
-          <div className="door right"><span className="knob" /></div>
-        </div>
+      {/* ENTRANCE — iron gates */}
+      <section className={`scene ${scene === "entrance" ? "active" : ""} ${doorsOpen ? "doors-open" : ""} ${ringing ? "ringing" : ""}`} id="entrance">
+        <div className="estate-beyond" />
         <span className="sconce l" /><span className="sconce r" />
-        <div className="entrance-content">
-          <div className="eyebrow">By Appointment of Her Grace · Garland, Texas</div>
+        <div className="gatewrap">
+          <div className="gate left"><GateHalf /></div>
+          <div className="gate right"><GateHalf /></div>
+        </div>
+        <div className="gate-crest">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="logo-img" src="/logo.png" alt="Baroness Tattoo" />
+          <img className="crest-logo" src="/logo.png" alt="Baroness Tattoo" />
+        </div>
+        <button className="bellpull" onClick={ring} aria-label="Ring the bell to enter">
+          <span className="bell-rope" />
+          <svg className="bell" viewBox="0 0 60 70" aria-hidden="true">
+            <defs><linearGradient id="bellg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#e8cf86" /><stop offset="1" stopColor="#b8924a" /></linearGradient></defs>
+            <path d="M30 8 a6 6 0 0 1 6 6 c10 4 13 18 13 30 l3 8 H8 l3 -8 c0 -12 3 -26 13 -30 a6 6 0 0 1 6 -6 Z" fill="url(#bellg)" stroke="#8b6f35" strokeWidth="1.5" />
+            <circle cx="30" cy="60" r="4" fill="#8b6f35" />
+          </svg>
+          <span className="bell-label">Ring to enter</span>
+        </button>
+        <div className="entrance-text">
+          <div className="eyebrow">By Appointment of Her Grace · Garland, Texas</div>
           <div className="estate-sub">A Luxury Atelier in the French Rococo</div>
           <div className="tagline">&ldquo;Wear your crown.&rdquo;</div>
-          <div className="knock"><button className="btn" onClick={ring}>Ring the Bell · Enter</button></div>
-          <div className="enterhint">⌄</div>
         </div>
         <div className="vignette" />
       </section>
@@ -357,6 +440,24 @@ export default function EstateApp({ artists, gallery = [] }: { artists: Artist[]
                 </div>
               )}
               {active.public_note && (<div className="notebox"><div className="who">A note left for you</div><span>{active.public_note}</span></div>)}
+              {active.products && active.products.length > 0 && (
+                <div className="shopwrap">
+                  <div className="shoph">Atelier shop</div>
+                  <div className="shopgrid">
+                    {active.products.map((pr) => (
+                      <div className="shopitem" key={pr.id}>
+                        {pr.preview_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={pr.preview_url} alt={pr.title} className="si-img" />
+                        ) : (<div className="si-ph">✦</div>)}
+                        <div className="si-title">{pr.title}</div>
+                        <div className="si-price">${(pr.price_cents / 100).toFixed(2)} · {pr.kind}</div>
+                        <button className="btn" onClick={() => buyProduct(pr.id)}>Buy</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="bookrow" style={{ justifyContent: "flex-start", marginTop: 22 }}>
                 <button className="btn" onClick={() => openLink(active.venue_url || STUDIO_VENUE)}>Book with this Artist</button>
                 {active.instagram_url && <button className="btn ghost" onClick={() => openLink(active.instagram_url)}>View Their Atelier</button>}
@@ -550,4 +651,39 @@ const CSS = `
 .estate .notebox .who{font-family:var(--caps);font-size:10px;letter-spacing:.2em;color:var(--gold-dark);text-transform:uppercase;margin-bottom:4px}
 @media(max-width:560px){.estate .photos{columns:2 150px}.estate .flashgrid{grid-template-columns:repeat(2,1fr)}.estate .backline{top:18px;left:18px}.estate .contact{grid-template-columns:1fr}.estate .quarters{top:18px;right:20px}.estate .boiserie{display:none}}
 @media(prefers-reduced-motion:reduce){.estate *,.estate *::before,.estate *::after{animation:none!important;transition:none!important}.estate .reveal{opacity:1;transform:none}}
+.estate .estate-beyond{position:absolute;inset:0;background:url(/rooms/foyer.jpg) center/cover;filter:brightness(.4) saturate(.85);transform:translate(calc(var(--px)*-18px),calc(var(--py)*-12px)) scale(1.12);z-index:0}
+.estate .gatewrap{position:absolute;inset:0;z-index:8}
+.estate .gate{position:absolute;top:0;height:100%;width:51%;transition:transform 1.8s cubic-bezier(.7,.02,.27,1);backface-visibility:hidden}
+.estate .gate.left{left:0;transform-origin:left center}
+.estate .gate.right{right:0;transform-origin:right center}
+.estate .gate-svg{width:100%;height:100%;display:block;filter:drop-shadow(0 0 18px rgba(0,0,0,.6))}
+.estate .doors-open .gate.left{transform:perspective(1600px) rotateY(118deg)}
+.estate .doors-open .gate.right{transform:perspective(1600px) rotateY(-118deg)}
+.estate .gate-crest{position:absolute;top:9%;left:50%;transform:translateX(-50%);z-index:11;background:radial-gradient(circle,#1f1d1a,#0c0a08);border:4px solid #caa24e;border-radius:50%;width:min(210px,44vw);height:min(210px,44vw);display:flex;align-items:center;justify-content:center;box-shadow:0 0 30px rgba(0,0,0,.7),inset 0 0 0 7px rgba(139,111,53,.4)}
+.estate .crest-logo{width:80%;height:80%;object-fit:contain;background:var(--cream);border-radius:50%;padding:10px}
+.estate .doors-open .gate-crest{opacity:0;transition:opacity .6s ease}
+.estate .bellpull{position:absolute;top:7%;right:19%;z-index:12;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+.estate .bell-rope{width:2px;height:54px;background:linear-gradient(#caa24e,#8b6f35)}
+.estate .bell{width:52px;height:auto;transform-origin:50% 8px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.5))}
+.estate .bellpull:hover .bell{animation:bellnudge .6s ease}
+.estate .ringing .bell{animation:bellring 1s ease}
+@keyframes bellnudge{0%,100%{transform:rotate(0)}30%{transform:rotate(9deg)}60%{transform:rotate(-7deg)}}
+@keyframes bellring{0%{transform:rotate(0)}15%{transform:rotate(24deg)}35%{transform:rotate(-19deg)}55%{transform:rotate(13deg)}75%{transform:rotate(-8deg)}100%{transform:rotate(0)}}
+.estate .bell-label{font-family:var(--caps);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-light);text-shadow:0 1px 4px #000}
+.estate .doors-open .bellpull{opacity:0;transition:opacity .5s ease;pointer-events:none}
+.estate .entrance-text{position:absolute;left:0;right:0;bottom:17%;z-index:10;text-align:center;transition:opacity .8s ease;padding:0 20px}
+.estate .doors-open .entrance-text{opacity:0}
+.estate .contactbar{position:fixed;right:26px;bottom:22px;z-index:58;display:flex;gap:8px}
+.estate .cbtn{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--black);background:linear-gradient(180deg,var(--gold-light),var(--gold));border:1px solid var(--gold-dark);text-decoration:none;box-shadow:0 4px 12px rgba(0,0,0,.35);transition:transform .2s,filter .2s}
+.estate .cbtn:hover{filter:brightness(1.08);transform:translateY(-2px)}
+@media(max-width:560px){.estate .contactbar{right:14px;bottom:14px;gap:6px}.estate .cbtn{width:30px;height:30px}.estate .bellpull{right:11%}}
+.estate .shopwrap{margin:6px 0 18px}
+.estate .shoph{font-family:var(--caps);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:8px}
+.estate .shopgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.estate .shopitem{border:1px solid var(--gold);border-radius:6px;overflow:hidden;background:#fffdf6;text-align:center;padding-bottom:8px}
+.estate .si-img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+.estate .si-ph{aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#241c16,#161210);color:var(--gold-light);font-size:26px}
+.estate .si-title{font-size:13px;color:var(--black);margin:6px 6px 0;font-weight:600}
+.estate .si-price{font-size:12px;color:var(--gold-dark);margin:0 0 6px}
+.estate .shopitem .btn{padding:7px 14px;font-size:10px}
 `.replace(/var\(--damask\)/g, DAMASK);

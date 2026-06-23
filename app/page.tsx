@@ -11,7 +11,7 @@ export default async function Home() {
     const { data } = await supabase
       .from("artists")
       .select(
-        "id,slug,display_name,specialty,bio,public_note,portrait_url,instagram_url,venue_url,avatar, flash(id,image_url,sort_order)"
+        "id,slug,display_name,specialty,bio,public_note,portrait_url,instagram_url,venue_url,avatar, flash(id,image_url,sort_order), products(id,title,description,price_cents,kind,preview_url,is_active)"
       )
       .eq("is_published", true)
       .order("sort_order");

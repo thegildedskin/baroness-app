@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import SetPassword from "./SetPassword";
 import Messages from "./Messages";
+import ProductManager from "./ProductManager";
 import AvatarBuilder from "./AvatarBuilder";
 import type { AvatarConfig } from "../avatar/AvatarRender";
 
@@ -18,9 +19,10 @@ type Artist = {
   avatar?: Partial<AvatarConfig> | null; premium?: boolean | null;
 };
 type Flash = { id: string; image_url: string; caption: string | null; sort_order: number };
+type Product = { id: string; title: string; description: string | null; price_cents: number; kind: string; preview_url: string | null; is_active: boolean };
 
-export default function ProfileEditor({ artist, flash, threads, isOwner, email }: {
-  artist: Artist; flash: Flash[]; threads: Thread[]; isOwner: boolean; email: string;
+export default function ProfileEditor({ artist, flash, threads, products, isOwner, email }: {
+  artist: Artist; flash: Flash[]; threads: Thread[]; products: Product[]; isOwner: boolean; email: string;
 }) {
   const supabase = createClient();
   const router = useRouter();
@@ -105,6 +107,8 @@ export default function ProfileEditor({ artist, flash, threads, isOwner, email }
         </div>
         <p style={{ marginTop: 12 }}><input type="file" accept="image/*" disabled={busy} onChange={(e) => e.target.files?.[0] && addFlash(e.target.files[0])} /></p>
       </div>
+
+      <ProductManager artistId={artist.id} products={products} />
 
       <Messages threads={threads} />
 
