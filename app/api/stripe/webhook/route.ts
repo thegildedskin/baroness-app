@@ -19,6 +19,11 @@ export async function POST(req: NextRequest) {
     const m = e instanceof Error ? e.message : "invalid signature";
     return NextResponse.json({ error: `Webhook error: ${m}` }, { status: 400 });
   }
+  if (event.type === "account.updated") {
+    const acct = event.data.object as Stripe.Account;
+    const admin = createAdminClient();
+    await admin.from("artists").update({ payouts_enabled: !!acct.charges_enabled }).eq("stripe_account_id", acct.id);
+  }
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const md = session.metadata || {};

@@ -17,6 +17,7 @@ type Artist = {
   bio: string | null; public_note: string | null; portrait_url: string | null;
   accent: string | null; instagram_url: string | null; venue_url: string | null; is_published: boolean;
   avatar?: Partial<AvatarConfig> | null; premium?: boolean | null; rpm_url?: string | null;
+  stripe_account_id?: string | null; payouts_enabled?: boolean | null;
 };
 type Flash = { id: string; image_url: string; caption: string | null; sort_order: number };
 type Product = { id: string; title: string; description: string | null; price_cents: number; kind: string; preview_url: string | null; is_active: boolean };
@@ -62,6 +63,16 @@ export default function ProfileEditor({ artist, flash, threads, products, isOwne
     setBusy(true);
     const { error } = await supabase.from("flash").delete().eq("id", id);
     setBusy(false); setStatus(error ? `Error: ${error.message}` : "Removed."); router.refresh();
+  }
+  async function connectPayouts() {
+    setBusy(true); setStatus("");
+    try {
+      const r = await fetch("/api/connect/onboard", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ artistId: artist.id }) });
+      const d = await r.json();
+      if (d.url) { window.location.href = d.url; return; }
+      setStatus(d.error || "Could not start payout setup.");
+    } catch { setStatus("Could not start payout setup."); }
+    setBusy(false);
   }
   return (
     <main className="wrap" style={{ maxWidth: 760 }}>
@@ -109,6 +120,18 @@ export default function ProfileEditor({ artist, flash, threads, products, isOwne
       </div>
 
       <ProductManager artistId={artist.id} products={products} />
+
+      <div className="card" style={{ marginBottom: 22 }}>
+        <h3 style={{ fontSize: 24, marginBottom: 8 }}>Payouts</h3>
+        {artist.payouts_enabled ? (
+          <p style={{ color: "var(--gold-dark)" }}>✓ Payouts active — your shop sales are sent to your Stripe account automatically (the house keeps a 15% fee).</p>
+        ) : (
+          <>
+            <p style={{ color: "var(--grey)", marginBottom: 10 }}>Connect a Stripe account to receive your shop earnings automatically.</p>
+            <button className="btn" onClick={connectPayouts} disabled={busy}>Connect payouts with Stripe</button>
+          </>
+        )}
+      </div>
 
       <Messages threads={threads} />
 
