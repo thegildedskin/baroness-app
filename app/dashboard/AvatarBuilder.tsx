@@ -9,7 +9,7 @@ const CATS: { key: keyof AvatarConfig; label: string }[] = [
   { key: "face", label: "Face shape" }, { key: "skin", label: "Skin" },
   { key: "hair", label: "Hair style" }, { key: "hairColor", label: "Hair colour" },
   { key: "eyes", label: "Eyes" }, { key: "eyeColor", label: "Eye colour" },
-  { key: "brows", label: "Brows" }, { key: "mouth", label: "Mouth" },
+  { key: "brows", label: "Brows" }, { key: "mouth", label: "Mouth" }, { key: "accessory", label: "Adornment" },
   { key: "outfit", label: "Attire" }, { key: "bg", label: "Backdrop" },
 ];
 
