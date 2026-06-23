@@ -35,6 +35,16 @@ export default function AvatarBuilder({ artistId, initial, entitled }: {
     setStatus(error ? `Error: ${error.message}` : "Avatar saved.");
     if (!error) router.refresh();
   }
+  async function unlock() {
+    setBusy(true); setStatus("");
+    try {
+      const res = await fetch("/api/checkout", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ artistId }) });
+      const data = await res.json();
+      if (data.url) { window.location.href = data.url; return; }
+      setStatus(data.error || "Could not start checkout.");
+    } catch { setStatus("Could not start checkout."); }
+    setBusy(false);
+  }
 
   const opts = OPTIONS[cat] || [];
   return (
@@ -71,7 +81,12 @@ export default function AvatarBuilder({ artistId, initial, entitled }: {
             <button className="btn" onClick={save} disabled={busy}>{busy ? "Saving…" : "Save avatar"}</button>
             {status && <span style={{ color: status.startsWith("Error") ? "#a33" : "var(--gold-dark)", fontSize: 14 }}>{status}</span>}
           </div>
-          {!entitled && <p style={{ fontSize: 13, color: "var(--grey)", marginTop: 8 }}>★ Premium looks unlock with a membership (payments coming soon).</p>}
+          {!entitled && (
+            <div style={{ marginTop: 10 }}>
+              <button className="btn ghost" onClick={unlock} disabled={busy}>★ Unlock premium looks — $12</button>
+              <p style={{ fontSize: 12, color: "var(--grey)", marginTop: 6 }}>Secure checkout via Stripe. Unlocks all premium hair, eyes, attire &amp; backdrops.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
