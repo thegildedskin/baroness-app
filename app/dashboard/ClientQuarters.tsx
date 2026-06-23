@@ -32,6 +32,14 @@ export default function ClientQuarters({ userId, email, profile, convos }: {
     setStatus(error ? `Error: ${error.message}` : "Saved.");
     if (!error) router.refresh();
   }
+  const [sug, setSug] = useState("");
+  const [sugStatus, setSugStatus] = useState("");
+  async function submitSuggestion() {
+    if (!sug.trim()) return;
+    const { error } = await supabase.from("suggestions").insert({ author_name: name || null, author_email: email, body: sug.trim() });
+    setSugStatus(error ? `Error: ${error.message}` : "Thank you — your note reached the house.");
+    if (!error) setSug("");
+  }
 
   const stat = (label: string, value: string, hint?: string) => (
     <div style={{ flex: "1 1 150px", background: "linear-gradient(180deg,#fdf6e7,#ece0c6)", border: "1px solid var(--gold)", borderRadius: 8, padding: "16px 18px" }}>

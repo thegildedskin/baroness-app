@@ -81,7 +81,7 @@ function RoomBackdrop({ kind }: { kind: string }) {
   );
 }
 
-export default function EstateApp({ artists }: { artists: Artist[] }) {
+export default function EstateApp({ artists, gallery = [] }: { artists: Artist[]; gallery?: string[] }) {
   const [scene, setScene] = useState<Scene>("entrance");
   const [doorsOpen, setDoorsOpen] = useState(false);
   const [transit, setTransit] = useState(false);
@@ -145,7 +145,7 @@ export default function EstateApp({ artists }: { artists: Artist[] }) {
   function openArtist(a: Artist) { setActive(a); setButlerTarget(`May I present ${a.display_name}. When ready, I shall book your sitting.`); }
 
   const galleryPhotos = artists.flatMap((a) => a.flash?.map((f) => f.image_url) ?? []).slice(0, 24);
-  const photos = galleryPhotos.length ? galleryPhotos : FALLBACK_PHOTOS;
+  const photos = gallery.length ? gallery : (galleryPhotos.length ? galleryPhotos : FALLBACK_PHOTOS);
   const initials = (name: string) => (name?.trim()?.[0] ?? "B").toUpperCase();
 
   return (

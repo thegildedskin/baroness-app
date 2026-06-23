@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 
 export default async function Home() {
   let artists: Artist[] = [];
+  let gallery: string[] = [];
   try {
     const supabase = createClient();
     const { data } = await supabase
@@ -15,9 +16,11 @@ export default async function Home() {
       .eq("is_published", true)
       .order("sort_order");
     artists = (data ?? []) as unknown as Artist[];
+    const { data: g } = await supabase.from("gallery").select("image_url").order("sort_order");
+    gallery = (g ?? []).map((x: { image_url: string }) => x.image_url);
   } catch {
     // Supabase not reachable — render the estate with no artists.
   }
 
-  return <EstateApp artists={artists} />;
+  return <EstateApp artists={artists} gallery={gallery} />;
 }
