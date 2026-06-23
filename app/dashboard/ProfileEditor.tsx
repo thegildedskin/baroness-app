@@ -70,10 +70,7 @@ export default function ProfileEditor({
       return;
     }
     const { data: pub } = supabase.storage.from("portraits").getPublicUrl(path);
-    const { error } = await supabase
-      .from("artists")
-      .update({ portrait_url: pub.publicUrl })
-      .eq("id", artist.id);
+    const { error } = await supabase.from("artists").update({ portrait_url: pub.publicUrl }).eq("id", artist.id);
     setBusy(false);
     setStatus(error ? `Error: ${error.message}` : "Portrait updated.");
     router.refresh();
@@ -108,13 +105,16 @@ export default function ProfileEditor({
 
   return (
     <main className="wrap" style={{ maxWidth: 760 }}>
-      {isOwner && (
-        <p style={{ marginBottom: 12 }}>
+      <p style={{ marginBottom: 12, display: "flex", gap: 18 }}>
+        <Link href="/" className="caps" style={{ fontSize: 11, color: "var(--gold-dark)" }}>
+          ← The Estate
+        </Link>
+        {isOwner && (
           <Link href="/dashboard" className="caps" style={{ fontSize: 11, color: "var(--gold-dark)" }}>
-            ← All artists
+            ↑ All artists
           </Link>
-        </p>
-      )}
+        )}
+      </p>
       <h1 style={{ fontSize: 44 }}>Editing: {artist.display_name}</h1>
       <p className="caps" style={{ fontSize: 10, color: "var(--gold-dark)", margin: "6px 0 22px" }}>
         Signed in as {email} {isOwner ? "· House Owner" : ""}
@@ -124,61 +124,27 @@ export default function ProfileEditor({
         <h3 style={{ fontSize: 24, marginBottom: 14 }}>Your portrait</h3>
         {artist.portrait_url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={artist.portrait_url}
-            alt="portrait"
-            style={{ width: 140, height: 140, objectFit: "cover", borderRadius: 6, border: "1px solid var(--gold)" }}
-          />
+          <img src={artist.portrait_url} alt="portrait" style={{ width: 140, height: 140, objectFit: "cover", borderRadius: 6, border: "1px solid var(--gold)" }} />
         ) : (
           <p style={{ color: "var(--grey)", marginBottom: 10 }}>No portrait yet.</p>
         )}
         <p style={{ marginTop: 12 }}>
-          <input
-            type="file"
-            accept="image/*"
-            disabled={busy}
-            onChange={(e) => e.target.files?.[0] && uploadPortrait(e.target.files[0])}
-          />
+          <input type="file" accept="image/*" disabled={busy} onChange={(e) => e.target.files?.[0] && uploadPortrait(e.target.files[0])} />
         </p>
       </div>
 
       <div className="card" style={{ marginBottom: 22 }}>
         <h3 style={{ fontSize: 24, marginBottom: 14 }}>Details</h3>
-        <label className="field">
-          <span>Display name</span>
-          <input value={form.display_name} onChange={(e) => set("display_name", e.target.value)} />
+        <label className="field"><span>Display name</span><input value={form.display_name} onChange={(e) => set("display_name", e.target.value)} /></label>
+        <label className="field"><span>Specialty</span><input value={form.specialty} onChange={(e) => set("specialty", e.target.value)} /></label>
+        <label className="field"><span>Bio</span>
+          <textarea rows={4} value={form.bio} onChange={(e) => set("bio", e.target.value)} style={{ width: "100%", padding: 11, border: "1px solid var(--gold-dark)", borderRadius: 3, fontFamily: "var(--body)", fontSize: 16, background: "#fdf6e7" }} />
         </label>
-        <label className="field">
-          <span>Specialty</span>
-          <input value={form.specialty} onChange={(e) => set("specialty", e.target.value)} />
-        </label>
-        <label className="field">
-          <span>Bio</span>
-          <textarea
-            rows={4}
-            value={form.bio}
-            onChange={(e) => set("bio", e.target.value)}
-            style={{ width: "100%", padding: 11, border: "1px solid var(--gold-dark)", borderRadius: 3, fontFamily: "var(--body)", fontSize: 16, background: "#fdf6e7" }}
-          />
-        </label>
-        <label className="field">
-          <span>Note to clients</span>
-          <input value={form.public_note} onChange={(e) => set("public_note", e.target.value)} />
-        </label>
-        <label className="field">
-          <span>Instagram / profile link</span>
-          <input value={form.instagram_url} onChange={(e) => set("instagram_url", e.target.value)} />
-        </label>
-        <label className="field">
-          <span>venue.ink booking link</span>
-          <input value={form.venue_url} onChange={(e) => set("venue_url", e.target.value)} />
-        </label>
+        <label className="field"><span>Note to clients</span><input value={form.public_note} onChange={(e) => set("public_note", e.target.value)} /></label>
+        <label className="field"><span>Instagram / profile link</span><input value={form.instagram_url} onChange={(e) => set("instagram_url", e.target.value)} /></label>
+        <label className="field"><span>venue.ink booking link</span><input value={form.venue_url} onChange={(e) => set("venue_url", e.target.value)} /></label>
         <label style={{ display: "flex", alignItems: "center", gap: 8, margin: "8px 0 4px" }}>
-          <input
-            type="checkbox"
-            checked={form.is_published}
-            onChange={(e) => set("is_published", e.target.checked)}
-          />
+          <input type="checkbox" checked={form.is_published} onChange={(e) => set("is_published", e.target.checked)} />
           <span className="caps" style={{ fontSize: 11 }}>Published (visible to visitors)</span>
         </label>
       </div>
@@ -189,42 +155,23 @@ export default function ProfileEditor({
           {flash.map((f) => (
             <div key={f.id} style={{ position: "relative" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={f.image_url}
-                alt={f.caption ?? "flash"}
-                style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 4, border: "1px solid var(--gold)" }}
-              />
-              <button
-                onClick={() => removeFlash(f.id)}
-                disabled={busy}
-                style={{ position: "absolute", top: 4, right: 4, background: "rgba(0,0,0,.6)", color: "#fff", border: "none", borderRadius: "50%", width: 22, height: 22, cursor: "pointer" }}
-              >
-                ×
-              </button>
+              <img src={f.image_url} alt={f.caption ?? "flash"} style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 4, border: "1px solid var(--gold)" }} />
+              <button onClick={() => removeFlash(f.id)} disabled={busy} style={{ position: "absolute", top: 4, right: 4, background: "rgba(0,0,0,.6)", color: "#fff", border: "none", borderRadius: "50%", width: 22, height: 22, cursor: "pointer" }}>×</button>
             </div>
           ))}
         </div>
         <p style={{ marginTop: 12 }}>
-          <input
-            type="file"
-            accept="image/*"
-            disabled={busy}
-            onChange={(e) => e.target.files?.[0] && addFlash(e.target.files[0])}
-          />
+          <input type="file" accept="image/*" disabled={busy} onChange={(e) => e.target.files?.[0] && addFlash(e.target.files[0])} />
         </p>
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-        <button className="btn" onClick={save} disabled={busy}>
-          {busy ? "Working…" : "Save changes"}
-        </button>
+        <button className="btn" onClick={save} disabled={busy}>{busy ? "Working…" : "Save changes"}</button>
         {status && <span style={{ color: status.startsWith("Error") ? "#a33" : "var(--gold-dark)" }}>{status}</span>}
       </div>
 
       <form action="/auth/signout" method="post" style={{ marginTop: 28 }}>
-        <button className="btn ghost" type="submit">
-          Sign out
-        </button>
+        <button className="btn ghost" type="submit">Sign out</button>
       </form>
     </main>
   );

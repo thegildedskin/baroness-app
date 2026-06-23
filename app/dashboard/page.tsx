@@ -42,6 +42,11 @@ export default async function Dashboard({
       .order("sort_order");
     return (
       <main className="wrap" style={{ maxWidth: 720 }}>
+        <p style={{ marginBottom: 12 }}>
+          <Link href="/" className="caps" style={{ fontSize: 11, color: "var(--gold-dark)" }}>
+            ← The Estate
+          </Link>
+        </p>
         <h1 style={{ fontSize: 44 }}>Artists&rsquo; Quarters</h1>
         <p className="caps" style={{ fontSize: 10, color: "var(--gold-dark)", margin: "6px 0 20px" }}>
           Signed in as {user.email} · House Owner
@@ -71,6 +76,11 @@ export default async function Dashboard({
   if (!artistId) {
     return (
       <main className="wrap" style={{ maxWidth: 640 }}>
+        <p style={{ marginBottom: 12 }}>
+          <Link href="/" className="caps" style={{ fontSize: 11, color: "var(--gold-dark)" }}>
+            ← The Estate
+          </Link>
+        </p>
         <h1 style={{ fontSize: 40 }}>Artists&rsquo; Quarters</h1>
         <div className="card" style={{ marginTop: 16 }}>
           <p>

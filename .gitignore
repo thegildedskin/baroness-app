@@ -7,3 +7,11 @@ out/
 .DS_Store
 .vercel
 next-env.d.ts.bak
+
+# secrets / keys — never commit these
+SupaBase API.txt
+*[Aa][Pp][Ii]*.txt
+*secret*
+*service_role*
+*.pem
+*.key
