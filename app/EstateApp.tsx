@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import ArtistMessageForm from "./ArtistMessageForm";
 
 export type Flash = { id: string; image_url: string };
 export type Artist = {
@@ -295,6 +296,7 @@ export default function EstateApp({ artists }: { artists: Artist[] }) {
                 {active.instagram_url && <button className="btn ghost" onClick={() => openLink(active.instagram_url)}>View Their Atelier</button>}
                 <button className="btn ghost" onClick={() => setActive(null)}>Return to the Hall</button>
               </div>
+              <ArtistMessageForm artistId={active.id} artistName={active.display_name} />
             </div>
           </div>
         </div>

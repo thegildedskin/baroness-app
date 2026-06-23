@@ -5,6 +5,17 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import SetPassword from "./SetPassword";
+import Messages from "./Messages";
+
+type Msg = { id: string; sender: string; body: string | null; created_at: string };
+type Thread = {
+  id: string;
+  client_name: string;
+  client_email: string | null;
+  created_at: string;
+  last_message_at: string;
+  messages: Msg[];
+};
 
 type Artist = {
   id: string; slug: string; display_name: string; specialty: string | null;
@@ -13,8 +24,8 @@ type Artist = {
 };
 type Flash = { id: string; image_url: string; caption: string | null; sort_order: number };
 
-export default function ProfileEditor({ artist, flash, isOwner, email }: {
-  artist: Artist; flash: Flash[]; isOwner: boolean; email: string;
+export default function ProfileEditor({ artist, flash, threads, isOwner, email }: {
+  artist: Artist; flash: Flash[]; threads: Thread[]; isOwner: boolean; email: string;
 }) {
   const supabase = createClient();
   const router = useRouter();
@@ -110,6 +121,8 @@ export default function ProfileEditor({ artist, flash, isOwner, email }: {
           <input type="file" accept="image/*" disabled={busy} onChange={(e) => e.target.files?.[0] && addFlash(e.target.files[0])} />
         </p>
       </div>
+
+      <Messages threads={threads} />
 
       <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
         <button className="btn" onClick={save} disabled={busy}>{busy ? "Working…" : "Save changes"}</button>

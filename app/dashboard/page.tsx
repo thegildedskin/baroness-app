@@ -55,7 +55,12 @@ export default async function Dashboard({ searchParams }: { searchParams: { id?:
 
   const { data: artist } = await supabase.from("artists").select("*").eq("id", artistId).single();
   const { data: flash } = await supabase.from("flash").select("id, image_url, caption, sort_order").eq("artist_id", artistId).order("sort_order");
+  const { data: threads } = await supabase
+    .from("threads")
+    .select("id, client_name, client_email, created_at, last_message_at, messages(id, sender, body, created_at)")
+    .eq("artist_id", artistId)
+    .order("last_message_at", { ascending: false });
   if (!artist) return (<main className="wrap"><p>Artist not found.</p></main>);
 
-  return (<ProfileEditor artist={artist} flash={flash ?? []} isOwner={!!isOwner} email={user.email!} />);
+  return (<ProfileEditor artist={artist} flash={flash ?? []} threads={threads ?? []} isOwner={!!isOwner} email={user.email!} />);
 }
