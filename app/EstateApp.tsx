@@ -70,26 +70,103 @@ function playChime() {
 }
 
 function GateHalf() {
-  const bars = [16, 46, 76, 106, 136];
+  const bars = [14, 37, 60, 83, 106, 129];
   return (
     <svg viewBox="0 0 152 600" preserveAspectRatio="none" className="gate-svg" aria-hidden="true">
-      <defs><linearGradient id="iron" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#43434a" /><stop offset="0.5" stopColor="#15151a" /><stop offset="1" stopColor="#43434a" /></linearGradient></defs>
-      <rect x="0" y="116" width="152" height="8" fill="url(#iron)" />
-      <rect x="0" y="300" width="152" height="8" fill="url(#iron)" />
-      <rect x="0" y="470" width="152" height="8" fill="url(#iron)" />
+      <defs>
+        <linearGradient id="iron" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#4a4a52" /><stop offset="0.5" stopColor="#121216" /><stop offset="1" stopColor="#4a4a52" /></linearGradient>
+        <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#f1dc97" /><stop offset="0.5" stopColor="#caa24e" /><stop offset="1" stopColor="#8b6f35" /></linearGradient>
+      </defs>
+      {/* arched top rail */}
+      <path d="M0 104 Q76 60 152 104" fill="none" stroke="url(#iron)" strokeWidth="11" />
+      <path d="M0 104 Q76 60 152 104" fill="none" stroke="url(#gold)" strokeWidth="2.5" />
+      {/* horizontal rails */}
+      <rect x="0" y="156" width="152" height="7" fill="url(#iron)" />
+      <rect x="0" y="436" width="152" height="7" fill="url(#iron)" />
+      {/* balusters */}
       {bars.map((x, i) => (
         <g key={i}>
-          <rect x={x - 2.5} y="30" width="5" height="556" fill="url(#iron)" />
-          <path d={`M${x - 6} 32 L${x} 12 L${x + 6} 32 Z`} fill="#caa24e" />
-          <circle cx={x} cy="120" r="4" fill="#caa24e" />
+          <rect x={x - 2} y="96" width="4" height="396" fill="url(#iron)" />
+          <path d={`M${x - 6} 100 L${x} 76 L${x + 6} 100 Z`} fill="url(#gold)" />
+          <circle cx={x} cy="156" r="3.4" fill="url(#gold)" />
         </g>
       ))}
-      <g fill="none" stroke="#caa24e" strokeWidth="3">
-        <path d="M30 210 C30 182 74 182 74 210 C74 238 30 238 30 210 Z" />
-        <path d="M78 210 C78 182 122 182 122 210 C122 238 78 238 78 210 Z" />
-        <path d="M30 388 C30 360 74 360 74 388 C74 416 30 416 30 388 Z" />
-        <path d="M78 388 C78 360 122 360 122 388 C122 416 78 416 78 388 Z" />
+      {/* gilded filigree sweeping up to the centre seam */}
+      <g fill="none" stroke="url(#gold)" strokeWidth="3" strokeLinecap="round">
+        <path d="M18 138 C44 116 60 138 54 162 C50 178 32 174 36 158" />
+        <path d="M134 138 C108 116 92 138 98 162 C102 178 120 174 116 158" />
+        <path d="M58 150 C72 130 80 130 94 150" />
+        <path d="M20 410 C48 390 60 408 56 430 M132 410 C104 390 92 408 96 430" />
       </g>
+      {/* solid base panel with framed rosette */}
+      <rect x="0" y="492" width="152" height="108" fill="url(#iron)" />
+      <g fill="none" stroke="url(#gold)" strokeWidth="2.4">
+        <rect x="12" y="508" width="128" height="80" rx="3" />
+        <path d="M34 558 C54 534 98 534 118 558" />
+        <ellipse cx="76" cy="544" rx="11" ry="13" />
+      </g>
+      <rect x="0" y="582" width="152" height="18" fill="url(#gold)" opacity="0.85" />
+    </svg>
+  );
+}
+
+// crisp oval cartouche + gold rosette centred in each gate half (aspect-correct)
+function GateMedallion() {
+  const petals = [0, 45, 90, 135, 180, 225, 270, 315];
+  return (
+    <svg viewBox="0 0 120 150" className="medallion-svg" aria-hidden="true">
+      <defs><linearGradient id="medg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#f1dc97" /><stop offset="0.55" stopColor="#caa24e" /><stop offset="1" stopColor="#7d6230" /></linearGradient></defs>
+      <ellipse cx="60" cy="75" rx="47" ry="65" fill="#100e0b" stroke="url(#medg)" strokeWidth="5" />
+      <ellipse cx="60" cy="75" rx="40" ry="57" fill="none" stroke="url(#medg)" strokeWidth="1.6" />
+      <g transform="translate(60 75)" fill="url(#medg)">
+        {petals.map((a) => (<ellipse key={a} rx="6.5" ry="22" transform={`rotate(${a})`} />))}
+      </g>
+      <circle cx="60" cy="75" r="8" fill="#f1dc97" stroke="#7d6230" strokeWidth="1" />
+      <path d="M48 13 C54 22 66 22 72 13 M60 6 C57 13 63 13 60 6" fill="none" stroke="url(#medg)" strokeWidth="2.2" strokeLinecap="round" />
+      <path d="M48 137 C54 128 66 128 72 137" fill="none" stroke="url(#medg)" strokeWidth="2.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+// gilded crest atop the gate — incorporates the Baroness emblem:
+// Sacred Heart in a crown of thorns beneath a cross, framed by cherub wings + scrolls
+function CrestEmblem() {
+  const thorns = Array.from({ length: 16 }, (_, i) => (i * 360) / 16);
+  return (
+    <svg viewBox="0 0 260 180" className="crest-emblem-svg" aria-hidden="true">
+      <defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#f3e0a4" /><stop offset="0.5" stopColor="#caa24e" /><stop offset="1" stopColor="#8b6f35" /></linearGradient></defs>
+      {/* symmetric C-scroll base */}
+      <g fill="none" stroke="url(#cg)" strokeWidth="4.5" strokeLinecap="round">
+        <path d="M130 150 C96 150 80 128 48 134 C26 138 30 162 50 156" />
+        <path d="M130 150 C164 150 180 128 212 134 C234 138 230 162 210 156" />
+        <path d="M130 156 C104 160 86 172 62 170 M130 156 C156 160 174 172 198 170" />
+      </g>
+      {/* shell / palmette crown */}
+      <g fill="url(#cg)">
+        <path d="M130 10 C124 22 124 30 130 34 C136 30 136 22 130 10 Z" />
+        <path d="M116 18 C118 28 122 32 128 34 C124 26 122 20 116 18 Z" />
+        <path d="M144 18 C142 28 138 32 132 34 C136 26 138 20 144 18 Z" />
+      </g>
+      {/* cross */}
+      <g fill="url(#cg)">
+        <rect x="127" y="34" width="6" height="34" rx="1" />
+        <rect x="118" y="44" width="24" height="6" rx="1" />
+      </g>
+      {/* cherub wings flanking the heart */}
+      <g fill="none" stroke="url(#cg)" strokeWidth="2.6" strokeLinecap="round">
+        <path d="M104 92 C84 84 70 92 64 104 M106 100 C88 96 76 104 72 114 M108 108 C94 106 84 112 82 120" />
+        <path d="M156 92 C176 84 190 92 196 104 M154 100 C172 96 184 104 188 114 M152 108 C166 106 176 112 178 120" />
+      </g>
+      {/* crown of thorns ring */}
+      <g transform="translate(130 104)">
+        <circle r="26" fill="none" stroke="url(#cg)" strokeWidth="3" />
+        {thorns.map((a, i) => {
+          const r = (a * Math.PI) / 180;
+          return <line key={i} x1={Math.cos(r) * 26} y1={Math.sin(r) * 26} x2={Math.cos(r) * 32} y2={Math.sin(r) * 32} stroke="url(#cg)" strokeWidth="2" strokeLinecap="round" />;
+        })}
+      </g>
+      {/* sacred heart */}
+      <path d="M130 122 C112 106 110 88 122 86 C129 85 130 94 130 94 C130 94 131 85 138 86 C150 88 148 106 130 122 Z" fill="url(#cg)" stroke="#7d6230" strokeWidth="1" />
     </svg>
   );
 }
@@ -233,10 +310,11 @@ export default function EstateApp({ artists, gallery = [] }: { artists: Artist[]
         <div className="estate-beyond" />
         <span className="sconce l" /><span className="sconce r" />
         <div className="gatewrap">
-          <div className="gate left"><GateHalf /></div>
-          <div className="gate right"><GateHalf /></div>
+          <div className="gate left"><GateHalf /><span className="gate-medallion"><GateMedallion /></span></div>
+          <div className="gate right"><GateHalf /><span className="gate-medallion"><GateMedallion /></span></div>
         </div>
         <div className="gate-crest">
+          <span className="crest-emblem"><CrestEmblem /></span>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="crest-logo" src="/logo.png" alt="Baroness Tattoo" />
         </div>
@@ -648,7 +726,6 @@ const CSS = `
 .estate .sheet p{font-size:18px;line-height:1.6;color:#3a322a;margin-bottom:14px}
 .estate .flashgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0 24px}
 .estate .flashgrid .ftile{width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;border:1px solid var(--gold-dark)}
-.estate .closeX{position:absolute;top:12px;right:14px;z-index:5;background:rgba(0,0,0,.45);color:var(--gold-light);border:1px solid var(--gold);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:18px}
 .estate .notebox{background:rgba(168,196,162,.16);border:1px dashed var(--gold-dark);border-radius:6px;padding:14px 16px;margin-top:6px;font-size:16px;color:#4a4036}
 .estate .notebox .who{font-family:var(--caps);font-size:10px;letter-spacing:.2em;color:var(--gold-dark);text-transform:uppercase;margin-bottom:4px}
 @media(max-width:560px){.estate .photos{columns:2 150px}.estate .flashgrid{grid-template-columns:repeat(2,1fr)}.estate .backline{top:18px;left:18px}.estate .contact{grid-template-columns:1fr}.estate .quarters{top:18px;right:20px}.estate .boiserie{display:none}}
@@ -661,9 +738,13 @@ const CSS = `
 .estate .gate-svg{width:100%;height:100%;display:block;filter:drop-shadow(0 0 18px rgba(0,0,0,.6))}
 .estate .doors-open .gate.left{transform:perspective(1600px) rotateY(118deg)}
 .estate .doors-open .gate.right{transform:perspective(1600px) rotateY(-118deg)}
-.estate .gate-crest{position:absolute;top:9%;left:50%;transform:translateX(-50%);z-index:11;background:radial-gradient(circle,#1f1d1a,#0c0a08);border:4px solid #caa24e;border-radius:50%;width:min(210px,44vw);height:min(210px,44vw);display:flex;align-items:center;justify-content:center;box-shadow:0 0 30px rgba(0,0,0,.7),inset 0 0 0 7px rgba(139,111,53,.4)}
-.estate .crest-logo{width:80%;height:80%;object-fit:contain;background:var(--cream);border-radius:50%;padding:10px}
+.estate .gate-crest{position:absolute;top:4%;left:50%;transform:translateX(-50%);z-index:11;display:flex;flex-direction:column;align-items:center;gap:0}
+.estate .crest-emblem{width:min(290px,58vw);display:block;filter:drop-shadow(0 4px 14px rgba(0,0,0,.6))}
+.estate .crest-emblem-svg{width:100%;height:auto;display:block}
+.estate .crest-logo{width:min(168px,34vw);height:min(168px,34vw);object-fit:contain;background:var(--cream);border-radius:50%;padding:12px;margin-top:-14px;border:4px solid #caa24e;box-shadow:0 0 26px rgba(0,0,0,.7),inset 0 0 0 6px rgba(139,111,53,.4)}
 .estate .doors-open .gate-crest{opacity:0;transition:opacity .6s ease}
+.estate .gate-medallion{position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);width:min(150px,30%);z-index:2;pointer-events:none}
+.estate .medallion-svg{width:100%;height:auto;display:block;filter:drop-shadow(0 2px 8px rgba(0,0,0,.55))}
 .estate .bellpull{position:absolute;top:7%;right:19%;z-index:12;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
 .estate .bell-rope{width:2px;height:54px;background:linear-gradient(#caa24e,#8b6f35)}
 .estate .bell{width:52px;height:auto;transform-origin:50% 8px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.5))}
