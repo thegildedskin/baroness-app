@@ -171,6 +171,37 @@ function CrestEmblem() {
   );
 }
 
+function ButlerAvatar() {
+  return (
+    <svg className="butler-svg" viewBox="0 0 100 100" aria-hidden="true">
+      <defs>
+        <radialGradient id="bl-skin" cx="50%" cy="40%" r="62%"><stop offset="0" stopColor="#f4d6b4" /><stop offset="1" stopColor="#d7a67c" /></radialGradient>
+        <linearGradient id="bl-coat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#2b2531" /><stop offset="1" stopColor="#130f18" /></linearGradient>
+        <linearGradient id="bl-gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#f1dc97" /><stop offset="1" stopColor="#b8924a" /></linearGradient>
+      </defs>
+      <path d="M12 100 C12 73 32 63 50 63 C68 63 88 73 88 100 Z" fill="url(#bl-coat)" />
+      <path d="M50 65 L34 100 L46 100 L50 78 Z" fill="#1b1822" />
+      <path d="M50 65 L66 100 L54 100 L50 78 Z" fill="#1b1822" />
+      <path d="M44 65 L50 80 L56 65 Z" fill="#f3ece0" />
+      <path d="M50 70 L43 66 V74 Z M50 70 L57 66 V74 Z" fill="url(#bl-gold)" />
+      <circle cx="50" cy="70" r="2" fill="#8b6f35" />
+      <circle cx="50" cy="86" r="1.8" fill="url(#bl-gold)" /><circle cx="50" cy="94" r="1.8" fill="url(#bl-gold)" />
+      <rect x="44" y="53" width="12" height="14" rx="5" fill="#e0b288" />
+      <ellipse cx="50" cy="39" rx="18" ry="21" fill="url(#bl-skin)" />
+      <circle cx="32" cy="41" r="3.2" fill="#e0b288" /><circle cx="68" cy="41" r="3.2" fill="#e0b288" />
+      <path d="M32 33 C34 17 66 17 68 33 C66 27 60 23 50 23 C40 23 34 27 32 33 Z" fill="#2a211c" />
+      <path d="M32 33 C31 26 35 21 43 20 C38 24 36 29 36 34 Z" fill="#1c1714" />
+      <path d="M40 35 q4 -2 8 0" stroke="#2a211c" strokeWidth="1.4" fill="none" strokeLinecap="round" />
+      <path d="M52 35 q4 -2 8 0" stroke="#2a211c" strokeWidth="1.4" fill="none" strokeLinecap="round" />
+      <ellipse cx="44" cy="40" rx="2.4" ry="2" fill="#fff" /><circle cx="44.3" cy="40" r="1.2" fill="#3a2a1c" />
+      <ellipse cx="56" cy="40" rx="2.4" ry="2" fill="#fff" /><circle cx="55.7" cy="40" r="1.2" fill="#3a2a1c" />
+      <path d="M50 42 l-1.6 4 q1.6 1.2 3.2 0" fill="none" stroke="#c89070" strokeWidth="1" strokeLinecap="round" />
+      <path d="M43 50 q7 4 14 0" stroke="#2a211c" strokeWidth="2.4" fill="none" strokeLinecap="round" />
+      <path d="M45 53 q5 2 10 0" stroke="#9c5a52" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function ContactBar() {
   const ph = CONTACT.phone.replace(/[^0-9]/g, "");
   return (
@@ -484,7 +515,7 @@ export default function EstateApp({ artists, gallery = [] }: { artists: Artist[]
             <a href="/studio">Design a Tattoo</a>
             <a href="/dashboard">My Quarters · Profile</a>
           </div>
-          <div className="avatar">🧑‍✈️</div>
+          <div className="avatar"><ButlerAvatar /></div>
         </div>
         <div className="bubble"><div className="who">Reynard · Butler to Her Grace</div><div className="say">{butlerText}</div></div>
       </div>
@@ -769,4 +800,29 @@ const CSS = `
 .estate .si-title{font-size:13px;color:var(--black);margin:6px 6px 0;font-weight:600}
 .estate .si-price{font-size:12px;color:var(--gold-dark);margin:0 0 6px}
 .estate .shopitem .btn{padding:7px 14px;font-size:10px}
+/* ===== CINEMATIC LAYER ===== */
+.estate::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:69;opacity:.05;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.estate .gate-svg{filter:drop-shadow(0 0 10px rgba(0,0,0,.7)) drop-shadow(0 0 16px rgba(202,162,78,.4))}
+.estate .crest-emblem-svg{filter:drop-shadow(0 4px 14px rgba(0,0,0,.6)) drop-shadow(0 0 13px rgba(241,220,151,.6))}
+.estate .medallion-svg{filter:drop-shadow(0 2px 8px rgba(0,0,0,.55)) drop-shadow(0 0 11px rgba(241,220,151,.55))}
+.estate .crest-logo{box-shadow:0 0 26px rgba(0,0,0,.7),0 0 46px rgba(202,162,78,.4),inset 0 0 0 6px rgba(139,111,53,.4)}
+.estate #entrance .estate-beyond::after{content:"";position:absolute;inset:-25%;background:conic-gradient(from 200deg at 50% 16%,transparent 0deg,rgba(255,214,140,.11) 7deg,transparent 15deg,transparent 26deg,rgba(255,214,140,.08) 33deg,transparent 41deg,transparent 72deg,rgba(255,214,140,.11) 81deg,transparent 90deg,transparent 150deg,rgba(255,214,140,.07) 158deg,transparent 166deg);mix-blend-mode:screen;transform-origin:50% 16%;animation:godrays 16s ease-in-out infinite}
+@keyframes godrays{0%,100%{opacity:.45;transform:rotate(-4deg)}50%{opacity:.95;transform:rotate(4deg)}}
+.estate #entrance::before{content:"";position:absolute;left:0;right:0;bottom:0;height:48%;z-index:7;pointer-events:none;background:linear-gradient(0deg,rgba(20,12,8,.72),transparent);filter:blur(2px)}
+.estate .doors-open .estate-beyond{filter:brightness(.92) saturate(1.05);transition:filter 1.6s ease}
+.estate .sconce{box-shadow:0 0 30px 14px rgba(255,196,92,.55),0 0 90px 42px rgba(255,150,40,.28),0 0 170px 84px rgba(255,120,30,.13)}
+.estate .cbtn{background:radial-gradient(circle at 32% 26%,#fbeec2,var(--gold) 58%,var(--gold-dark));box-shadow:0 4px 14px rgba(0,0,0,.45),inset 0 1px 2px rgba(255,255,255,.6),inset 0 -2px 4px rgba(139,111,53,.5)}
+.estate .cbtn:hover{transform:translateY(-3px) scale(1.08);filter:brightness(1.12);box-shadow:0 8px 22px rgba(0,0,0,.5),0 0 24px rgba(241,220,151,.7),inset 0 1px 2px rgba(255,255,255,.7)}
+.estate .butler .avatar{width:106px;height:106px;overflow:hidden;background:radial-gradient(circle at 50% 28%,#3a2f3c,#17101a);box-shadow:0 0 0 2px var(--gold),0 0 24px rgba(202,162,78,.5),0 8px 24px rgba(0,0,0,.6);animation:butlerFloat 5.5s ease-in-out infinite}
+.estate .butler-svg{width:100%;height:100%;display:block}
+@keyframes butlerFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.estate .butlerdock:hover .avatar{box-shadow:0 0 0 3px var(--gold-light),0 0 36px rgba(241,220,151,.8),0 8px 24px rgba(0,0,0,.6)}
+.estate .bubble{background:linear-gradient(180deg,rgba(250,242,224,.98),rgba(238,224,196,.96));backdrop-filter:blur(6px);box-shadow:0 8px 26px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.4)}
+.estate .scene{transition:opacity 1s cubic-bezier(.2,.7,.2,1)}
+.estate .room-card:hover{transform:translateY(-6px) scale(1.02);box-shadow:0 26px 60px rgba(0,0,0,.4),0 0 28px rgba(202,162,78,.35)}
+.estate .portrait:hover{transform:translateY(-5px) scale(1.02);box-shadow:0 22px 50px rgba(0,0,0,.4),0 0 24px rgba(202,162,78,.3)}
+.estate .btn::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-18deg);animation:btnsheen 5s ease-in-out infinite;pointer-events:none}
+@keyframes btnsheen{0%,72%{left:-60%}86%{left:130%}100%{left:130%}}
+.estate .wordmark-sm{background:linear-gradient(92deg,#8b6f35,#e8cf86,#8b6f35);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:foil 7s linear infinite}
+@keyframes foil{0%{background-position:0% center}100%{background-position:200% center}}
 `.replace(/var\(--damask\)/g, DAMASK);
