@@ -14,6 +14,7 @@ import { claimAchievements } from "@/app/actions";
 type Convo = { id: string; artist_id: string; last_message_at: string; artists: { display_name: string } | { display_name: string }[] | null };
 type Profile = { display_name: string | null; avatar: Partial<AvatarConfig> | null; credits: number | null; total_spent_cents: number | null; premium: boolean | null; rpm_url: string | null };
 type Entry = { id: string; title: string | null; artist_name: string | null; inked_on: string | null; notes: string | null; image_url: string | null };
+type Design = { id: string; title: string | null; placement: string | null; image_url: string | null; created_at: string };
 
 function artistName(c: Convo): string {
   const a = c.artists;
@@ -21,12 +22,17 @@ function artistName(c: Convo): string {
   return Array.isArray(a) ? (a[0]?.display_name ?? "An artist") : a.display_name;
 }
 
-export default function ClientQuarters({ userId, email, profile, convos, passport, achievements }: {
-  userId: string; email: string; profile: Profile | null; convos: Convo[]; passport: Entry[]; achievements: string[];
+export default function ClientQuarters({ userId, email, profile, convos, passport, achievements, designs = [] }: {
+  userId: string; email: string; profile: Profile | null; convos: Convo[]; passport: Entry[]; achievements: string[]; designs?: Design[];
 }) {
   const supabase = createClient();
   const router = useRouter();
   const [name, setName] = useState(profile?.display_name ?? "");
+
+  async function deleteDesign(id: string) {
+    const { error } = await supabase.from("designs").delete().eq("id", id);
+    if (!error) router.refresh();
+  }
   const [status, setStatus] = useState("");
   const credits = profile?.credits ?? 0;
   const spentCents = profile?.total_spent_cents ?? 0;
@@ -74,6 +80,7 @@ export default function ClientQuarters({ userId, email, profile, convos, passpor
       <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 22 }}>
         {stat("Credits & gifts", String(credits), "Earned via achievements")}
         {stat("Total spent", `$${spent}`, "Across the house")}
+        {stat("Designs created", String(designs.length), "In the Atelier")}
         {stat("Conversations", String(convos.length), "With your artists")}
       </div>
 
@@ -111,6 +118,32 @@ export default function ClientQuarters({ userId, email, profile, convos, passpor
         <div style={{ display: "flex", justifyContent: "center", background: "radial-gradient(120% 90% at 50% 0%, #d6e6ef, #a9c4d4)", border: "1px solid var(--gold)", borderRadius: 10, padding: 18 }}>
           <AvatarRender config={profile?.avatar ?? null} size={220} />
         </div>
+      </div>
+
+      <div className="card" style={{ marginBottom: 22 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+          <h3 style={{ fontSize: 22 }}>Your Atelier creations</h3>
+          <Link href="/studio" className="caps" style={{ fontSize: 11, color: "var(--gold-dark)" }}>+ Design a tattoo</Link>
+        </div>
+        {designs.length === 0 ? (
+          <p style={{ color: "var(--grey)" }}>No designs yet. Create one in <Link href="/studio">the Tattoo Atelier</Link> — every design you save is logged here.</p>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))", gap: 12 }}>
+            {designs.map((d) => (
+              <div key={d.id} style={{ border: "1px solid var(--gold)", borderRadius: 8, overflow: "hidden", background: "#fffdf6", position: "relative" }}>
+                {d.image_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={d.image_url} alt={d.title ?? "design"} style={{ width: "100%", aspectRatio: "3/4", objectFit: "cover", display: "block", background: "#fff" }} />
+                ) : (<div style={{ aspectRatio: "3/4", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--grey)" }}>—</div>)}
+                <div style={{ padding: "8px 10px" }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "var(--black)" }}>{d.title || "Untitled design"}</div>
+                  <div style={{ fontSize: 11, color: "var(--gold-dark)" }}>{d.placement ? `${d.placement} · ` : ""}{new Date(d.created_at).toLocaleDateString()}</div>
+                </div>
+                <button onClick={() => deleteDesign(d.id)} title="Remove" style={{ position: "absolute", top: 6, right: 6, background: "rgba(0,0,0,.55)", color: "#fff", border: "none", borderRadius: "50%", width: 22, height: 22, cursor: "pointer", fontSize: 13 }}>×</button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <Passport userId={userId} entries={passport} />
