@@ -60,7 +60,7 @@ const EYE: Record<string, string> = { brown: "#5b3b1a", hazel: "#8a6b2f", amber:
 const OUTFIT: Record<string, string> = { gown: "#9fbccf", suit: "#2b2630", robe: "#c8959a", cloak: "#3a2f3c", tee: "#cfd8dc", corset: "#7a2d3a", royal: "#3a5673", lace: "#efe3ea" };
 const BG: Record<string, string> = { cream: "#efe3c6", blue: "#9fbccf", rose: "#d9a7a0", sage: "#c7d4c0", lavender: "#cdc3df", gold: "#caa24e", royal: "#3a5673", noir: "#241016" };
 
-export function AvatarRender({ config, size = 168 }: { config?: Partial<AvatarConfig> | null; size?: number }) {
+export function AvatarRender({ config, size = 168, tattoo = null }: { config?: Partial<AvatarConfig> | null; size?: number; tattoo?: string | null }) {
   const c = { ...DEFAULT_AVATAR, ...(config || {}) };
   const skin = SKIN[c.skin] || SKIN.light;
   const hair = HAIR[c.hairColor] || HAIR.brown;
@@ -162,6 +162,7 @@ export function AvatarRender({ config, size = 168 }: { config?: Partial<AvatarCo
         <circle cx="74" cy="110" r="5" fill="#e8a0a0" opacity="0.35" /><circle cx="126" cy="110" r="5" fill="#e8a0a0" opacity="0.35" />
         {mouth}
         {acc}
+        {tattoo && <image href={tattoo} x="84" y="158" width="32" height="38" preserveAspectRatio="xMidYMid meet" style={{ mixBlendMode: "multiply" }} />}
       </g>
       <rect x="6" y="6" width="188" height="212" rx="14" fill="none" stroke="#b8924a" strokeWidth="3" />
       <rect x="10" y="10" width="180" height="204" rx="11" fill="none" stroke="#8b6f35" strokeWidth="1" />

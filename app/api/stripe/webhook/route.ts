@@ -28,7 +28,9 @@ export async function POST(req: NextRequest) {
     const session = event.data.object as Stripe.Checkout.Session;
     const md = session.metadata || {};
     const admin = createAdminClient();
-    if (md.type === "product" && md.productId) {
+    if (md.type === "design_export" && md.designId) {
+      await admin.from("designs").update({ exported: true }).eq("id", md.designId);
+    } else if (md.type === "product" && md.productId) {
       await admin.from("purchases").insert({ product_id: md.productId, artist_id: md.artistId ?? null, buyer_email: session.customer_details?.email ?? null, amount_cents: session.amount_total ?? null, stripe_session: session.id });
     } else if (md.artistId) {
       await admin.from("artists").update({ premium: true }).eq("id", md.artistId);

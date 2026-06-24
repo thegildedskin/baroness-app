@@ -34,6 +34,7 @@ export default function Studio() {
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
+  const [savedId, setSavedId] = useState<string | null>(null);
 
   function ctx() { return canvasRef.current?.getContext("2d") || null; }
   useEffect(() => { const c = ctx(); if (c && canvasRef.current) { c.fillStyle = "#fffdf6"; c.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height); } }, []);
@@ -82,8 +83,21 @@ export default function Studio() {
     const up = await supabase.storage.from("designs").upload(path, blob, { upsert: true, contentType: "image/png" });
     if (up.error) { setBusy(false); setStatus(`Error: ${up.error.message}`); return; }
     const url = supabase.storage.from("designs").getPublicUrl(path).data.publicUrl;
-    const { error } = await supabase.from("designs").insert({ user_id: user.id, title: title.trim() || "Untitled design", placement: placement || null, image_url: url });
-    setBusy(false); setStatus(error ? `Error: ${error.message}` : "Saved to your designs.");
+    const { data: ins, error } = await supabase.from("designs").insert({ user_id: user.id, title: title.trim() || "Untitled design", placement: placement || null, image_url: url }).select("id").single();
+    setBusy(false);
+    if (error) { setStatus(`Error: ${error.message}`); return; }
+    setSavedId(ins.id); setStatus("Saved to your designs — now export it to wear on your avatar.");
+  }
+  async function exportToAvatar() {
+    if (!savedId) { setStatus("Save your design first."); return; }
+    setBusy(true); setStatus("Opening secure checkout…");
+    try {
+      const r = await fetch("/api/checkout-design", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ designId: savedId }) });
+      const d = await r.json();
+      if (d.url) { window.location.href = d.url; return; }
+      setStatus(d.error || "Could not start checkout.");
+    } catch { setStatus("Could not start checkout."); }
+    setBusy(false);
   }
   async function aiGenerate() {
     if (!aiPrompt.trim()) return;
@@ -146,6 +160,7 @@ export default function Studio() {
             <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Design title" style={{ flex: 1, minWidth: 140, padding: "9px 11px", border: "1px solid var(--gold-dark)", borderRadius: 3, background: "#fdf6e7", fontFamily: "var(--body)", fontSize: 15 }} />
             <button className="btn" onClick={save} disabled={busy}>Save</button>
             <button className="btn ghost" onClick={exportStencil}>Export stencil</button>
+            {savedId && <button className="btn" onClick={exportToAvatar} disabled={busy} title="Wear this design on your 3D/2D avatar and showcase it on your profile">Export to my avatar ($8)</button>}
           </div>
           <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
             <input value={aiPrompt} onChange={(e) => setAiPrompt(e.target.value)} placeholder="AI: describe a design (e.g., rococo filigree heart)" style={{ flex: 1, padding: "9px 11px", border: "1px solid var(--gold-dark)", borderRadius: 3, background: "#fdf6e7", fontFamily: "var(--body)", fontSize: 14 }} />

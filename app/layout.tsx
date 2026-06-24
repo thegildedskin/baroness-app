@@ -5,7 +5,12 @@ export const metadata: Metadata = {
   title: "Baroness Tattoo — Wear Your Crown",
   description:
     "Baroness Tattoo — a luxury studio in the decadence of the French Rococo. Garland, TX.",
+  manifest: "/manifest.json",
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Baroness" },
+  icons: { icon: "/icon-192.png", apple: "/icon-192.png" },
 };
+
+export const viewport = { themeColor: "#0c0a08" };
 
 export default function RootLayout({
   children,
@@ -22,7 +27,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <script dangerouslySetInnerHTML={{ __html: "if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})})}" }} />
+      </body>
     </html>
   );
 }

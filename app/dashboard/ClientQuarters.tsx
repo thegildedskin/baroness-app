@@ -12,9 +12,9 @@ import { ACHIEVEMENTS, tierFor, nextTier } from "@/lib/achievements";
 import { claimAchievements } from "@/app/actions";
 
 type Convo = { id: string; artist_id: string; last_message_at: string; artists: { display_name: string } | { display_name: string }[] | null };
-type Profile = { display_name: string | null; avatar: Partial<AvatarConfig> | null; credits: number | null; total_spent_cents: number | null; premium: boolean | null; rpm_url: string | null };
+type Profile = { display_name: string | null; avatar: Partial<AvatarConfig> | null; credits: number | null; total_spent_cents: number | null; premium: boolean | null; rpm_url: string | null; avatar_tattoo: string | null };
 type Entry = { id: string; title: string | null; artist_name: string | null; inked_on: string | null; notes: string | null; image_url: string | null };
-type Design = { id: string; title: string | null; placement: string | null; image_url: string | null; created_at: string };
+type Design = { id: string; title: string | null; placement: string | null; image_url: string | null; created_at: string; exported?: boolean | null };
 
 function artistName(c: Convo): string {
   const a = c.artists;
@@ -31,6 +31,22 @@ export default function ClientQuarters({ userId, email, profile, convos, passpor
 
   async function deleteDesign(id: string) {
     const { error } = await supabase.from("designs").delete().eq("id", id);
+    if (!error) router.refresh();
+  }
+  async function exportDesign(id: string) {
+    try {
+      const r = await fetch("/api/checkout-design", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ designId: id }) });
+      const d = await r.json();
+      if (d.url) { window.location.href = d.url; return; }
+      alert(d.error || "Could not start checkout.");
+    } catch { alert("Could not start checkout."); }
+  }
+  async function wearDesign(d: Design) {
+    const { error } = await supabase.from("profiles").update({ avatar_tattoo: d.image_url, avatar_tattoo_placement: d.placement }).eq("id", userId);
+    if (!error) router.refresh();
+  }
+  async function removeTattoo() {
+    const { error } = await supabase.from("profiles").update({ avatar_tattoo: null, avatar_tattoo_placement: null }).eq("id", userId);
     if (!error) router.refresh();
   }
   const [status, setStatus] = useState("");
@@ -116,8 +132,14 @@ export default function ClientQuarters({ userId, email, profile, convos, passpor
       <div className="card" style={{ marginBottom: 22 }}>
         <h3 style={{ fontSize: 22, marginBottom: 12 }}>Your likeness in the estate</h3>
         <div style={{ display: "flex", justifyContent: "center", background: "radial-gradient(120% 90% at 50% 0%, #d6e6ef, #a9c4d4)", border: "1px solid var(--gold)", borderRadius: 10, padding: 18 }}>
-          <AvatarRender config={profile?.avatar ?? null} size={220} />
+          <AvatarRender config={profile?.avatar ?? null} size={220} tattoo={profile?.avatar_tattoo ?? null} />
         </div>
+        {profile?.avatar_tattoo && (
+          <p style={{ marginTop: 10, fontSize: 13, color: "var(--grey)", display: "flex", gap: 10, alignItems: "center" }}>
+            Wearing one of your Atelier designs.
+            <button onClick={removeTattoo} className="caps" style={{ fontSize: 9, letterSpacing: ".08em", padding: "4px 8px", borderRadius: 3, cursor: "pointer", border: "1px solid var(--gold-dark)", background: "transparent", color: "var(--gold-dark)" }}>Remove</button>
+          </p>
+        )}
       </div>
 
       <div className="card" style={{ marginBottom: 22 }}>
@@ -138,6 +160,11 @@ export default function ClientQuarters({ userId, email, profile, convos, passpor
                 <div style={{ padding: "8px 10px" }}>
                   <div style={{ fontSize: 13, fontWeight: 600, color: "var(--black)" }}>{d.title || "Untitled design"}</div>
                   <div style={{ fontSize: 11, color: "var(--gold-dark)" }}>{d.placement ? `${d.placement} · ` : ""}{new Date(d.created_at).toLocaleDateString()}</div>
+                  {d.exported ? (
+                    <button onClick={() => wearDesign(d)} className="caps" style={{ marginTop: 6, fontSize: 9, letterSpacing: ".08em", padding: "5px 8px", borderRadius: 3, cursor: "pointer", border: "1px solid var(--gold-dark)", background: "var(--gold)", color: "#1a1a1a" }}>Wear on avatar</button>
+                  ) : (
+                    <button onClick={() => exportDesign(d.id)} className="caps" style={{ marginTop: 6, fontSize: 9, letterSpacing: ".08em", padding: "5px 8px", borderRadius: 3, cursor: "pointer", border: "1px solid var(--gold-dark)", background: "transparent", color: "var(--gold-dark)" }}>Export to avatar ($8)</button>
+                  )}
                 </div>
                 <button onClick={() => deleteDesign(d.id)} title="Remove" style={{ position: "absolute", top: 6, right: 6, background: "rgba(0,0,0,.55)", color: "#fff", border: "none", borderRadius: "50%", width: 22, height: 22, cursor: "pointer", fontSize: 13 }}>×</button>
               </div>

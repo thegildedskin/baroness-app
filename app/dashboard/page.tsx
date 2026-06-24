@@ -49,7 +49,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { id?:
     // Client Quarters (clients + any not-yet-linked user)
     const { data: cprofile } = await supabase
       .from("profiles")
-      .select("display_name, avatar, credits, total_spent_cents, premium, rpm_url")
+      .select("display_name, avatar, credits, total_spent_cents, premium, rpm_url, avatar_tattoo")
       .eq("id", user.id)
       .single();
     let convos: Convo[] = [];
@@ -68,7 +68,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { id?:
     const { data: passport } = await supabase.from("ink_passport").select("id, title, artist_name, inked_on, notes, image_url").eq("user_id", user.id).order("created_at", { ascending: false });
     const { data: achRows } = await supabase.from("user_achievements").select("key").eq("user_id", user.id);
     const achievements = (achRows ?? []).map((r: { key: string }) => r.key);
-    const { data: designs } = await supabase.from("designs").select("id, title, placement, image_url, created_at").eq("user_id", user.id).order("created_at", { ascending: false });
+    const { data: designs } = await supabase.from("designs").select("id, title, placement, image_url, created_at, exported").eq("user_id", user.id).order("created_at", { ascending: false });
     return <ClientQuarters userId={user.id} email={user.email!} profile={cprofile ?? null} convos={convos} passport={passport ?? []} achievements={achievements} designs={designs ?? []} />;
   }
 
@@ -81,6 +81,5 @@ export default async function Dashboard({ searchParams }: { searchParams: { id?:
     .order("last_message_at", { ascending: false });
   const { data: products } = await supabase.from("products").select("id, title, description, price_cents, kind, preview_url, is_active").eq("artist_id", artistId).order("created_at", { ascending: false });
   if (!artist) return (<main className="wrap"><p>Artist not found.</p></main>);
-
   return (<ProfileEditor artist={artist} flash={flash ?? []} threads={threads ?? []} products={products ?? []} isOwner={!!isOwner} email={user.email!} />);
 }
