@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 type Convo = { id: string; artist_id: string; last_message_at: string; artists: { display_name: string } | { display_name: string }[] | null };
 
-export default async function Dashboard({ searchParams }: { searchParams: { id?: string } }) {
+export default async function Dashboard({ searchParams }: { searchParams: { id?: string; me?: string } }) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -24,11 +24,11 @@ export default async function Dashboard({ searchParams }: { searchParams: { id?:
     artistId = own?.id;
   }
 
-  if (isOwner && !artistId) {
+  if (isOwner && !artistId && searchParams.me !== "1") {
     const { data: artists } = await supabase.from("artists").select("id, display_name, slug, is_published").order("sort_order");
     return (
       <main className="wrap" style={{ maxWidth: 720 }}>
-        <p style={{ marginBottom: 12, display: "flex", gap: 18 }}><Link href="/" className="caps" style={{ fontSize: 11, color: "var(--gold-dark)" }}>← The Estate</Link><Link href="/admin" className="caps" style={{ fontSize: 11, color: "var(--gold-dark)" }}>⚜ House Admin</Link></p>
+        <p style={{ marginBottom: 12, display: "flex", gap: 18 }}><Link href="/" className="caps" style={{ fontSize: 11, color: "var(--gold-dark)" }}>← The Estate</Link><Link href="/admin" className="caps" style={{ fontSize: 11, color: "var(--gold-dark)" }}>⚜ House Admin</Link><Link href="/dashboard?me=1" className="caps" style={{ fontSize: 11, color: "var(--gold-dark)" }}>👤 My Quarters &amp; Avatar</Link></p>
         <h1 style={{ fontSize: 44 }}>Artists&rsquo; Quarters</h1>
         <p className="caps" style={{ fontSize: 10, color: "var(--gold-dark)", margin: "6px 0 20px" }}>Signed in as {user.email} · House Owner</p>
         <div className="card">
