@@ -23,3 +23,9 @@ h1,h2,h3{font-family:var(--display);font-weight:700;color:var(--black)}
 .field span{font-family:var(--caps);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--black);display:block;margin-bottom:5px}
 .field input{width:100%;padding:11px 13px;border:1px solid var(--gold-dark);border-radius:3px;background:#fdf6e7;font-family:var(--body);font-size:16px}
 .card{background:linear-gradient(180deg,#fdf6e7,var(--cream-deep));border:1px solid var(--gold);border-radius:8px;padding:32px 34px}
+
+/* Lenis smooth scroll */
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+.lenis.lenis-smooth [data-lenis-prevent]{overscroll-behavior:contain}
+.lenis.lenis-stopped{overflow:hidden}

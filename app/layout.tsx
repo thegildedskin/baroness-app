@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import SmoothScroll from "./SmoothScroll";
 
 export const metadata: Metadata = {
   title: "Baroness Tattoo — Wear Your Crown",
@@ -28,6 +29,7 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <SmoothScroll />
         {children}
         <script dangerouslySetInnerHTML={{ __html: "if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})})}" }} />
       </body>

@@ -174,6 +174,51 @@ function CrestEmblem() {
   );
 }
 
+function SpinningCube({ onPick }: { onPick: (s: Scene) => void }) {
+  const cubeRef = useRef<HTMLDivElement>(null);
+  const rot = useRef({ x: -16, y: 22 });
+  const vel = useRef({ x: 0, y: 0.32 });
+  const drag = useRef({ on: false, px: 0, py: 0, moved: 0 });
+  useEffect(() => {
+    let raf = 0;
+    const tick = () => {
+      if (!drag.current.on) { rot.current.y += vel.current.y; rot.current.x += vel.current.x; vel.current.x *= 0.94; vel.current.y += (0.32 - vel.current.y) * 0.03; }
+      if (cubeRef.current) cubeRef.current.style.transform = `rotateX(${rot.current.x}deg) rotateY(${rot.current.y}deg)`;
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+  const down = (e: React.PointerEvent) => { drag.current = { on: true, px: e.clientX, py: e.clientY, moved: 0 }; };
+  const move = (e: React.PointerEvent) => {
+    if (!drag.current.on) return;
+    const dx = e.clientX - drag.current.px, dy = e.clientY - drag.current.py;
+    drag.current.px = e.clientX; drag.current.py = e.clientY; drag.current.moved += Math.abs(dx) + Math.abs(dy);
+    rot.current.y += dx * 0.5; rot.current.x -= dy * 0.5; vel.current = { x: -dy * 0.04, y: dx * 0.04 };
+  };
+  const up = () => { drag.current.on = false; };
+  const FACES = [
+    { t: "Portraits", g: "\u269C", s: "artists", tf: "translateZ(110px)" },
+    { t: "Gallery", g: "\uD83D\uDDBC", s: "gallery", tf: "rotateY(90deg) translateZ(110px)" },
+    { t: "Atelier", g: "\uD83D\uDD8B", href: "/studio", tf: "rotateY(180deg) translateZ(110px)" },
+    { t: "Boudoir", g: "\uD83D\uDC5B", s: "boutique", tf: "rotateY(-90deg) translateZ(110px)" },
+    { t: "Drawing Room", g: "\uD83D\uDCDC", s: "salon", tf: "rotateX(90deg) translateZ(110px)" },
+    { t: "The Grounds", g: "\uD83C\uDFDB", href: "/explore", tf: "rotateX(-90deg) translateZ(110px)" },
+  ];
+  const pick = (fa: { s?: string; href?: string }) => { if (drag.current.moved > 6) return; if (fa.href) { window.location.href = fa.href; } else if (fa.s) { onPick(fa.s as Scene); } };
+  return (
+    <div className="cube-stage" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerLeave={up} title="Drag to turn \u00B7 tap a face to enter">
+      <div className="cube" ref={cubeRef}>
+        {FACES.map((fa) => (
+          <button key={fa.t} className="cube-face" style={{ transform: fa.tf }} onClick={() => pick(fa)}>
+            <span className="cube-glyph">{fa.g}</span><span className="cube-label">{fa.t}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function ButlerAvatar() {
   return (
     <svg className="butler-svg" viewBox="0 0 100 100" aria-hidden="true">
@@ -379,6 +424,7 @@ export default function EstateApp({ artists, gallery = [] }: { artists: Artist[]
           <div className="section-title reveal">The Grand Foyer</div>
           <div className="section-kicker reveal">Choose a door, and I shall escort you through.</div>
           <div className="filigree reveal"><span>❦</span></div>
+          <SpinningCube onPick={go} />
           <div className="rooms">
             <div className="room-card reveal" onClick={() => go("artists")}><span className="room-emblem"><svg viewBox="0 0 40 40" width="38" height="38" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="14" y="4" width="12" height="15" rx="4" /><path d="M20 19 V30 M20 30 V37 M14 9 H10 a3 3 0 0 0 -3 3 V15" /><circle cx="20" cy="9" r="1.6" fill="currentColor" /></svg></span><div className="room-name">Portrait Salon</div><div className="room-desc">Her Grace&rsquo;s artists</div></div>
             <div className="room-card reveal" onClick={() => go("gallery")}><span className="room-emblem">🖼</span><div className="room-name">The Gallery</div><div className="room-desc">Works upon the skin</div></div>
@@ -830,4 +876,11 @@ const CSS = `
 @keyframes btnsheen{0%,72%{left:-60%}86%{left:130%}100%{left:130%}}
 .estate .wordmark-sm{background:linear-gradient(92deg,#8b6f35,#e8cf86,#8b6f35);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:foil 7s linear infinite}
 @keyframes foil{0%{background-position:0% center}100%{background-position:200% center}}
+.estate .cube-stage{width:220px;height:220px;margin:8px auto 26px;perspective:900px;cursor:grab;touch-action:none}
+.estate .cube-stage:active{cursor:grabbing}
+.estate .cube{position:relative;width:220px;height:220px;transform-style:preserve-3d}
+.estate .cube-face{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;border:2px solid var(--gold);border-radius:16px;backface-visibility:hidden;cursor:pointer;color:#fff;background:linear-gradient(150deg,rgba(58,86,115,.92),rgba(36,16,22,.94));box-shadow:inset 0 0 0 4px rgba(202,162,78,.35),0 0 34px rgba(202,162,78,.3)}
+.estate .cube-face:hover{background:linear-gradient(150deg,rgba(184,146,74,.96),rgba(58,86,115,.96))}
+.estate .cube-glyph{font-size:56px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.55))}
+.estate .cube-label{font-family:var(--caps);letter-spacing:.16em;text-transform:uppercase;font-size:12px;color:var(--gold-light)}
 `.replace(/var\(--damask\)/g, DAMASK);

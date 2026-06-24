@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "rea
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { createClient } from "@/lib/supabase/client";
+import { EffectComposer, Bloom, Vignette, SMAA } from "@react-three/postprocessing";
 
 type Keys = Record<string, boolean>;
 type Cam = { yaw: number; pitch: number; dist: number };
@@ -232,6 +233,11 @@ export default function Explore() {
           <Furniture kind={room.key} wood={woodRef.current} />
         </group>
         <Player keys={keys} cam={cam} rpmUrl={rpmUrl} />
+        <EffectComposer multisampling={0}>
+          <Bloom intensity={0.7} luminanceThreshold={0.5} luminanceSmoothing={0.25} mipmapBlur />
+          <SMAA />
+          <Vignette offset={0.32} darkness={0.72} eskil={false} />
+        </EffectComposer>
       </Canvas>
 
       <div style={{ position: "fixed", top: 16, left: 16, right: 16, display: "flex", justifyContent: "space-between", gap: 12, pointerEvents: "none", fontFamily: "var(--body)" }}>
