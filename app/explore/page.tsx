@@ -7,7 +7,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { createClient } from "@/lib/supabase/client";
 
 type Keys = Record<string, boolean>;
-type Cam = { yaw: number; pitch: number };
+type Cam = { yaw: number; pitch: number; dist: number };
 
 const ROOMS = [
   { key: "foyer", label: "Grand Foyer", wall: "#a9c4d4", photo: "/rooms/foyer.jpg", page: "/", floor: "marble", rug: "#3a5673" },
@@ -187,7 +187,7 @@ function Player({ keys, cam, rpmUrl }: { keys: MutableRefObject<Keys>; cam: Muta
     }
     const B = 8.6; g.position.x = Math.max(-B, Math.min(B, g.position.x)); g.position.z = Math.max(-B, Math.min(B, g.position.z));
     // camera follows on a yaw/pitch orbit
-    const dist = 9.5; const cp = state.camera;
+    const dist = c.dist; const cp = state.camera;
     const cx = g.position.x + Math.sin(c.yaw) * Math.cos(c.pitch) * dist;
     const cz = g.position.z + Math.cos(c.yaw) * Math.cos(c.pitch) * dist;
     const cy = 1.5 + Math.sin(c.pitch) * dist;
@@ -204,7 +204,7 @@ function Player({ keys, cam, rpmUrl }: { keys: MutableRefObject<Keys>; cam: Muta
 
 export default function Explore() {
   const keys = useRef<Keys>({});
-  const cam = useRef<Cam>({ yaw: 0, pitch: 0.34 });
+  const cam = useRef<Cam>({ yaw: 0, pitch: 0.34, dist: 9.5 });
   const [rpmUrl, setRpmUrl] = useState<string | null>(null);
   const [roomKey, setRoomKey] = useState("foyer");
   const woodRef = useRef<THREE.Texture | null>(null);
@@ -214,9 +214,10 @@ export default function Explore() {
   useEffect(() => {
     const d = (e: KeyboardEvent) => { keys.current[e.key.toLowerCase()] = true; if (e.key.startsWith("Arrow")) e.preventDefault(); };
     const u = (e: KeyboardEvent) => { keys.current[e.key.toLowerCase()] = false; };
-    window.addEventListener("keydown", d); window.addEventListener("keyup", u);
+    const wheel = (ev: WheelEvent) => { cam.current.dist = Math.max(4, Math.min(20, cam.current.dist + ev.deltaY * 0.012)); };
+    window.addEventListener("keydown", d); window.addEventListener("keyup", u); window.addEventListener("wheel", wheel, { passive: true });
     (async () => { try { const supabase = createClient(); const { data: { user } } = await supabase.auth.getUser(); if (user) { const { data } = await supabase.from("profiles").select("rpm_url").eq("id", user.id).single(); if (data?.rpm_url) setRpmUrl(data.rpm_url as string); } } catch { /* anon */ } })();
-    return () => { window.removeEventListener("keydown", d); window.removeEventListener("keyup", u); };
+    return () => { window.removeEventListener("keydown", d); window.removeEventListener("keyup", u); window.removeEventListener("wheel", wheel); };
   }, []);
 
   return (
@@ -236,7 +237,7 @@ export default function Explore() {
       <div style={{ position: "fixed", top: 16, left: 16, right: 16, display: "flex", justifyContent: "space-between", gap: 12, pointerEvents: "none", fontFamily: "var(--body)" }}>
         <div style={{ background: "rgba(20,12,8,.74)", border: "1px solid #b8924a", borderRadius: 8, padding: "12px 16px", color: "#f5e9d3", maxWidth: 380, pointerEvents: "auto" }}>
           <div style={{ fontFamily: "var(--blackletter)", color: "#e8cf86", fontSize: 22, lineHeight: 1 }}>{room.label}</div>
-          <div style={{ fontSize: 13, opacity: 0.9, margin: "6px 0 10px" }}><strong>W A S D</strong> to walk · <strong>arrow keys</strong> to pan &amp; tilt the view.{rpmUrl ? " You're walking as your created avatar." : " Make a 3D avatar in your Quarters to appear as yourself."}</div>
+          <div style={{ fontSize: 13, opacity: 0.9, margin: "6px 0 10px" }}><strong>W A S D</strong> to walk · <strong>arrow keys</strong> pan &amp; tilt · <strong>scroll</strong> to zoom.{rpmUrl ? " You're walking as your created avatar." : " Make a 3D avatar in your Quarters to appear as yourself."}</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {ROOMS.map((r) => (
               <button key={r.key} onClick={() => setRoomKey(r.key)} style={{ fontFamily: "var(--caps)", fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", padding: "6px 9px", borderRadius: 3, cursor: "pointer", border: "1px solid #8b6f35", background: r.key === roomKey ? "#caa24e" : "transparent", color: r.key === roomKey ? "#1a1a1a" : "#e8cf86" }}>{r.label}</button>

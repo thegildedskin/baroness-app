@@ -19,9 +19,12 @@ const CONTACT = {
   address: "315 Coneflower Drive, Garland, TX",
   mapUrl: "https://maps.google.com/?q=315+Coneflower+Drive+Garland+TX",
   phone: "469-246-7217",
-  email: "hello@baronesstattoo.com",
+  email: "thegildedskin@gmail.com",
+  emailDisplay: "baroness@baronesstattoo.com",
   instagram: "https://www.instagram.com/baronesstattoo",
   facebook: "https://www.facebook.com/baronesstattoo",
+  tiktok: "https://www.tiktok.com/@baronesstattoo",
+  yelp: "https://www.yelp.com/biz/baroness-tattoo-garland",
 };
 const FALLBACK_PHOTOS = [
   "https://img1.wsimg.com/isteam/ip/b35cdeff-49dc-4837-9cdc-dfead84f5d5f/686041825_18399724834146430_853037633092867592.jpg/:/cr=t:0%25,l:0%25,w:100%25,h:100%25/rs=w:640",
@@ -206,11 +209,13 @@ function ContactBar() {
   const ph = CONTACT.phone.replace(/[^0-9]/g, "");
   return (
     <div className="contactbar">
-      <a className="cbtn" href={CONTACT.mapUrl} target="_blank" rel="noopener noreferrer" aria-label="Address" title={CONTACT.address}><svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z" fill="currentColor" /></svg></a>
-      <a className="cbtn" href={`tel:${ph}`} aria-label="Phone" title={CONTACT.phone}><svg viewBox="0 0 24 24" width="16" height="16"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.24 11 11 0 0 0 3.5.56 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11 11 0 0 0 .56 3.5 1 1 0 0 1-.24 1z" fill="currentColor" /></svg></a>
-      <a className="cbtn" href={`mailto:${CONTACT.email}`} aria-label="Email" title={CONTACT.email}><svg viewBox="0 0 24 24" width="16" height="16"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm0 2v.4l8 5 8-5V6H4zm16 12V8.9l-8 5-8-5V18h16z" fill="currentColor" /></svg></a>
-      <a className="cbtn" href={CONTACT.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 3.3.15 4.8 1.7 4.95 4.95.06 1.3.07 1.7.07 4.9s0 3.6-.07 4.9c-.15 3.25-1.65 4.8-4.95 4.95-1.3.06-1.7.07-4.9.07s-3.6 0-4.9-.07c-3.3-.15-4.8-1.7-4.95-4.95C2.2 15.6 2.2 15.2 2.2 12s0-3.6.07-4.9C2.42 3.85 3.92 2.32 7.1 2.27 8.4 2.2 8.8 2.2 12 2.2zm0 3.05a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5zm0 2.4a4.35 4.35 0 1 1 0 8.7 4.35 4.35 0 0 1 0-8.7zm6.95-.9a1.58 1.58 0 1 0 0 3.16 1.58 1.58 0 0 0 0-3.16z" fill="currentColor" /></svg></a>
-      <a className="cbtn" href={CONTACT.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M14 9h3V6h-3c-2.2 0-4 1.8-4 4v2H7v3h3v7h3v-7h3l1-3h-4v-2c0-.6.4-1 1-1z" fill="currentColor" /></svg></a>
+      <a className="cbtn" href={CONTACT.mapUrl} target="_blank" rel="noopener noreferrer" aria-label="Address" title={CONTACT.address}><svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z" fill="currentColor" /></svg></a>
+      <a className="cbtn" href={`tel:${ph}`} aria-label="Phone" title={CONTACT.phone}><svg viewBox="0 0 24 24" width="20" height="20"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.24 11 11 0 0 0 3.5.56 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11 11 0 0 0 .56 3.5 1 1 0 0 1-.24 1z" fill="currentColor" /></svg></a>
+      <a className="cbtn" href={`mailto:${CONTACT.email}`} aria-label="Email" title={CONTACT.emailDisplay}><svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm0 2v.4l8 5 8-5V6H4zm16 12V8.9l-8 5-8-5V18h16z" fill="currentColor" /></svg></a>
+      <a className="cbtn" href={CONTACT.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 3.3.15 4.8 1.7 4.95 4.95.06 1.3.07 1.7.07 4.9s0 3.6-.07 4.9c-.15 3.25-1.65 4.8-4.95 4.95-1.3.06-1.7.07-4.9.07s-3.6 0-4.9-.07c-3.3-.15-4.8-1.7-4.95-4.95C2.2 15.6 2.2 15.2 2.2 12s0-3.6.07-4.9C2.42 3.85 3.92 2.32 7.1 2.27 8.4 2.2 8.8 2.2 12 2.2zm0 3.05a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5zm0 2.4a4.35 4.35 0 1 1 0 8.7 4.35 4.35 0 0 1 0-8.7zm6.95-.9a1.58 1.58 0 1 0 0 3.16 1.58 1.58 0 0 0 0-3.16z" fill="currentColor" /></svg></a>
+      <a className="cbtn" href={CONTACT.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M14 9h3V6h-3c-2.2 0-4 1.8-4 4v2H7v3h3v7h3v-7h3l1-3h-4v-2c0-.6.4-1 1-1z" fill="currentColor" /></svg></a>
+      <a className="cbtn" href={CONTACT.tiktok} target="_blank" rel="noopener noreferrer" aria-label="TikTok"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M16.5 3h-2.6v12.3a2.2 2.2 0 1 1-2.2-2.2c.2 0 .4 0 .6.05V10.5a5.1 5.1 0 1 0 4.2 5V8.8a6.3 6.3 0 0 0 3.6 1.1V7.3a3.7 3.7 0 0 1-3.6-3.3z" fill="currentColor" /></svg></a>
+      <a className="cbtn" href={CONTACT.yelp} target="_blank" rel="noopener noreferrer" aria-label="Yelp"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M11.6 13.3l-4.5 1.5a.8.8 0 0 1-1-1l1.6-4.3a.8.8 0 0 1 1.45-.15l2.75 3a.8.8 0 0 1-.3 0.95zm1.6-2.5V4.3a.8.8 0 0 1 1.2-.7l3 1.7a.8.8 0 0 1 .1 1.3l-3 3.8a.8.8 0 0 1-1.3-.6zm.15 3.2l3.25 2.6a.8.8 0 0 1-.25 1.4l-3.3 1a.8.8 0 0 1-1-.9l.05-3.9a.8.8 0 0 1 1.2-.6zm-2.5 1.2l.2 4.2a.8.8 0 0 1-1.2.7l-2.5-2a.8.8 0 0 1 .3-1.4l2.9-1a.8.8 0 0 1 .3.5z" fill="currentColor" /></svg></a>
     </div>
   );
 }
@@ -787,10 +792,10 @@ const CSS = `
 .estate .doors-open .bellpull{opacity:0;transition:opacity .5s ease;pointer-events:none}
 .estate .entrance-text{position:absolute;left:0;right:0;bottom:17%;z-index:10;text-align:center;transition:opacity .8s ease;padding:0 20px}
 .estate .doors-open .entrance-text{opacity:0}
-.estate .contactbar{position:fixed;right:26px;bottom:22px;z-index:58;display:flex;gap:8px}
-.estate .cbtn{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--black);background:linear-gradient(180deg,var(--gold-light),var(--gold));border:1px solid var(--gold-dark);text-decoration:none;box-shadow:0 4px 12px rgba(0,0,0,.35);transition:transform .2s,filter .2s}
+.estate .contactbar{position:fixed;right:26px;bottom:22px;z-index:58;display:flex;flex-wrap:wrap;justify-content:flex-end;max-width:calc(100vw - 52px);gap:10px}
+.estate .cbtn{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--black);background:linear-gradient(180deg,var(--gold-light),var(--gold));border:1px solid var(--gold-dark);text-decoration:none;box-shadow:0 4px 12px rgba(0,0,0,.35);transition:transform .2s,filter .2s}
 .estate .cbtn:hover{filter:brightness(1.08);transform:translateY(-2px)}
-@media(max-width:560px){.estate .contactbar{right:14px;bottom:14px;gap:6px}.estate .cbtn{width:30px;height:30px}.estate .bellpull{right:11%}}
+@media(max-width:560px){.estate .contactbar{right:14px;bottom:14px;gap:6px}.estate .cbtn{width:40px;height:40px}.estate .bellpull{right:11%}}
 .estate .shopwrap{margin:6px 0 18px}
 .estate .shoph{font-family:var(--caps);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:8px}
 .estate .shopgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
