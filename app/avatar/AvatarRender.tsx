@@ -1,9 +1,13 @@
 import React from "react";
+import { getLook } from "./looks";
 
 export type AvatarConfig = {
   skin: string; face: string; hair: string; hairColor: string;
   eyes: string; eyeColor: string; brows: string; mouth: string;
   accessory: string; outfit: string; bg: string;
+  // When set, the avatar renders the chosen illustrated "look" instead of the
+  // built-from-parts cartoon. See app/avatar/looks.ts.
+  look?: string;
 };
 
 export const DEFAULT_AVATAR: AvatarConfig = {
@@ -82,6 +86,23 @@ export function AvatarRender({ config, size = 168, tattoo = null }: { config?: P
   const uid = React.useId().replace(/[:]/g, "");
   const gid = (n: string) => `${uid}-${n}`;
   const u = (n: string) => `url(#${gid(n)})`;
+
+  // Illustrated look chosen — render the portrait instead of the cartoon.
+  const look = getLook(c.look);
+  if (look) {
+    return (
+      <svg viewBox="0 0 200 224" width={size} height={size * 224 / 200} role="img" aria-label={look.label}>
+        <defs><clipPath id={gid("clip")}><rect x="6" y="6" width="188" height="212" rx="14" /></clipPath></defs>
+        <g clipPath={`url(#${gid("clip")})`}>
+          <rect x="0" y="0" width="200" height="224" fill="#efe3c6" />
+          <image href={look.src} x="0" y="0" width="200" height="224" preserveAspectRatio="xMidYMin slice" />
+          {tattoo && <image href={tattoo} x="84" y="150" width="32" height="38" preserveAspectRatio="xMidYMid meet" style={{ mixBlendMode: "multiply" }} />}
+        </g>
+        <rect x="6" y="6" width="188" height="212" rx="14" fill="none" stroke="#b8924a" strokeWidth="3" />
+        <rect x="10" y="10" width="180" height="204" rx="11" fill="none" stroke="#8b6f35" strokeWidth="1" />
+      </svg>
+    );
+  }
 
   // Derived shades for volume.
   const skinHi = mix(skin, 0.26), skinLo = mix(skin, -0.16), skinShadow = mix(skin, -0.3);

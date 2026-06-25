@@ -1,37 +1,32 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { AvatarRender, OPTIONS, DEFAULT_AVATAR, type AvatarConfig } from "../avatar/AvatarRender";
-
-const CATS: { key: keyof AvatarConfig; label: string }[] = [
-  { key: "face", label: "Face shape" }, { key: "skin", label: "Skin" },
-  { key: "hair", label: "Hair style" }, { key: "hairColor", label: "Hair colour" },
-  { key: "eyes", label: "Eyes" }, { key: "eyeColor", label: "Eye colour" },
-  { key: "brows", label: "Brows" }, { key: "mouth", label: "Mouth" }, { key: "accessory", label: "Adornment" },
-  { key: "outfit", label: "Attire" }, { key: "bg", label: "Backdrop" },
-];
+import { AvatarRender, type AvatarConfig } from "../avatar/AvatarRender";
+import { LOOKS_BY_GENDER, getLook, type Look } from "../avatar/looks";
 
 export default function AvatarBuilder({ artistId, initial, entitled, table = "artists", canUnlock = true, rpmUrl = null }: {
   artistId: string; initial: Partial<AvatarConfig> | null; entitled: boolean; table?: string; canUnlock?: boolean; rpmUrl?: string | null;
 }) {
   const supabase = createClient();
   const router = useRouter();
-  const [cfg, setCfg] = useState<AvatarConfig>({ ...DEFAULT_AVATAR, ...(initial || {}) });
-  const [cat, setCat] = useState<keyof AvatarConfig>("face");
+  const current = getLook(initial?.look);
+  const [lookId, setLookId] = useState<string | null>(current?.id ?? null);
+  const [gender, setGender] = useState<"female" | "male">(current?.gender ?? "female");
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
 
-  function pick(key: keyof AvatarConfig, opt: { id: string; premium?: boolean }) {
-    if (opt.premium && !entitled) { setStatus("That's a premium look — unlock to use it."); return; }
+  function pick(look: Look) {
+    if (look.premium && !entitled) { setStatus("That's a premium look — unlock to wear it."); return; }
     setStatus("");
-    setCfg((c) => ({ ...c, [key]: opt.id }));
+    setLookId(look.id);
   }
   async function save() {
+    if (!lookId) { setStatus("Choose a look first."); return; }
     setBusy(true); setStatus("");
-    const { error } = await supabase.from(table).update({ avatar: cfg }).eq("id", artistId);
+    const { error } = await supabase.from(table).update({ avatar: { ...(initial || {}), look: lookId } }).eq("id", artistId);
     setBusy(false);
     setStatus(error ? `Error: ${error.message}` : "Avatar saved.");
     if (!error) router.refresh();
@@ -47,32 +42,48 @@ export default function AvatarBuilder({ artistId, initial, entitled, table = "ar
     setBusy(false);
   }
 
-  const opts = OPTIONS[cat] || [];
+  const looks = LOOKS_BY_GENDER[gender];
+  const previewCfg: Partial<AvatarConfig> = { ...(initial || {}), look: lookId ?? undefined };
+
   return (
     <div className="card" style={{ marginBottom: 22 }}>
-      <h3 style={{ fontSize: 24, marginBottom: 14 }}>Your avatar</h3>
+      <h3 style={{ fontSize: 24, marginBottom: 4 }}>Your avatar</h3>
+      <p style={{ fontSize: 13, color: "var(--grey)", marginBottom: 14 }}>Choose your likeness from the House wardrobe.</p>
       <div style={{ display: "flex", gap: 22, flexWrap: "wrap" }}>
-        <div style={{ flex: "0 0 auto" }}><AvatarRender config={cfg} size={168} /></div>
-        <div style={{ flex: 1, minWidth: 260 }}>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-            {CATS.map((cc) => (
-              <button key={cc.key} onClick={() => setCat(cc.key)} className="caps"
-                style={{ fontSize: 9, letterSpacing: ".12em", padding: "6px 9px", borderRadius: 2, cursor: "pointer",
-                  border: "1px solid var(--gold-dark)", background: cat === cc.key ? "var(--gold)" : "transparent", color: cat === cc.key ? "var(--black)" : "var(--gold-dark)" }}>
-                {cc.label}
+        <div style={{ flex: "0 0 auto" }}>
+          {lookId ? <AvatarRender config={previewCfg} size={200} /> : (
+            <div style={{ width: 200, height: 224, borderRadius: 14, border: "3px solid var(--gold-dark)", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", color: "var(--gold-dark)", background: "#efe3c6", fontSize: 13, padding: 16 }}>
+              Pick a look to preview your likeness
+            </div>
+          )}
+        </div>
+        <div style={{ flex: 1, minWidth: 280 }}>
+          <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
+            {(["female", "male"] as const).map((g) => (
+              <button key={g} onClick={() => setGender(g)} className="caps"
+                style={{ fontSize: 10, letterSpacing: ".12em", padding: "7px 16px", borderRadius: 2, cursor: "pointer",
+                  border: "1px solid var(--gold-dark)", background: gender === g ? "var(--gold)" : "transparent", color: gender === g ? "var(--black)" : "var(--gold-dark)" }}>
+                {g === "female" ? "Ladies" : "Gentlemen"}
               </button>
             ))}
           </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {opts.map((o) => {
-              const selected = cfg[cat] === o.id;
-              const locked = o.premium && !entitled;
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(96px, 1fr))", gap: 10 }}>
+            {looks.map((look) => {
+              const selected = lookId === look.id;
+              const locked = look.premium && !entitled;
               return (
-                <button key={o.id} onClick={() => pick(cat, o)} title={o.label}
-                  style={{ position: "relative", display: "flex", alignItems: "center", gap: 6, padding: "7px 11px", borderRadius: 3, cursor: locked ? "not-allowed" : "pointer",
-                    border: selected ? "2px solid var(--gold-dark)" : "1px solid var(--gold)", background: selected ? "rgba(184,146,74,.18)" : "#fdf6e7", opacity: locked ? 0.6 : 1, fontFamily: "var(--body)", fontSize: 14 }}>
-                  {o.swatch && <span style={{ width: 16, height: 16, borderRadius: "50%", background: o.swatch, border: "1px solid var(--gold-dark)", display: "inline-block" }} />}
-                  {o.label}{o.premium && <span style={{ fontSize: 11 }}>{locked ? "🔒" : "★"}</span>}
+                <button key={look.id} onClick={() => pick(look)} title={look.label}
+                  style={{ position: "relative", padding: 0, borderRadius: 6, cursor: locked ? "not-allowed" : "pointer", overflow: "hidden",
+                    border: selected ? "3px solid var(--gold-dark)" : "1px solid var(--gold)", background: "#efe3c6", opacity: locked ? 0.55 : 1 }}>
+                  <div style={{ position: "relative", width: "100%", aspectRatio: "3 / 4", background: "#efe3c6" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={look.src} alt={look.label} loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }}
+                      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
+                  </div>
+                  <div className="caps" style={{ fontSize: 8, letterSpacing: ".08em", padding: "4px 2px", color: "var(--gold-dark)", background: "#fdf6e7", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {look.label}{look.premium && <span> {locked ? "🔒" : "★"}</span>}
+                  </div>
+                  {selected && <span style={{ position: "absolute", top: 4, right: 4, width: 18, height: 18, borderRadius: "50%", background: "var(--gold-dark)", color: "#fff", fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center" }}>✓</span>}
                 </button>
               );
             })}
@@ -84,7 +95,7 @@ export default function AvatarBuilder({ artistId, initial, entitled, table = "ar
           {!entitled && (canUnlock ? (
             <div style={{ marginTop: 10 }}>
               <button className="btn ghost" onClick={unlock} disabled={busy}>★ Unlock premium looks — $12</button>
-              <p style={{ fontSize: 12, color: "var(--grey)", marginTop: 6 }}>Secure checkout via Stripe. Unlocks all premium hair, eyes, attire &amp; backdrops.</p>
+              <p style={{ fontSize: 12, color: "var(--grey)", marginTop: 6 }}>Secure checkout via Stripe. Unlocks the full wardrobe.</p>
             </div>
           ) : (
             <p style={{ fontSize: 13, color: "var(--grey)", marginTop: 8 }}>★ Premium looks unlock with a membership (coming soon).</p>
