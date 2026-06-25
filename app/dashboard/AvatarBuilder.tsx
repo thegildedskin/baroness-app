@@ -51,8 +51,8 @@ export default function AvatarBuilder({ artistId, initial, entitled, table = "ar
       <p style={{ fontSize: 13, color: "var(--grey)", marginBottom: 14 }}>Choose your likeness from the House wardrobe.</p>
       <div style={{ display: "flex", gap: 22, flexWrap: "wrap" }}>
         <div style={{ flex: "0 0 auto" }}>
-          {lookId ? <AvatarRender config={previewCfg} size={200} /> : (
-            <div style={{ width: 200, height: 224, borderRadius: 14, border: "3px solid var(--gold-dark)", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", color: "var(--gold-dark)", background: "#efe3c6", fontSize: 13, padding: 16 }}>
+          {lookId ? <AvatarRender config={previewCfg} size={200} fullBody /> : (
+            <div style={{ width: 200, height: 200 * 470 / 200, borderRadius: 14, border: "3px solid var(--gold-dark)", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", color: "var(--gold-dark)", background: "#efe3c6", fontSize: 13, padding: 16 }}>
               Pick a look to preview your likeness
             </div>
           )}
@@ -75,10 +75,10 @@ export default function AvatarBuilder({ artistId, initial, entitled, table = "ar
                 <button key={look.id} onClick={() => pick(look)} title={look.label}
                   style={{ position: "relative", padding: 0, borderRadius: 6, cursor: locked ? "not-allowed" : "pointer", overflow: "hidden",
                     border: selected ? "3px solid var(--gold-dark)" : "1px solid var(--gold)", background: "#efe3c6", opacity: locked ? 0.55 : 1 }}>
-                  <div style={{ position: "relative", width: "100%", aspectRatio: "3 / 4", background: "#efe3c6" }}>
+                  <div style={{ position: "relative", width: "100%", aspectRatio: "1 / 1.9", background: "#efe3c6" }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={look.src} alt={look.label} loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }}
-                      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
+                      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", objectPosition: "center bottom" }} />
                   </div>
                   <div className="caps" style={{ fontSize: 8, letterSpacing: ".08em", padding: "4px 2px", color: "var(--gold-dark)", background: "#fdf6e7", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                     {look.label}{look.premium && <span> {locked ? "🔒" : "★"}</span>}

@@ -74,7 +74,7 @@ function mix(hex: string, pct: number): string {
   return `#${hx(r)}${hx(g)}${hx(b)}`;
 }
 
-export function AvatarRender({ config, size = 168, tattoo = null }: { config?: Partial<AvatarConfig> | null; size?: number; tattoo?: string | null }) {
+export function AvatarRender({ config, size = 168, tattoo = null, fullBody = false }: { config?: Partial<AvatarConfig> | null; size?: number; tattoo?: string | null; fullBody?: boolean }) {
   const c = { ...DEFAULT_AVATAR, ...(config || {}) };
   const skin = SKIN[c.skin] || SKIN.light;
   const hair = HAIR[c.hairColor] || HAIR.brown;
@@ -90,6 +90,33 @@ export function AvatarRender({ config, size = 168, tattoo = null }: { config?: P
   // Illustrated look chosen — render the portrait instead of the cartoon.
   const look = getLook(c.look);
   if (look) {
+    // Full-body mode: show the entire figure (head to feet) in a tall, gilt-framed
+    // portrait. The source art is a full-length figure on a warm neutral ground, so
+    // we letterbox with a matched mat colour and use "meet" to avoid cropping legs/head.
+    if (fullBody) {
+      const FW = 200, FH = 470;
+      return (
+        <svg viewBox={`0 0 ${FW} ${FH}`} width={size} height={size * FH / FW} role="img" aria-label={look.label}>
+          <defs>
+            <clipPath id={gid("clip")}><rect x="6" y="6" width={FW - 12} height={FH - 12} rx="14" /></clipPath>
+            <linearGradient id={gid("mat")} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#eadfca" /><stop offset="100%" stopColor="#d6c8ac" />
+            </linearGradient>
+            <radialGradient id={gid("matvig")} cx="50%" cy="42%" r="72%">
+              <stop offset="62%" stopColor="rgba(0,0,0,0)" /><stop offset="100%" stopColor="rgba(60,40,20,0.18)" />
+            </radialGradient>
+          </defs>
+          <g clipPath={`url(#${gid("clip")})`}>
+            <rect x="0" y="0" width={FW} height={FH} fill={u("mat")} />
+            <image href={look.src} x="0" y="0" width={FW} height={FH} preserveAspectRatio="xMidYMid meet" />
+            {tattoo && <image href={tattoo} x={FW / 2 - 16} y={FH * 0.33} width="32" height="38" preserveAspectRatio="xMidYMid meet" style={{ mixBlendMode: "multiply" }} />}
+            <rect x="0" y="0" width={FW} height={FH} fill={u("matvig")} />
+          </g>
+          <rect x="6" y="6" width={FW - 12} height={FH - 12} rx="14" fill="none" stroke="#b8924a" strokeWidth="3" />
+          <rect x="10" y="10" width={FW - 20} height={FH - 20} rx="11" fill="none" stroke="#8b6f35" strokeWidth="1" />
+        </svg>
+      );
+    }
     return (
       <svg viewBox="0 0 200 224" width={size} height={size * 224 / 200} role="img" aria-label={look.label}>
         <defs><clipPath id={gid("clip")}><rect x="6" y="6" width="188" height="212" rx="14" /></clipPath></defs>

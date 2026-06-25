@@ -8,6 +8,7 @@ import AvatarBuilder from "./AvatarBuilder";
 import Passport from "./Passport";
 import SetPassword from "./SetPassword";
 import { AvatarRender, type AvatarConfig } from "../avatar/AvatarRender";
+import { getLook } from "../avatar/looks";
 import { ACHIEVEMENTS, tierFor, nextTier } from "@/lib/achievements";
 import { claimAchievements } from "@/app/actions";
 
@@ -132,7 +133,13 @@ export default function ClientQuarters({ userId, email, profile, convos, passpor
       <div className="card" style={{ marginBottom: 22 }}>
         <h3 style={{ fontSize: 22, marginBottom: 12 }}>Your likeness in the estate</h3>
         <div style={{ display: "flex", justifyContent: "center", background: "radial-gradient(120% 90% at 50% 0%, #d6e6ef, #a9c4d4)", border: "1px solid var(--gold)", borderRadius: 10, padding: 18 }}>
-          <AvatarRender config={profile?.avatar ?? null} size={220} tattoo={profile?.avatar_tattoo ?? null} />
+          {getLook(profile?.avatar?.look) ? (
+            <AvatarRender config={profile?.avatar ?? null} size={240} tattoo={profile?.avatar_tattoo ?? null} fullBody />
+          ) : (
+            <div style={{ textAlign: "center", color: "var(--gold-dark)", padding: "48px 20px", fontSize: 14 }}>
+              Choose a look above to set your full-length likeness in the estate.
+            </div>
+          )}
         </div>
         {profile?.avatar_tattoo && (
           <p style={{ marginTop: 10, fontSize: 13, color: "var(--grey)", display: "flex", gap: 10, alignItems: "center" }}>
