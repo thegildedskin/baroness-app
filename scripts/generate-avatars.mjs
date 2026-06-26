@@ -13,6 +13,17 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+// Load .env.local (so the key you put there for Next also works here).
+try {
+  const envPath = path.resolve(process.cwd(), ".env.local");
+  if (fs.existsSync(envPath)) {
+    for (const line of fs.readFileSync(envPath, "utf8").split(/\r?\n/)) {
+      const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
+      if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
+    }
+  }
+} catch { /* ignore */ }
+
 const KEY = process.env.OPENAI_API_KEY;
 if (!KEY) {
   console.error("✗ OPENAI_API_KEY is not set. Export it and re-run:\n  export OPENAI_API_KEY=sk-...\n");

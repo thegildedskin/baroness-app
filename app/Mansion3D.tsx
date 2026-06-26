@@ -57,7 +57,7 @@ function Mansion({ spin }: { spin: MutableRefObject<Spin> }) {
   });
 
   return (
-    <group ref={g} position={[0, -1.45, 0]}>
+    <group ref={g} position={[0, -2.2, 0]}>
       {/* terrace + steps */}
       <mesh position={[0, 0.15, 0]} receiveShadow>
         <boxGeometry args={[6.6, 0.3, 3.1]} />
@@ -180,12 +180,12 @@ export default function Mansion3D() {
       onPointerUp={up}
       onPointerLeave={up}
       title="Drag to turn the estate"
-      style={{ width: "min(380px,86vw)", height: 300, margin: "4px auto 26px", cursor: "grab", touchAction: "none" }}
+      style={{ width: "min(440px,92vw)", height: 360, margin: "4px auto 26px", cursor: "grab", touchAction: "none" }}
     >
       <Canvas
         dpr={[1, 2]}
         gl={{ alpha: true, antialias: true }}
-        camera={{ position: [4.6, 2.9, 6.2], fov: 32 }}
+        camera={{ position: [9.5, 5.8, 12.9], fov: 30 }}
       >
         <ambientLight intensity={0.85} color="#fff2da" />
         <directionalLight position={[5, 9, 6]} intensity={1.15} color="#ffe9c4" />
