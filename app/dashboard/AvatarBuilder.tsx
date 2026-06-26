@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { AvatarRender, type AvatarConfig } from "../avatar/AvatarRender";
 import { LOOKS_BY_GENDER, getLook, type Look } from "../avatar/looks";
+import { OUTFITS_BY_GENDER, type Outfit } from "../avatar/outfits";
 
 export default function AvatarBuilder({ artistId, initial, entitled, table = "artists", canUnlock = true, rpmUrl = null }: {
   artistId: string; initial: Partial<AvatarConfig> | null; entitled: boolean; table?: string; canUnlock?: boolean; rpmUrl?: string | null;
@@ -15,6 +16,9 @@ export default function AvatarBuilder({ artistId, initial, entitled, table = "ar
   const current = getLook(initial?.look);
   const [lookId, setLookId] = useState<string | null>(current?.id ?? null);
   const [gender, setGender] = useState<"female" | "male">(current?.gender ?? "female");
+  const [outfitId, setOutfitId] = useState<string | null>(initial?.outfitId ?? null);
+  const [bareChest, setBareChest] = useState<boolean>(!!initial?.bareChest);
+  const [bareArms, setBareArms] = useState<boolean>(!!initial?.bareArms);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
 
@@ -23,10 +27,16 @@ export default function AvatarBuilder({ artistId, initial, entitled, table = "ar
     setStatus("");
     setLookId(look.id);
   }
+  function pickOutfit(o: Outfit) {
+    if (o.premium && !entitled) { setStatus("That's a premium outfit — unlock to wear it."); return; }
+    setStatus("");
+    setOutfitId((cur) => (cur === o.id ? null : o.id));
+  }
   async function save() {
     if (!lookId) { setStatus("Choose a look first."); return; }
     setBusy(true); setStatus("");
-    const { error } = await supabase.from(table).update({ avatar: { ...(initial || {}), look: lookId } }).eq("id", artistId);
+    const avatar = { ...(initial || {}), look: lookId, outfitId: outfitId ?? undefined, bareChest, bareArms };
+    const { error } = await supabase.from(table).update({ avatar }).eq("id", artistId);
     setBusy(false);
     setStatus(error ? `Error: ${error.message}` : "Avatar saved.");
     if (!error) router.refresh();
@@ -43,7 +53,10 @@ export default function AvatarBuilder({ artistId, initial, entitled, table = "ar
   }
 
   const looks = LOOKS_BY_GENDER[gender];
-  const previewCfg: Partial<AvatarConfig> = { ...(initial || {}), look: lookId ?? undefined };
+  const outfits = OUTFITS_BY_GENDER[gender];
+  const previewCfg: Partial<AvatarConfig> = { ...(initial || {}), look: lookId ?? undefined, outfitId: outfitId ?? undefined, bareChest, bareArms };
+  const SKIN_TILE: Record<string, string> = { light: "#f0c8a8", medium: "#e0a878", olive: "#c79a66", tan: "#c88a5a", brown: "#a06a40", deep: "#6e4326" };
+  const skinTile = SKIN_TILE[(initial?.skin as string) || "light"] || SKIN_TILE.light;
 
   return (
     <div className="card" style={{ marginBottom: 22 }}>
@@ -87,6 +100,45 @@ export default function AvatarBuilder({ artistId, initial, entitled, table = "ar
                 </button>
               );
             })}
+          </div>
+          <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px solid rgba(139,111,53,.3)" }}>
+            <div className="caps" style={{ fontSize: 10, color: "var(--gold-dark)", marginBottom: 8 }}>Wardrobe</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(88px, 1fr))", gap: 8 }}>
+              {outfits.map((o) => {
+                const selected = outfitId === o.id;
+                const locked = o.premium && !entitled;
+                return (
+                  <button key={o.id} onClick={() => pickOutfit(o)} title={o.label}
+                    style={{ position: "relative", padding: 0, borderRadius: 6, cursor: locked ? "not-allowed" : "pointer", overflow: "hidden",
+                      border: selected ? "3px solid var(--gold-dark)" : "1px solid var(--gold)", background: "#fdf6e7", opacity: locked ? 0.55 : 1 }}>
+                    <div style={{ position: "relative", width: "100%", aspectRatio: "1 / 1.4", background: o.bare ? skinTile : "#efe3c6", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      {o.src ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={o.src} alt={o.label} loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }}
+                          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", objectPosition: "center bottom" }} />
+                      ) : (
+                        <span style={{ fontSize: 18 }} aria-hidden>{o.coversChest ? "🩱" : "🖋️"}</span>
+                      )}
+                    </div>
+                    <div className="caps" style={{ fontSize: 8, letterSpacing: ".06em", padding: "4px 2px", color: "var(--gold-dark)", background: "#fdf6e7", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {o.label}{o.premium && <span> {locked ? "🔒" : "★"}</span>}
+                    </div>
+                    {selected && <span style={{ position: "absolute", top: 4, right: 4, width: 16, height: 16, borderRadius: "50%", background: "var(--gold-dark)", color: "#fff", fontSize: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>✓</span>}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="caps" style={{ fontSize: 10, color: "var(--gold-dark)", margin: "14px 0 6px" }}>Show off your ink</div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {([["bareChest", bareChest, setBareChest, "No shirt — bare chest"], ["bareArms", bareArms, setBareArms, "Sleeveless — bare arms"]] as const).map(([key, val, setter, label]) => (
+                <button key={key} onClick={() => setter(!val)} className="caps"
+                  style={{ fontSize: 10, letterSpacing: ".08em", padding: "8px 12px", borderRadius: 3, cursor: "pointer",
+                    border: "1px solid var(--gold-dark)", background: val ? "var(--gold)" : "transparent", color: val ? "var(--black)" : "var(--gold-dark)" }}>
+                  {val ? "✓ " : ""}{label}
+                </button>
+              ))}
+            </div>
+            <p style={{ fontSize: 11, color: "var(--grey)", marginTop: 6 }}>Bare the skin to display tattoos you&rsquo;ve designed in the Atelier.</p>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 16 }}>
             <button className="btn" onClick={save} disabled={busy}>{busy ? "Saving…" : "Save avatar"}</button>

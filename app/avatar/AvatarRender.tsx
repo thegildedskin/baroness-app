@@ -1,5 +1,6 @@
 import React from "react";
 import { getLook } from "./looks";
+import { getOutfit } from "./outfits";
 
 export type AvatarConfig = {
   skin: string; face: string; hair: string; hairColor: string;
@@ -8,6 +9,13 @@ export type AvatarConfig = {
   // When set, the avatar renders the chosen illustrated "look" instead of the
   // built-from-parts cartoon. See app/avatar/looks.ts.
   look?: string;
+  // Paper-doll wardrobe (see app/avatar/outfits.ts). `outfitId` selects a clothing
+  // LAYER drawn over the likeness; `bareChest` / `bareArms` strip the garment so
+  // tattoos read on bare skin. All three are optional & back-compatible — an avatar
+  // saved before this feature simply renders as it always did.
+  outfitId?: string;
+  bareChest?: boolean;
+  bareArms?: boolean;
 };
 
 export const DEFAULT_AVATAR: AvatarConfig = {
@@ -87,9 +95,27 @@ export function AvatarRender({ config, size = 168, tattoo = null, fullBody = fal
   const gid = (n: string) => `${uid}-${n}`;
   const u = (n: string) => `url(#${gid(n)})`;
 
-  // Illustrated look chosen — render the portrait instead of the cartoon.
+  // ── Wardrobe layers (paper-doll) ────────────────────────────────────────────
+  // `outfitId` chooses a clothing overlay; the bare toggles (or a bare outfit
+  // entry) strip it so saved tattoos read on bare skin.
+  const outfitSel = getOutfit(c.outfitId);
+  const bareChest = !!c.bareChest || outfitSel?.coversChest === false;
+  const bareArms = !!c.bareArms || outfitSel?.coversArms === false;
+  // Only overlay a garment when one is chosen, it has art, and the chest isn't
+  // being deliberately bared.
+  const outfitLayer = outfitSel?.src && !bareChest ? outfitSel.src : null;
+  // We enter layered mode whenever the wearer touches the wardrobe so the rest of
+  // the time the fused portrait renders byte-for-byte as it always has.
+  const layered = !!(outfitSel || c.bareChest || c.bareArms);
+
+  // Illustrated look chosen — render the portrait (optionally with wardrobe layers).
   const look = getLook(c.look);
   if (look) {
+    // Prefer dedicated bare-body art when layering so garments/ink composite onto
+    // skin; otherwise fall back to the fused portrait (renders exactly as before).
+    const baseSrc = layered && look.body ? look.body : look.src;
+    const inkOnSkin = layered && bareChest && !!tattoo; // ink drawn under (absent) garment
+
     // Full-body mode: show the entire figure (head to feet) in a tall, gilt-framed
     // portrait. The source art is a full-length figure on a warm neutral ground, so
     // we letterbox with a matched mat colour and use "meet" to avoid cropping legs/head.
@@ -108,8 +134,10 @@ export function AvatarRender({ config, size = 168, tattoo = null, fullBody = fal
           </defs>
           <g clipPath={`url(#${gid("clip")})`}>
             <rect x="0" y="0" width={FW} height={FH} fill={u("mat")} />
-            <image href={look.src} x="0" y="0" width={FW} height={FH} preserveAspectRatio="xMidYMid meet" />
-            {tattoo && <image href={tattoo} x={FW / 2 - 16} y={FH * 0.33} width="32" height="38" preserveAspectRatio="xMidYMid meet" style={{ mixBlendMode: "multiply" }} />}
+            <image href={baseSrc} x="0" y="0" width={FW} height={FH} preserveAspectRatio="xMidYMid meet" />
+            {inkOnSkin && <image href={tattoo!} x={FW / 2 - 16} y={FH * 0.33} width="32" height="38" preserveAspectRatio="xMidYMid meet" style={{ mixBlendMode: "multiply" }} />}
+            {outfitLayer && <image href={outfitLayer} x="0" y="0" width={FW} height={FH} preserveAspectRatio="xMidYMid meet" />}
+            {tattoo && !inkOnSkin && <image href={tattoo} x={FW / 2 - 16} y={FH * 0.33} width="32" height="38" preserveAspectRatio="xMidYMid meet" style={{ mixBlendMode: "multiply" }} />}
             <rect x="0" y="0" width={FW} height={FH} fill={u("matvig")} />
           </g>
           <rect x="6" y="6" width={FW - 12} height={FH - 12} rx="14" fill="none" stroke="#b8924a" strokeWidth="3" />
@@ -122,8 +150,10 @@ export function AvatarRender({ config, size = 168, tattoo = null, fullBody = fal
         <defs><clipPath id={gid("clip")}><rect x="6" y="6" width="188" height="212" rx="14" /></clipPath></defs>
         <g clipPath={`url(#${gid("clip")})`}>
           <rect x="0" y="0" width="200" height="224" fill="#efe3c6" />
-          <image href={look.src} x="0" y="0" width="200" height="224" preserveAspectRatio="xMidYMin slice" />
-          {tattoo && <image href={tattoo} x="84" y="150" width="32" height="38" preserveAspectRatio="xMidYMid meet" style={{ mixBlendMode: "multiply" }} />}
+          <image href={baseSrc} x="0" y="0" width="200" height="224" preserveAspectRatio="xMidYMin slice" />
+          {inkOnSkin && <image href={tattoo!} x="84" y="150" width="32" height="38" preserveAspectRatio="xMidYMid meet" style={{ mixBlendMode: "multiply" }} />}
+          {outfitLayer && <image href={outfitLayer} x="0" y="0" width="200" height="224" preserveAspectRatio="xMidYMin slice" />}
+          {tattoo && !inkOnSkin && <image href={tattoo} x="84" y="150" width="32" height="38" preserveAspectRatio="xMidYMid meet" style={{ mixBlendMode: "multiply" }} />}
         </g>
         <rect x="6" y="6" width="188" height="212" rx="14" fill="none" stroke="#b8924a" strokeWidth="3" />
         <rect x="10" y="10" width="180" height="204" rx="11" fill="none" stroke="#8b6f35" strokeWidth="1" />
@@ -187,7 +217,8 @@ export function AvatarRender({ config, size = 168, tattoo = null, fullBody = fal
     c.mouth === "grin" ? <g><path d="M86 118 Q100 134 114 118 Z" fill="#fff" stroke="#9c5a52" strokeWidth="2" /></g> :
     <path d="M86 119 Q100 132 114 119" stroke="#9c5a52" strokeWidth="3" strokeLinecap="round" fill="none" />;
 
-  const shoulders =
+  // Clothed torso (the cloth garment of the built-from-parts bust).
+  const cloth =
     c.outfit === "suit" ? <g><path d="M40 224 C40 178 160 178 160 224 Z" fill={u("outfit")} /><path d="M100 182 L84 224 L100 210 L116 224 Z" fill="#f3ecda" /></g> :
     c.outfit === "robe" ? <g><path d="M44 224 C44 180 156 180 156 224 Z" fill={u("outfit")} /><path d="M100 184 L82 224 M100 184 L118 224" stroke="#caa24e" strokeWidth="3" /></g> :
     c.outfit === "cloak" ? <g><path d="M34 224 C34 176 166 176 166 224 Z" fill={u("outfit")} /><path d="M100 182 L100 224" stroke="#caa24e" strokeWidth="2" /><circle cx="100" cy="188" r="5" fill="#caa24e" /></g> :
@@ -196,6 +227,24 @@ export function AvatarRender({ config, size = 168, tattoo = null, fullBody = fal
     c.outfit === "lace" ? <g><path d="M46 224 C46 182 154 182 154 224 Z" fill={u("outfit")} /><path d="M70 186 Q100 200 130 186" fill="none" stroke="#caa24e" strokeWidth="2" /><circle cx="86" cy="204" r="2" fill="#caa24e" /><circle cx="100" cy="208" r="2" fill="#caa24e" /><circle cx="114" cy="204" r="2" fill="#caa24e" /></g> :
     c.outfit === "royal" ? <g><path d="M38 224 C38 176 162 176 162 224 Z" fill={u("outfit")} /><path d="M38 200 C70 214 130 214 162 200 L162 224 L38 224 Z" fill="#7a2d3a" /><circle cx="100" cy="190" r="6" fill="#caa24e" /></g> :
     <g><path d="M40 224 C40 178 160 178 160 224 Z" fill={u("outfit")} /><path d="M70 184 C82 200 118 200 130 184" fill="none" stroke="#f3ecda" strokeWidth="3" /></g>;
+
+  // Bare skin torso — drawn when the wearer goes shirtless to show chest ink.
+  const bareTorso = (
+    <g>
+      <path d="M40 224 C40 178 160 178 160 224 Z" fill={u("skin")} />
+      <ellipse cx="100" cy="198" rx="60" ry="22" fill={skinHi} opacity="0.12" />
+      <path d="M66 192 Q100 184 134 192" fill="none" stroke={skinLo} strokeWidth="2" opacity="0.55" strokeLinecap="round" />
+      <path d="M100 196 L100 224" stroke={skinLo} strokeWidth="1.4" opacity="0.4" />
+      <path d="M72 206 Q86 220 100 210" fill="none" stroke={skinLo} strokeWidth="1.6" opacity="0.32" />
+      <path d="M128 206 Q114 220 100 210" fill="none" stroke={skinLo} strokeWidth="1.6" opacity="0.32" />
+    </g>
+  );
+  // Skin showing at the shoulders/upper arms when sleeveless.
+  const armCaps = <g><ellipse cx="46" cy="208" rx="15" ry="24" fill={u("skin")} /><ellipse cx="154" cy="208" rx="15" ry="24" fill={u("skin")} /></g>;
+
+  const shoulders = bareChest
+    ? <g>{bareTorso}</g>
+    : <g>{bareArms && armCaps}{cloth}</g>;
 
   const acc = (() => {
     switch (c.accessory) {

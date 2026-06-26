@@ -9,7 +9,10 @@ export type Look = {
   id: string;
   label: string;
   gender: "female" | "male";
-  src: string;       // served from /public
+  src: string;       // served from /public (the fused, fully-dressed portrait)
+  body?: string;     // optional bare-body art (skin/face/hair only) for paper-doll
+                     // layering — when present, outfits & tattoos composite onto it.
+                     // See app/avatar/outfits.ts. Falls back to `src` if absent.
   premium?: boolean; // gate behind membership / gems if true
   gems?: number;     // optional price tag for the store view
 };
