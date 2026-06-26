@@ -13,7 +13,8 @@ export default function CreateAvatar() {
   const [status, setStatus] = useState<"loading" | "ready" | "failed">("loading");
 
   useEffect(() => {
-    const timer = setTimeout(() => setStatus((s) => (s === "ready" ? s : "failed")), 9000);
+    // RPM's creator is heavy on first load; give it generous time before falling back.
+    const timer = setTimeout(() => setStatus((s) => (s === "ready" ? s : "failed")), 30000);
     async function save(url: string) {
       setSaving(true);
       const supabase = createClient();
@@ -52,7 +53,7 @@ export default function CreateAvatar() {
         title="Create your avatar"
         allow="camera *; microphone *"
         onError={() => setStatus("failed")}
-        src={`https://${SUB}.readyplayer.me/avatar?frameApi&bodyType=fullbody&clearCache`}
+        src={`https://${SUB}.readyplayer.me/avatar?frameApi&bodyType=fullbody`}
         style={{ width: "100%", height: "100%", border: 0, opacity: status === "ready" ? 1 : 0, transition: "opacity .4s" }}
       />
       <a href="/dashboard?me=1" style={{ position: "fixed", top: 14, left: 14, zIndex: 5, ...backBtn }}>← Quarters</a>
