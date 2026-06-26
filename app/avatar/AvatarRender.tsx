@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { getLook } from "./looks";
 import { getOutfit } from "./outfits";
@@ -20,6 +22,9 @@ export type AvatarConfig = {
   // flow). When set it is used as the portrait base, taking precedence over
   // both `look` and the built-from-parts cartoon. See app/dashboard/AvatarCreator.tsx.
   likenessUrl?: string;
+  // Optional explicit garment colour for from-code avatars (lets premade looks
+  // use any hue without adding a new outfit id).
+  outfitColor?: string;
 };
 
 export const DEFAULT_AVATAR: AvatarConfig = {
@@ -87,17 +92,36 @@ function mix(hex: string, pct: number): string {
 }
 
 export function AvatarRender({ config, size = 168, tattoo = null, fullBody = false }: { config?: Partial<AvatarConfig> | null; size?: number; tattoo?: string | null; fullBody?: boolean }) {
-  const c = { ...DEFAULT_AVATAR, ...(config || {}) };
+  const base = { ...DEFAULT_AVATAR, ...(config || {}) };
+  // A premade "look" carries a full from-code config; apply it over the base so
+  // the gallery and saved premades render from code (no external image needed).
+  const lookCfg = getLook(base.look)?.config;
+  const c = (lookCfg ? { ...base, ...lookCfg } : base) as AvatarConfig;
   const skin = SKIN[c.skin] || SKIN.light;
   const hair = HAIR[c.hairColor] || HAIR.brown;
   const eye = EYE[c.eyeColor] || EYE.brown;
-  const outfit = OUTFIT[c.outfit] || OUTFIT.gown;
+  const outfit = c.outfitColor || OUTFIT[c.outfit] || OUTFIT.gown;
   const bg = BG[c.bg] || BG.cream;
 
   // Unique id prefix so multiple avatars on one page don't share gradient defs.
   const uid = React.useId().replace(/[:]/g, "");
   const gid = (n: string) => `${uid}-${n}`;
   const u = (n: string) => `url(#${gid(n)})`;
+
+  // Premade looks prefer an illustrated portrait at /avatars/<id>.png when one
+  // has been generated; if the file is absent we fall back to the from-code
+  // avatar. Probe existence client-side so missing art never shows a blank frame.
+  const [imgErr, setImgErr] = React.useState(false);
+  const lookSrc = getLook(c.look)?.src;
+  React.useEffect(() => {
+    setImgErr(false);
+    if (!lookSrc || c.likenessUrl) return;
+    let alive = true;
+    const probe = new Image();
+    probe.onerror = () => { if (alive) setImgErr(true); };
+    probe.src = lookSrc;
+    return () => { alive = false; };
+  }, [lookSrc, c.likenessUrl]);
 
   // ── Wardrobe layers (paper-doll) ────────────────────────────────────────────
   // `outfitId` chooses a clothing overlay; the bare toggles (or a bare outfit
@@ -116,11 +140,14 @@ export function AvatarRender({ config, size = 168, tattoo = null, fullBody = fal
   // wardrobe layers). A generated likeness (c.likenessUrl) takes precedence over a look.
   const look = getLook(c.look);
   const customSrc = c.likenessUrl;
-  if (look || customSrc) {
+  // Bare toggles want the from-code avatar so tattoos read on skin.
+  const wantInk = !!c.bareChest || !!c.bareArms;
+  const portraitSrc = customSrc || (look?.src && !imgErr && !wantInk ? look.src : null);
+  if (portraitSrc) {
     const aria = look?.label || "your likeness";
     // Prefer the generated likeness, then bare-body art when layering, else the
     // fused portrait (renders exactly as before).
-    const baseSrc = customSrc || (layered && look?.body ? look.body : look!.src);
+    const baseSrc = portraitSrc;
     const inkOnSkin = layered && bareChest && !!tattoo; // ink drawn under (absent) garment
 
     // Full-body mode: show the entire figure (head to feet) in a tall, gilt-framed
@@ -141,7 +168,7 @@ export function AvatarRender({ config, size = 168, tattoo = null, fullBody = fal
           </defs>
           <g clipPath={`url(#${gid("clip")})`}>
             <rect x="0" y="0" width={FW} height={FH} fill={u("mat")} />
-            <image href={baseSrc} x="0" y="0" width={FW} height={FH} preserveAspectRatio="xMidYMid meet" />
+            <image href={baseSrc} x="0" y="0" width={FW} height={FH} preserveAspectRatio="xMidYMid meet" onError={() => setImgErr(true)} />
             {inkOnSkin && <image href={tattoo!} x={FW / 2 - 16} y={FH * 0.33} width="32" height="38" preserveAspectRatio="xMidYMid meet" style={{ mixBlendMode: "multiply" }} />}
             {outfitLayer && <image href={outfitLayer} x="0" y="0" width={FW} height={FH} preserveAspectRatio="xMidYMid meet" />}
             {tattoo && !inkOnSkin && <image href={tattoo} x={FW / 2 - 16} y={FH * 0.33} width="32" height="38" preserveAspectRatio="xMidYMid meet" style={{ mixBlendMode: "multiply" }} />}
@@ -157,7 +184,7 @@ export function AvatarRender({ config, size = 168, tattoo = null, fullBody = fal
         <defs><clipPath id={gid("clip")}><rect x="6" y="6" width="188" height="212" rx="14" /></clipPath></defs>
         <g clipPath={`url(#${gid("clip")})`}>
           <rect x="0" y="0" width="200" height="224" fill="#efe3c6" />
-          <image href={baseSrc} x="0" y="0" width="200" height="224" preserveAspectRatio="xMidYMin slice" />
+          <image href={baseSrc} x="0" y="0" width="200" height="224" preserveAspectRatio="xMidYMin slice" onError={() => setImgErr(true)} />
           {inkOnSkin && <image href={tattoo!} x="84" y="150" width="32" height="38" preserveAspectRatio="xMidYMid meet" style={{ mixBlendMode: "multiply" }} />}
           {outfitLayer && <image href={outfitLayer} x="0" y="0" width="200" height="224" preserveAspectRatio="xMidYMin slice" />}
           {tattoo && !inkOnSkin && <image href={tattoo} x="84" y="150" width="32" height="38" preserveAspectRatio="xMidYMid meet" style={{ mixBlendMode: "multiply" }} />}

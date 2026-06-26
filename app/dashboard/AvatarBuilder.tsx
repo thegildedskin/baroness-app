@@ -101,10 +101,8 @@ export default function AvatarBuilder({ artistId, initial, entitled, table = "ar
                 <button key={look.id} onClick={() => pick(look)} title={look.label}
                   style={{ position: "relative", padding: 0, borderRadius: 6, cursor: locked ? "not-allowed" : "pointer", overflow: "hidden",
                     border: selected ? "3px solid var(--gold-dark)" : "1px solid var(--gold)", background: "#efe3c6", opacity: locked ? 0.55 : 1 }}>
-                  <div style={{ position: "relative", width: "100%", aspectRatio: "1 / 1.9", background: "#efe3c6" }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={look.src} alt={look.label} loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }}
-                      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", objectPosition: "center bottom" }} />
+                  <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", width: "100%", background: "#efe3c6", overflow: "hidden" }}>
+                    <AvatarRender config={{ look: look.id }} size={104} />
                   </div>
                   <div className="caps" style={{ fontSize: 8, letterSpacing: ".08em", padding: "4px 2px", color: "var(--gold-dark)", background: "#fdf6e7", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                     {look.label}{look.premium && <span> {locked ? "🔒" : "★"}</span>}
