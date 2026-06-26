@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import ArtistMessageForm from "./ArtistMessageForm";
 import { AvatarRender, type AvatarConfig } from "./avatar/AvatarRender";
 import ReviewsTicker from "./ReviewsTicker";
@@ -13,6 +14,8 @@ export type Artist = {
   avatar?: Partial<AvatarConfig> | null;
   products?: { id: string; title: string; description: string | null; price_cents: number; kind: string; preview_url: string | null }[];
 };
+
+const Mansion3D = dynamic(() => import("./Mansion3D"), { ssr: false });
 
 const STUDIO_VENUE = "https://venue.ink/";
 const CONTACT = {
@@ -171,51 +174,6 @@ function CrestEmblem() {
       {/* sacred heart */}
       <path d="M130 122 C112 106 110 88 122 86 C129 85 130 94 130 94 C130 94 131 85 138 86 C150 88 148 106 130 122 Z" fill="url(#cg)" stroke="#7d6230" strokeWidth="1" />
     </svg>
-  );
-}
-
-function SpinningCube({ onPick }: { onPick: (s: Scene) => void }) {
-  const cubeRef = useRef<HTMLDivElement>(null);
-  const rot = useRef({ x: -16, y: 22 });
-  const vel = useRef({ x: 0, y: 0.32 });
-  const drag = useRef({ on: false, px: 0, py: 0, moved: 0 });
-  useEffect(() => {
-    let raf = 0;
-    const tick = () => {
-      if (!drag.current.on) { rot.current.y += vel.current.y; rot.current.x += vel.current.x; vel.current.x *= 0.94; vel.current.y += (0.32 - vel.current.y) * 0.03; }
-      if (cubeRef.current) cubeRef.current.style.transform = `rotateX(${rot.current.x}deg) rotateY(${rot.current.y}deg)`;
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, []);
-  const down = (e: React.PointerEvent) => { drag.current = { on: true, px: e.clientX, py: e.clientY, moved: 0 }; };
-  const move = (e: React.PointerEvent) => {
-    if (!drag.current.on) return;
-    const dx = e.clientX - drag.current.px, dy = e.clientY - drag.current.py;
-    drag.current.px = e.clientX; drag.current.py = e.clientY; drag.current.moved += Math.abs(dx) + Math.abs(dy);
-    rot.current.y += dx * 0.5; rot.current.x -= dy * 0.5; vel.current = { x: -dy * 0.04, y: dx * 0.04 };
-  };
-  const up = () => { drag.current.on = false; };
-  const FACES = [
-    { t: "Portraits", g: "\u269C", s: "artists", tf: "translateZ(110px)" },
-    { t: "Gallery", g: "\uD83D\uDDBC", s: "gallery", tf: "rotateY(90deg) translateZ(110px)" },
-    { t: "Atelier", g: "\uD83D\uDD8B", href: "/studio", tf: "rotateY(180deg) translateZ(110px)" },
-    { t: "Boudoir", g: "\uD83D\uDC5B", s: "boutique", tf: "rotateY(-90deg) translateZ(110px)" },
-    { t: "Drawing Room", g: "\uD83D\uDCDC", s: "salon", tf: "rotateX(90deg) translateZ(110px)" },
-    { t: "The Grounds", g: "\uD83C\uDFDB", href: "/explore", tf: "rotateX(-90deg) translateZ(110px)" },
-  ];
-  const pick = (fa: { s?: string; href?: string }) => { if (drag.current.moved > 6) return; if (fa.href) { window.location.href = fa.href; } else if (fa.s) { onPick(fa.s as Scene); } };
-  return (
-    <div className="cube-stage" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerLeave={up} title="Drag to turn \u00B7 tap a face to enter">
-      <div className="cube" ref={cubeRef}>
-        {FACES.map((fa) => (
-          <button key={fa.t} className="cube-face" style={{ transform: fa.tf }} onClick={() => pick(fa)}>
-            <span className="cube-glyph">{fa.g}</span><span className="cube-label">{fa.t}</span>
-          </button>
-        ))}
-      </div>
-    </div>
   );
 }
 
@@ -420,11 +378,13 @@ export default function EstateApp({ artists, gallery = [] }: { artists: Artist[]
       <section className={`scene ${scene === "foyer" ? "active" : ""}`}>
         <RoomBackdrop kind="foyer" />
         <div className="scene-inner center">
-          <div className="wordmark-sm reveal">Baroness Tattoo</div>
-          <div className="section-title reveal">The Grand Foyer</div>
-          <div className="section-kicker reveal">Choose a door, and I shall escort you through.</div>
+          <div className="titleplaque reveal">
+            <div className="wordmark-sm">Baroness Tattoo</div>
+            <div className="section-title">The Grand Foyer</div>
+            <div className="section-kicker">Choose a door, and I shall escort you through.</div>
+          </div>
           <div className="filigree reveal"><span>❦</span></div>
-          <SpinningCube onPick={go} />
+          <Mansion3D />
           <div className="rooms">
             <div className="room-card reveal" onClick={() => go("artists")}><span className="room-emblem"><svg viewBox="0 0 40 40" width="38" height="38" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="14" y="4" width="12" height="15" rx="4" /><path d="M20 19 V30 M20 30 V37 M14 9 H10 a3 3 0 0 0 -3 3 V15" /><circle cx="20" cy="9" r="1.6" fill="currentColor" /></svg></span><div className="room-name">Portrait Salon</div><div className="room-desc">Her Grace&rsquo;s artists</div></div>
             <div className="room-card reveal" onClick={() => go("gallery")}><span className="room-emblem">🖼</span><div className="room-name">The Gallery</div><div className="room-desc">Works upon the skin</div></div>
@@ -442,7 +402,7 @@ export default function EstateApp({ artists, gallery = [] }: { artists: Artist[]
         <RoomBackdrop kind="gallery-hall" />
         <div className="scene-inner">
           <div className="backline"><button className="btn ghost" onClick={() => go("foyer")}>← The Foyer</button></div>
-          <div className="roomhead reveal"><div className="section-title">Portrait Salon</div><div className="section-kicker">The artists in Her Grace&rsquo;s service</div></div>
+          <div className="roomhead titleplaque reveal"><div className="section-title">Portrait Salon</div><div className="section-kicker">The artists in Her Grace&rsquo;s service</div></div>
           <div className="filigree reveal"><span>❦</span></div>
           {artists.length === 0 ? (
             <p className="reveal" style={{ fontStyle: "italic", color: "var(--grey)" }}>The artists are preparing their portraits. Pray return shortly.</p>
@@ -508,7 +468,7 @@ export default function EstateApp({ artists, gallery = [] }: { artists: Artist[]
         <RoomBackdrop kind="boudoir" />
         <div className="scene-inner">
           <div className="backline"><button className="btn ghost" onClick={() => go("foyer")}>← The Foyer</button></div>
-          <div className="roomhead reveal"><div className="section-title">Maison Baroness</div><div className="section-kicker">The ritual before the ritual — a skincare house for the working canvas</div></div>
+          <div className="roomhead titleplaque reveal"><div className="section-title">Maison Baroness</div><div className="section-kicker">The ritual before the ritual — a skincare house for the working canvas</div></div>
           <div className="filigree reveal"><span>❦</span></div>
           <div className="shelf">
             {WARES.map((w) => (
@@ -633,6 +593,8 @@ export default function EstateApp({ artists, gallery = [] }: { artists: Artist[]
     </div>
   );
 }
+
+const GARLAND = "url(\"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='230'%20height='38'%20viewBox='0%200%20230%2038'%3E%3Cg%20fill='none'%20stroke='%23caa24e'%20stroke-width='1.6'%20stroke-linecap='round'%3E%3Cpath%20d='M115%2027%20C84%2027%2062%2014%2030%2019'/%3E%3Cpath%20d='M115%2027%20C146%2027%20168%2014%20200%2019'/%3E%3Cpath%20d='M74%2023%20C70%2014%2063%2012%2056%2014'/%3E%3Cpath%20d='M156%2023%20C160%2014%20167%2012%20174%2014'/%3E%3C/g%3E%3Cg%20fill='%238fa98f'%3E%3Cellipse%20cx='54'%20cy='14'%20rx='7'%20ry='3.4'%20transform='rotate(-28%2054%2014)'/%3E%3Cellipse%20cx='176'%20cy='14'%20rx='7'%20ry='3.4'%20transform='rotate(28%20176%2014)'/%3E%3Cellipse%20cx='90'%20cy='25'%20rx='6'%20ry='3'%20transform='rotate(20%2090%2025)'/%3E%3Cellipse%20cx='140'%20cy='25'%20rx='6'%20ry='3'%20transform='rotate(-20%20140%2025)'/%3E%3C/g%3E%3Ccircle%20cx='115'%20cy='20'%20r='8'%20fill='%23c2818f'/%3E%3Ccircle%20cx='115'%20cy='20'%20r='5'%20fill='%23d49aa6'/%3E%3Ccircle%20cx='115'%20cy='20'%20r='2.4'%20fill='%23a85f6e'/%3E%3Ccircle%20cx='76'%20cy='20'%20r='6'%20fill='%23c2818f'/%3E%3Ccircle%20cx='76'%20cy='20'%20r='3.4'%20fill='%23d49aa6'/%3E%3Ccircle%20cx='154'%20cy='20'%20r='6'%20fill='%23c2818f'/%3E%3Ccircle%20cx='154'%20cy='20'%20r='3.4'%20fill='%23d49aa6'/%3E%3C/svg%3E\")";
 
 const DAMASK = "url(\"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='90'%20height='130'%20viewBox='0%200%2090%20130'%3E%3Cg%20fill='none'%20stroke='%23b8924a'%20stroke-opacity='0.18'%20stroke-width='2'%3E%3Cpath%20d='M45%206C66%2028%2066%2050%2045%2070%2024%2050%2024%2028%2045%206Z'/%3E%3Ccircle%20cx='45'%20cy='38'%20r='7'/%3E%3Cpath%20d='M0%2072C22%2094%2022%20116%200%20130M90%2072C68%2094%2068%20116%2090%20130'/%3E%3C/g%3E%3C/svg%3E\")";
 
@@ -839,9 +801,10 @@ const CSS = `
 .estate .entrance-text{position:absolute;left:0;right:0;bottom:17%;z-index:10;text-align:center;transition:opacity .8s ease;padding:0 20px}
 .estate .doors-open .entrance-text{opacity:0}
 .estate .contactbar{position:fixed;right:26px;bottom:22px;z-index:58;display:flex;flex-wrap:wrap;justify-content:flex-end;max-width:calc(100vw - 52px);gap:10px}
-.estate .cbtn{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--black);background:linear-gradient(180deg,var(--gold-light),var(--gold));border:1px solid var(--gold-dark);text-decoration:none;box-shadow:0 4px 12px rgba(0,0,0,.35);transition:transform .2s,filter .2s}
-.estate .cbtn:hover{filter:brightness(1.08);transform:translateY(-2px)}
-@media(max-width:560px){.estate .contactbar{right:14px;bottom:14px;gap:6px}.estate .cbtn{width:40px;height:40px}.estate .bellpull{right:11%}}
+.estate .cbtn{width:40px;height:40px;border-radius:0;display:flex;align-items:center;justify-content:center;color:#e8cf86;background:none;border:none;text-decoration:none;box-shadow:none;transition:transform .2s,filter .2s}
+.estate .cbtn svg{width:28px;height:28px}
+.estate .cbtn:hover{filter:brightness(1.12);transform:translateY(-2px)}
+@media(max-width:560px){.estate .contactbar{right:14px;bottom:14px;gap:8px}.estate .cbtn{width:34px;height:34px}.estate .cbtn svg{width:24px;height:24px}.estate .bellpull{right:11%}}
 .estate .shopwrap{margin:6px 0 18px}
 .estate .shoph{font-family:var(--caps);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:8px}
 .estate .shopgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
@@ -862,8 +825,8 @@ const CSS = `
 .estate #entrance::before{content:"";position:absolute;left:0;right:0;bottom:0;height:48%;z-index:7;pointer-events:none;background:linear-gradient(0deg,rgba(20,12,8,.72),transparent);filter:blur(2px)}
 .estate .doors-open .estate-beyond{filter:brightness(.92) saturate(1.05);transition:filter 1.6s ease}
 .estate .sconce{box-shadow:0 0 30px 14px rgba(255,196,92,.55),0 0 90px 42px rgba(255,150,40,.28),0 0 170px 84px rgba(255,120,30,.13)}
-.estate .cbtn{background:radial-gradient(circle at 32% 26%,#fbeec2,var(--gold) 58%,var(--gold-dark));box-shadow:0 4px 14px rgba(0,0,0,.45),inset 0 1px 2px rgba(255,255,255,.6),inset 0 -2px 4px rgba(139,111,53,.5)}
-.estate .cbtn:hover{transform:translateY(-3px) scale(1.08);filter:brightness(1.12);box-shadow:0 8px 22px rgba(0,0,0,.5),0 0 24px rgba(241,220,151,.7),inset 0 1px 2px rgba(255,255,255,.7)}
+.estate .cbtn{background:none;color:#e8cf86;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+.estate .cbtn:hover{transform:translateY(-3px) scale(1.1);color:#f3e3a6;filter:drop-shadow(0 0 10px rgba(241,220,151,.8)) drop-shadow(0 1px 2px rgba(0,0,0,.55))}
 .estate .butler .avatar{width:106px;height:106px;overflow:hidden;background:radial-gradient(circle at 50% 28%,#3a2f3c,#17101a);box-shadow:0 0 0 2px var(--gold),0 0 24px rgba(202,162,78,.5),0 8px 24px rgba(0,0,0,.6);animation:butlerFloat 5.5s ease-in-out infinite}
 .estate .butler-svg{width:100%;height:100%;display:block}
 @keyframes butlerFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
@@ -883,4 +846,13 @@ const CSS = `
 .estate .cube-face:hover{background:linear-gradient(150deg,rgba(184,146,74,.96),rgba(58,86,115,.96))}
 .estate .cube-glyph{font-size:56px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.55))}
 .estate .cube-label{font-family:var(--caps);letter-spacing:.16em;text-transform:uppercase;font-size:12px;color:var(--gold-light)}
-`.replace(/var\(--damask\)/g, DAMASK);
+/* ===== TITLE PLAQUE (readable cartouche behind headings) ===== */
+.estate .titleplaque{--garland:GARLAND;position:relative;display:inline-block;max-width:780px;margin:0 auto 30px;padding:30px 56px 34px;text-align:center;background:linear-gradient(180deg,rgba(253,247,233,.95),rgba(235,221,188,.93));border:2px solid var(--gold);border-radius:16px;box-shadow:0 16px 44px rgba(0,0,0,.45),inset 0 0 0 4px rgba(255,255,255,.42),inset 0 0 0 6px var(--gold-dark);backdrop-filter:blur(3px)}
+.estate .titleplaque::before,.estate .titleplaque::after{content:"";position:absolute;left:50%;width:230px;height:38px;background:var(--garland) center/contain no-repeat;pointer-events:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+.estate .titleplaque::before{top:-21px;transform:translateX(-50%)}
+.estate .titleplaque::after{bottom:-21px;transform:translateX(-50%) scaleY(-1)}
+.estate .titleplaque .section-title{margin-bottom:6px}
+.estate .titleplaque .section-kicker{margin-bottom:0}
+.estate .roomhead.titleplaque{margin-bottom:26px}
+@media(max-width:560px){.estate .titleplaque{padding:24px 26px 28px;max-width:90vw}.estate .titleplaque::before,.estate .titleplaque::after{width:170px;height:28px}}
+`.replace(/var\(--damask\)/g, DAMASK).replace(/GARLAND/g, GARLAND);
