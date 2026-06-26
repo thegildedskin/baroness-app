@@ -16,6 +16,10 @@ export type AvatarConfig = {
   outfitId?: string;
   bareChest?: boolean;
   bareArms?: boolean;
+  // AI-generated / uploaded likeness (the "create from scratch / from image"
+  // flow). When set it is used as the portrait base, taking precedence over
+  // both `look` and the built-from-parts cartoon. See app/dashboard/AvatarCreator.tsx.
+  likenessUrl?: string;
 };
 
 export const DEFAULT_AVATAR: AvatarConfig = {
@@ -108,12 +112,15 @@ export function AvatarRender({ config, size = 168, tattoo = null, fullBody = fal
   // the time the fused portrait renders byte-for-byte as it always has.
   const layered = !!(outfitSel || c.bareChest || c.bareArms);
 
-  // Illustrated look chosen — render the portrait (optionally with wardrobe layers).
+  // Illustrated look or a generated likeness — render the portrait (optionally with
+  // wardrobe layers). A generated likeness (c.likenessUrl) takes precedence over a look.
   const look = getLook(c.look);
-  if (look) {
-    // Prefer dedicated bare-body art when layering so garments/ink composite onto
-    // skin; otherwise fall back to the fused portrait (renders exactly as before).
-    const baseSrc = layered && look.body ? look.body : look.src;
+  const customSrc = c.likenessUrl;
+  if (look || customSrc) {
+    const aria = look?.label || "your likeness";
+    // Prefer the generated likeness, then bare-body art when layering, else the
+    // fused portrait (renders exactly as before).
+    const baseSrc = customSrc || (layered && look?.body ? look.body : look!.src);
     const inkOnSkin = layered && bareChest && !!tattoo; // ink drawn under (absent) garment
 
     // Full-body mode: show the entire figure (head to feet) in a tall, gilt-framed
@@ -122,7 +129,7 @@ export function AvatarRender({ config, size = 168, tattoo = null, fullBody = fal
     if (fullBody) {
       const FW = 200, FH = 470;
       return (
-        <svg viewBox={`0 0 ${FW} ${FH}`} width={size} height={size * FH / FW} role="img" aria-label={look.label}>
+        <svg viewBox={`0 0 ${FW} ${FH}`} width={size} height={size * FH / FW} role="img" aria-label={aria}>
           <defs>
             <clipPath id={gid("clip")}><rect x="6" y="6" width={FW - 12} height={FH - 12} rx="14" /></clipPath>
             <linearGradient id={gid("mat")} x1="0" y1="0" x2="0" y2="1">
@@ -146,7 +153,7 @@ export function AvatarRender({ config, size = 168, tattoo = null, fullBody = fal
       );
     }
     return (
-      <svg viewBox="0 0 200 224" width={size} height={size * 224 / 200} role="img" aria-label={look.label}>
+      <svg viewBox="0 0 200 224" width={size} height={size * 224 / 200} role="img" aria-label={aria}>
         <defs><clipPath id={gid("clip")}><rect x="6" y="6" width="188" height="212" rx="14" /></clipPath></defs>
         <g clipPath={`url(#${gid("clip")})`}>
           <rect x="0" y="0" width="200" height="224" fill="#efe3c6" />

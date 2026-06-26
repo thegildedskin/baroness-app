@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { AvatarRender, type AvatarConfig } from "../avatar/AvatarRender";
 import { LOOKS_BY_GENDER, getLook, type Look } from "../avatar/looks";
 import { OUTFITS_BY_GENDER, type Outfit } from "../avatar/outfits";
+import AvatarCreator from "./AvatarCreator";
 
 export default function AvatarBuilder({ artistId, initial, entitled, table = "artists", canUnlock = true, rpmUrl = null }: {
   artistId: string; initial: Partial<AvatarConfig> | null; entitled: boolean; table?: string; canUnlock?: boolean; rpmUrl?: string | null;
@@ -16,6 +17,7 @@ export default function AvatarBuilder({ artistId, initial, entitled, table = "ar
   const current = getLook(initial?.look);
   const [lookId, setLookId] = useState<string | null>(current?.id ?? null);
   const [gender, setGender] = useState<"female" | "male">(current?.gender ?? "female");
+  const [mode, setMode] = useState<"looks" | "ai">(initial?.likenessUrl ? "ai" : "looks");
   const [outfitId, setOutfitId] = useState<string | null>(initial?.outfitId ?? null);
   const [bareChest, setBareChest] = useState<boolean>(!!initial?.bareChest);
   const [bareArms, setBareArms] = useState<boolean>(!!initial?.bareArms);
@@ -61,7 +63,18 @@ export default function AvatarBuilder({ artistId, initial, entitled, table = "ar
   return (
     <div className="card" style={{ marginBottom: 22 }}>
       <h3 style={{ fontSize: 24, marginBottom: 4 }}>Your avatar</h3>
-      <p style={{ fontSize: 13, color: "var(--grey)", marginBottom: 14 }}>Choose your likeness from the House wardrobe.</p>
+      <p style={{ fontSize: 13, color: "var(--grey)", marginBottom: 14 }}>Choose a premade look, or create your own likeness with AI.</p>
+      <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
+        {(["looks", "ai"] as const).map((m) => (
+          <button key={m} onClick={() => setMode(m)} className="caps"
+            style={{ fontSize: 11, letterSpacing: ".1em", padding: "9px 18px", borderRadius: 999, cursor: "pointer",
+              border: "1px solid var(--gold-dark)", background: mode === m ? "var(--gold)" : "transparent", color: mode === m ? "var(--black)" : "var(--gold-dark)" }}>
+            {m === "looks" ? "Premade looks" : "✨ Create with AI"}
+          </button>
+        ))}
+      </div>
+      {mode === "ai" && <AvatarCreator artistId={artistId} initial={initial} table={table} />}
+      {mode === "looks" && (
       <div style={{ display: "flex", gap: 22, flexWrap: "wrap" }}>
         <div style={{ flex: "0 0 auto" }}>
           {lookId ? <AvatarRender config={previewCfg} size={200} fullBody /> : (
@@ -167,6 +180,7 @@ export default function AvatarBuilder({ artistId, initial, entitled, table = "ar
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

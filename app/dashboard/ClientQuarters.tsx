@@ -133,11 +133,11 @@ export default function ClientQuarters({ userId, email, profile, convos, passpor
       <div className="card" style={{ marginBottom: 22 }}>
         <h3 style={{ fontSize: 22, marginBottom: 12 }}>Your likeness in the estate</h3>
         <div style={{ display: "flex", justifyContent: "center", background: "radial-gradient(120% 90% at 50% 0%, #d6e6ef, #a9c4d4)", border: "1px solid var(--gold)", borderRadius: 10, padding: 18 }}>
-          {getLook(profile?.avatar?.look) ? (
+          {(getLook(profile?.avatar?.look) || profile?.avatar?.likenessUrl) ? (
             <AvatarRender config={profile?.avatar ?? null} size={240} tattoo={profile?.avatar_tattoo ?? null} fullBody />
           ) : (
             <div style={{ textAlign: "center", color: "var(--gold-dark)", padding: "48px 20px", fontSize: 14 }}>
-              Choose a look above to set your full-length likeness in the estate.
+              Choose a look above, or create a likeness with AI, to set your full-length figure in the estate.
             </div>
           )}
         </div>
