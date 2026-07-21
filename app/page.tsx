@@ -1,11 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
-import EstateApp, { type Artist } from "./EstateApp";
+import EstateApp, { type Artist, type SiteSettings } from "./EstateApp";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
   let artists: Artist[] = [];
   let gallery: string[] = [];
+  let settings: SiteSettings = {};
   try {
     const supabase = createClient();
     const { data } = await supabase
@@ -18,9 +19,14 @@ export default async function Home() {
     artists = (data ?? []) as unknown as Artist[];
     const { data: g } = await supabase.from("gallery").select("image_url").order("sort_order");
     gallery = (g ?? []).map((x: { image_url: string }) => x.image_url);
+    const { data: s } = await supabase.from("site_settings").select("key,value").in("key", ["studio_venue_url", "booking_promise"]);
+    for (const row of s ?? []) {
+      if (row.key === "studio_venue_url" && row.value) settings.studio_venue_url = row.value;
+      if (row.key === "booking_promise" && row.value) settings.booking_promise = row.value;
+    }
   } catch {
     // Supabase not reachable — render the estate with no artists.
   }
 
-  return <EstateApp artists={artists} gallery={gallery} />;
+  return <EstateApp artists={artists} gallery={gallery} settings={settings} />;
 }

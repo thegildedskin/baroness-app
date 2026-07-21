@@ -17,7 +17,10 @@ export type Artist = {
 
 const Mansion3D = dynamic(() => import("./Mansion3D"), { ssr: false });
 
+export type SiteSettings = { studio_venue_url?: string; booking_promise?: string };
+
 const STUDIO_VENUE = "https://venue.ink/";
+const BOOKING_PROMISE = "A reply within the hour during receiving hours — a paid deposit is what locks your date.";
 const CONTACT = {
   address: "315 Coneflower Drive, Garland, TX",
   mapUrl: "https://maps.google.com/?q=315+Coneflower+Drive+Garland+TX",
@@ -263,7 +266,9 @@ function RoomBackdrop({ kind }: { kind: string }) {
   );
 }
 
-export default function EstateApp({ artists, gallery = [] }: { artists: Artist[]; gallery?: string[] }) {
+export default function EstateApp({ artists, gallery = [], settings = {} }: { artists: Artist[]; gallery?: string[]; settings?: SiteSettings }) {
+  const studioVenue = settings.studio_venue_url || STUDIO_VENUE;
+  const bookingPromise = settings.booking_promise || BOOKING_PROMISE;
   const [scene, setScene] = useState<Scene>("entrance");
   const [doorsOpen, setDoorsOpen] = useState(false);
   const [transit, setTransit] = useState(false);
@@ -453,12 +458,30 @@ export default function EstateApp({ artists, gallery = [] }: { artists: Artist[]
             <span className="corner tl">❧</span><span className="corner tr">❧</span><span className="corner bl">❧</span><span className="corner br">❧</span>
             <h3>The Writing Parlor</h3>
             <div className="lead">Show up already winning.</div>
-            <p>Her Grace receives by appointment. Present your petition and we shall arrange your sitting through the house register — deposits, scheduling, and correspondence kept in good order there.</p>
-            <p style={{ fontStyle: "italic", color: "var(--grey)" }}>Walk-ins welcomed at Her Grace&rsquo;s pleasure: Monday through Saturday, noon to eight; Sunday, noon to six. Shop minimum $100.</p>
+            <p>Her Grace receives by appointment, and the house register keeps everything in good order: your idea, your references, your deposit, your date. Three steps, no lost letters:</p>
+            <ol className="booksteps">
+              <li><strong>Choose your artist</strong> — each keeps their own register below.</li>
+              <li><strong>Send your petition</strong> — the idea, placement, and reference images.</li>
+              <li><strong>Leave a deposit</strong> — the deposit is what enters your sitting in the book.</li>
+            </ol>
+            <p style={{ fontStyle: "italic", color: "var(--grey)" }}>{bookingPromise}</p>
+            {artists.length > 0 && (
+              <div className="registerlist">
+                <div className="rl-head">The Registers</div>
+                {artists.map((a) => (
+                  <button key={a.id} className="rl-row" onClick={() => openLink(a.venue_url || studioVenue)}>
+                    <span className="rl-name">{a.display_name}</span>
+                    <span className="rl-spec">{a.specialty || "Custom tattoo artist"}</span>
+                    <span className="rl-go">Open their register →</span>
+                  </button>
+                ))}
+              </div>
+            )}
             <div className="bookrow">
-              <button className="btn" onClick={() => openLink(STUDIO_VENUE)}>Request a Sitting</button>
-              <button className="btn ghost" onClick={() => go("artists")}>Choose an Artist First</button>
+              <button className="btn" onClick={() => openLink(studioVenue)}>Not sure who? House Register</button>
+              <button className="btn ghost" onClick={() => go("artists")}>Meet the Artists First</button>
             </div>
+            <p style={{ fontStyle: "italic", color: "var(--grey)", marginTop: 14 }}>Walk-ins welcomed at Her Grace&rsquo;s pleasure: Monday through Saturday, noon to eight; Sunday, noon to six. Shop minimum $100.</p>
           </div>
         </div>
       </section>
@@ -498,7 +521,7 @@ export default function EstateApp({ artists, gallery = [] }: { artists: Artist[]
               <div><div className="lbl">Of Note</div><div className="val">Walk-ins welcome<br />Shop minimum $100</div></div>
             </div>
             <div className="bookrow" style={{ justifyContent: "flex-start", marginTop: 22 }}>
-              <button className="btn" onClick={() => openLink(STUDIO_VENUE)}>Request a Sitting</button>
+              <button className="btn" onClick={() => openLink(studioVenue)}>Request a Sitting</button>
             </div>
           </div>
         </div>
@@ -581,11 +604,12 @@ export default function EstateApp({ artists, gallery = [] }: { artists: Artist[]
                 </div>
               )}
               <div className="bookrow" style={{ justifyContent: "flex-start", marginTop: 22 }}>
-                <button className="btn" onClick={() => openLink(active.venue_url || STUDIO_VENUE)}>Book with this Artist</button>
+                <button className="btn" onClick={() => openLink(active.venue_url || studioVenue)}>Book with this Artist</button>
                 {active.instagram_url && <button className="btn ghost" onClick={() => openLink(active.instagram_url)}>View Their Atelier</button>}
                 <button className="btn ghost" onClick={() => setActive(null)}>Return to the Hall</button>
               </div>
-              <ArtistMessageForm artistId={active.id} artistName={active.display_name} />
+              <p className="bookpromise">{bookingPromise}</p>
+              <ArtistMessageForm artistId={active.id} artistName={active.display_name} venueUrl={active.venue_url || studioVenue} />
             </div>
           </div>
         </div>
@@ -717,6 +741,17 @@ const CSS = `
 .estate .corner.tl{top:5px;left:9px}.estate .corner.tr{top:5px;right:9px;transform:scaleX(-1)}
 .estate .corner.bl{bottom:3px;left:9px;transform:scaleY(-1)}.estate .corner.br{bottom:3px;right:9px;transform:scale(-1)}
 .estate .bookrow{display:flex;flex-wrap:wrap;gap:13px;justify-content:center;margin-top:8px}
+.estate .booksteps{margin:6px 0 12px;padding-left:22px;display:grid;gap:6px;font-size:16px}
+.estate .booksteps li::marker{color:var(--gold-dark);font-family:var(--caps)}
+.estate .registerlist{margin:14px 0 16px;border:1px solid var(--gold);border-radius:6px;overflow:hidden;background:#fffdf6}
+.estate .rl-head{font-family:var(--caps);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-dark);padding:10px 14px;border-bottom:1px solid rgba(139,111,53,.25);background:linear-gradient(180deg,#fdf6e7,#f2e7cd)}
+.estate .rl-row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:11px 14px;background:transparent;border:none;border-bottom:1px solid rgba(139,111,53,.18);cursor:pointer;font-family:var(--body);font-size:15px;color:var(--black)}
+.estate .rl-row:last-child{border-bottom:none}
+.estate .rl-row:hover{background:rgba(202,162,78,.14)}
+.estate .rl-name{font-weight:600;min-width:96px}
+.estate .rl-spec{color:var(--grey);flex:1;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.estate .rl-go{font-family:var(--caps);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-dark);white-space:nowrap}
+.estate .bookpromise{margin-top:10px;font-style:italic;color:var(--grey);font-size:14px}
 .estate .contact{display:grid;grid-template-columns:1fr 1fr;gap:18px 30px;margin-top:26px;padding-top:22px;border-top:1px solid rgba(139,111,53,.4)}
 .estate .contact .lbl{font-family:var(--caps);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:3px}
 .estate .contact .val{font-size:18px;color:#3a322a;line-height:1.45}

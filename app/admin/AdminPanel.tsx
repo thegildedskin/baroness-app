@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import MarketingTab, { type MktArtist, type MktSetting, type MktPost, type MktMetric } from "./MarketingTab";
 
 type Gallery = { id: string; image_url: string; caption: string | null };
 type Pending = { id: string; image_url: string; artist_id: string; artists: { display_name: string } | { display_name: string }[] | null };
@@ -17,11 +18,12 @@ function aname(a: { display_name: string } | { display_name: string }[] | null):
   return Array.isArray(a) ? (a[0]?.display_name ?? "—") : a.display_name;
 }
 
-const TABS = ["Gallery", "Approvals", "Suggestions", "People", "Messages"] as const;
+const TABS = ["Gallery", "Approvals", "Suggestions", "People", "Messages", "Marketing"] as const;
 type Tab = (typeof TABS)[number];
 
-export default function AdminPanel({ gallery, pending, suggestions, artists, clients, threads }: {
+export default function AdminPanel({ gallery, pending, suggestions, artists, clients, threads, mktArtists, mktSettings, mktPosts, mktMetrics }: {
   gallery: Gallery[]; pending: Pending[]; suggestions: Suggestion[]; artists: ArtistRow[]; clients: ClientRow[]; threads: ThreadRow[];
+  mktArtists: MktArtist[]; mktSettings: MktSetting[]; mktPosts: MktPost[]; mktMetrics: MktMetric[];
 }) {
   const supabase = createClient();
   const router = useRouter();
@@ -166,6 +168,10 @@ export default function AdminPanel({ gallery, pending, suggestions, artists, cli
             )}
           </div>
         </div>
+      )}
+
+      {tab === "Marketing" && (
+        <MarketingTab artists={mktArtists} settings={mktSettings} posts={mktPosts} metrics={mktMetrics} />
       )}
 
       {tab === "Messages" && (
