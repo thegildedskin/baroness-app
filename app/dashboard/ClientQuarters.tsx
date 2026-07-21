@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import QuartersShell, { type QTile } from "./QuartersShell";
 import AvatarBuilder from "./AvatarBuilder";
 import Passport from "./Passport";
 import SetPassword from "./SetPassword";
@@ -86,14 +87,26 @@ export default function ClientQuarters({ userId, email, profile, convos, passpor
   );
   const pct = next ? Math.min(100, Math.round(((spentCents - tier.min) / (next.min - tier.min)) * 100)) : 100;
 
-  return (
-    <main className="wrap" style={{ maxWidth: 820 }}>
-      <p style={{ marginBottom: 12 }}>
-        <Link href="/" className="caps" style={{ fontSize: 11, color: "var(--gold-dark)" }}>← The Estate</Link>
-      </p>
-      <h1 style={{ fontSize: 46 }}>Your Quarters</h1>
-      <p className="caps" style={{ fontSize: 10, color: "var(--gold-dark)", margin: "6px 0 22px" }}>{name ? `${name} · ` : ""}{email}</p>
+  const [panel, setPanel] = useState("standing");
+  const tiles: QTile[] = [
+    { key: "standing", label: "Standing & Honors", desc: `${tier.name} · ${credits} credits`, icon: "🏆", accent: "#caa24e" },
+    { key: "avatar", label: "Your Avatar", desc: "Looks, likeness & ink", icon: "🎭", accent: "#8f6fd4" },
+    { key: "atelier", label: "Atelier Creations", desc: `${designs.length} design${designs.length === 1 ? "" : "s"}`, icon: "🖋", accent: "#5f9ed4", badge: designs.length ? String(designs.length) : undefined },
+    { key: "passport", label: "Ink Passport", desc: "Your tattoo history", icon: "📜", accent: "#4fae8a" },
+    { key: "messages", label: "Conversations", desc: `${convos.length} with your artists`, icon: "✉", accent: "#d4788f", badge: convos.length ? String(convos.length) : undefined },
+    { key: "settings", label: "Concierge", desc: "Name, notes & account", icon: "⚙", accent: "#7d8aa0" },
+  ];
 
+  return (
+    <QuartersShell
+      eyebrow="Baroness Tattoo · Client Quarters"
+      title={name ? `Welcome back, ${name}` : "Your Quarters"}
+      subtitle={`${email} · ${tier.name}`}
+      tiles={tiles}
+      active={panel}
+      onSelect={setPanel}
+    >
+      {panel === "standing" && (<>
       <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 22 }}>
         {stat("Credits & gifts", String(credits), "Earned via achievements")}
         {stat("Total spent", `$${spent}`, "Across the house")}
@@ -127,7 +140,9 @@ export default function ClientQuarters({ userId, email, profile, convos, passpor
           })}
         </div>
       </div>
+      </>)}
 
+      {panel === "avatar" && (<>
       <AvatarBuilder artistId={userId} table="profiles" canUnlock={false} initial={profile?.avatar ?? null} entitled={!!profile?.premium} rpmUrl={profile?.rpm_url ?? null} />
 
       <div className="card" style={{ marginBottom: 22 }}>
@@ -148,7 +163,9 @@ export default function ClientQuarters({ userId, email, profile, convos, passpor
           </p>
         )}
       </div>
+      </>)}
 
+      {panel === "atelier" && (
       <div className="card" style={{ marginBottom: 22 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
           <h3 style={{ fontSize: 22 }}>Your Atelier creations</h3>
@@ -179,9 +196,11 @@ export default function ClientQuarters({ userId, email, profile, convos, passpor
           </div>
         )}
       </div>
+      )}
 
-      <Passport userId={userId} entries={passport} />
+      {panel === "passport" && <Passport userId={userId} entries={passport} />}
 
+      {panel === "messages" && (
       <div className="card" style={{ marginBottom: 22 }}>
         <h3 style={{ fontSize: 22, marginBottom: 12 }}>Your conversations</h3>
         {convos.length === 0 ? (
@@ -197,7 +216,9 @@ export default function ClientQuarters({ userId, email, profile, convos, passpor
           </ul>
         )}
       </div>
+      )}
 
+      {panel === "settings" && (<>
       <div className="card" style={{ marginBottom: 22 }}>
         <h3 style={{ fontSize: 22, marginBottom: 8 }}>Leave a suggestion for the house</h3>
         <textarea value={sug} onChange={(e) => setSug(e.target.value)} rows={3} placeholder="An idea, a request, a wish for your next visit..." style={{ width: "100%", padding: 11, border: "1px solid var(--gold-dark)", borderRadius: 3, background: "#fdf6e7", fontFamily: "var(--body)", fontSize: 16 }} />
@@ -223,6 +244,7 @@ export default function ClientQuarters({ userId, email, profile, convos, passpor
 
       <div style={{ marginTop: 6 }}><SetPassword /></div>
       <form action="/auth/signout" method="post" style={{ marginTop: 6 }}><button className="btn ghost" type="submit">Sign out</button></form>
-    </main>
+      </>)}
+    </QuartersShell>
   );
 }

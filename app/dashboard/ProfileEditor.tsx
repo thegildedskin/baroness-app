@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import QuartersShell, { type QTile } from "./QuartersShell";
 import SetPassword from "./SetPassword";
 import Messages from "./Messages";
 import ProductManager from "./ProductManager";
@@ -74,17 +75,33 @@ export default function ProfileEditor({ artist, flash, threads, products, isOwne
     } catch { setStatus("Could not start payout setup."); }
     setBusy(false);
   }
+  const [panel, setPanel] = useState("profile");
+  const unread = threads.length;
+  const tiles: QTile[] = [
+    { key: "profile", label: "Profile", desc: form.is_published ? "Published to the estate" : "Hidden from visitors", icon: "👤", accent: "#caa24e" },
+    { key: "avatar", label: "Avatar", desc: "Your figure in the estate", icon: "🎭", accent: "#8f6fd4" },
+    { key: "flash", label: "Flash Gallery", desc: `${flash.length} piece${flash.length === 1 ? "" : "s"}`, icon: "⚡", accent: "#5f9ed4", badge: flash.length ? String(flash.length) : undefined },
+    { key: "shop", label: "Atelier Shop", desc: `${products.length} product${products.length === 1 ? "" : "s"}`, icon: "🛍", accent: "#4fae8a" },
+    { key: "payouts", label: "Payouts", desc: artist.payouts_enabled ? "Stripe connected" : "Not connected", icon: "💰", accent: "#d4a04f" },
+    { key: "messages", label: "Messages", desc: `${unread} conversation${unread === 1 ? "" : "s"}`, icon: "✉", accent: "#d4788f", badge: unread ? String(unread) : undefined },
+    { key: "settings", label: "Account", desc: "Password & sign out", icon: "⚙", accent: "#7d8aa0" },
+  ];
+
   return (
-    <main className="wrap" style={{ maxWidth: 760 }}>
-      <p style={{ marginBottom: 12, display: "flex", gap: 18 }}>
-        <Link href="/" className="caps" style={{ fontSize: 11, color: "var(--gold-dark)" }}>← The Estate</Link>
-        {isOwner && <Link href="/dashboard" className="caps" style={{ fontSize: 11, color: "var(--gold-dark)" }}>↑ All artists</Link>}
-      </p>
-      <h1 style={{ fontSize: 44 }}>Editing: {artist.display_name}</h1>
-      <p className="caps" style={{ fontSize: 10, color: "var(--gold-dark)", margin: "6px 0 22px" }}>Signed in as {email} {isOwner ? "· House Owner" : ""}</p>
+    <QuartersShell
+      eyebrow={`Baroness Tattoo · Artists' Quarters${isOwner ? " · House Owner" : ""}`}
+      title={artist.display_name}
+      subtitle={`${form.specialty || "Custom tattoo artist"} · signed in as ${email}`}
+      tiles={tiles}
+      active={panel}
+      onSelect={setPanel}
+      topLinks={isOwner ? [{ href: "/dashboard", label: "All artists" }] : []}
+    >
+      {panel === "avatar" && (
+        <AvatarBuilder artistId={artist.id} initial={artist.avatar ?? null} entitled={!!(artist.premium || isOwner)} rpmUrl={artist.rpm_url ?? null} />
+      )}
 
-      <AvatarBuilder artistId={artist.id} initial={artist.avatar ?? null} entitled={!!(artist.premium || isOwner)} rpmUrl={artist.rpm_url ?? null} />
-
+      {panel === "profile" && (<>
       <div className="card" style={{ marginBottom: 22 }}>
         <h3 style={{ fontSize: 24, marginBottom: 14 }}>Your portrait photo</h3>
         {artist.portrait_url ? (
@@ -104,7 +121,13 @@ export default function ProfileEditor({ artist, flash, threads, products, isOwne
         <label className="field"><span>venue.ink booking link</span><input value={form.venue_url} onChange={(e) => set("venue_url", e.target.value)} /></label>
         <label style={{ display: "flex", alignItems: "center", gap: 8, margin: "8px 0 4px" }}><input type="checkbox" checked={form.is_published} onChange={(e) => set("is_published", e.target.checked)} /><span className="caps" style={{ fontSize: 11 }}>Published (visible to visitors)</span></label>
       </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 22 }}>
+        <button className="btn" onClick={save} disabled={busy}>{busy ? "Working…" : "Save changes"}</button>
+        {status && <span style={{ color: status.startsWith("Error") ? "#a33" : "var(--gold-dark)" }}>{status}</span>}
+      </div>
+      </>)}
 
+      {panel === "flash" && (
       <div className="card" style={{ marginBottom: 22 }}>
         <h3 style={{ fontSize: 24, marginBottom: 14 }}>Flash gallery</h3>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(110px,1fr))", gap: 10 }}>
@@ -118,9 +141,11 @@ export default function ProfileEditor({ artist, flash, threads, products, isOwne
         </div>
         <p style={{ marginTop: 12 }}><input type="file" accept="image/*" disabled={busy} onChange={(e) => e.target.files?.[0] && addFlash(e.target.files[0])} /></p>
       </div>
+      )}
 
-      <ProductManager artistId={artist.id} products={products} />
+      {panel === "shop" && <ProductManager artistId={artist.id} products={products} />}
 
+      {panel === "payouts" && (
       <div className="card" style={{ marginBottom: 22 }}>
         <h3 style={{ fontSize: 24, marginBottom: 8 }}>Payouts</h3>
         {artist.payouts_enabled ? (
@@ -132,15 +157,14 @@ export default function ProfileEditor({ artist, flash, threads, products, isOwne
           </>
         )}
       </div>
+      )}
 
-      <Messages threads={threads} />
+      {panel === "messages" && <Messages threads={threads} />}
 
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-        <button className="btn" onClick={save} disabled={busy}>{busy ? "Working…" : "Save changes"}</button>
-        {status && <span style={{ color: status.startsWith("Error") ? "#a33" : "var(--gold-dark)" }}>{status}</span>}
-      </div>
-      <div style={{ marginTop: 30 }}><SetPassword /></div>
+      {panel === "settings" && (<>
+      <div style={{ marginTop: 6 }}><SetPassword /></div>
       <form action="/auth/signout" method="post" style={{ marginTop: 6 }}><button className="btn ghost" type="submit">Sign out</button></form>
-    </main>
+      </>)}
+    </QuartersShell>
   );
 }
