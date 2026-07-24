@@ -6,8 +6,9 @@
 // floor plane, or click to pick up. Gem shop / inventory stay a DOM overlay.
 // Saved layout migrates from the old {item,x,y%} shape to {item,x,z,rotation}.
 
-import { Canvas, useLoader, useThree, type ThreeEvent } from "@react-three/fiber";
+import { Canvas, useFrame, useLoader, useThree, type ThreeEvent } from "@react-three/fiber";
 import { TextureLoader } from "three";
+import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
 import {
   Suspense,
   useCallback,
@@ -149,19 +150,29 @@ function Room() {
 function PlacedItem({
   p,
   onPointerDown,
+  interactive,
 }: {
   p: Placed;
   onPointerDown: (e: ThreeEvent<PointerEvent>) => void;
+  interactive: boolean;
 }) {
   const it = byId(p.item);
   const tex = it ? emojiTexture(it.em) : null;
+  const planeRef = useRef<THREE.Mesh>(null);
+  const { camera } = useThree();
+  useFrame(() => {
+    const m = planeRef.current;
+    if (!m) return;
+    // billboard the art toward the camera (Y only) so it reads from any angle
+    m.rotation.y = Math.atan2(camera.position.x - p.x, camera.position.z - p.z) - p.rotation;
+  });
   if (!it || !tex) return null;
   const h = it.size / 20; // world height
   const w = h * 0.9;
   return (
     <group position={[p.x, 0, p.z]} rotation-y={p.rotation}>
       {/* billboard art, anchored so its foot sits on the floor */}
-      <mesh position={[0, h / 2, 0]} onPointerDown={onPointerDown}>
+      <mesh ref={planeRef} position={[0, h / 2, 0]} onPointerDown={interactive ? onPointerDown : undefined}>
         <planeGeometry args={[w, h]} />
         <meshBasicMaterial map={tex} transparent alphaTest={0.35} toneMapped={false} />
       </mesh>
@@ -203,6 +214,84 @@ function DragController({
   return null;
 }
 
+/** Resets the fixed isometric-ish camera whenever we return to edit mode. */
+function CameraRig({ mode }: { mode: "edit" | "walk" }) {
+  const { camera } = useThree();
+  useEffect(() => {
+    if (mode === "edit") {
+      camera.position.set(0, 3.4, 7);
+      camera.lookAt(0, 1, 0);
+    }
+  }, [mode, camera]);
+  return null;
+}
+
+/** First-person walk: pointer-lock mouse-look + WASD, bounded to the room. */
+function WalkControls({
+  active,
+  onExit,
+  onLockChange,
+}: {
+  active: boolean;
+  onExit: () => void;
+  onLockChange: (locked: boolean) => void;
+}) {
+  const { camera, gl } = useThree();
+  const controls = useMemo(() => new PointerLockControls(camera, gl.domElement), [camera, gl]);
+  const keys = useRef<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (!active) return;
+    // enter at standing height near the front of the room, facing the wall
+    camera.position.set(0, 1.6, 2.8);
+    camera.lookAt(0, 1.6, -1);
+
+    const moveCodes = new Set(["KeyW", "KeyA", "KeyS", "KeyD", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]);
+    const onDown = (e: KeyboardEvent) => {
+      if (moveCodes.has(e.code)) {
+        keys.current[e.code] = true;
+        e.preventDefault();
+      }
+    };
+    const onUp = (e: KeyboardEvent) => { keys.current[e.code] = false; };
+    const onClick = () => { if (!controls.isLocked) controls.lock(); };
+    const onLock = () => onLockChange(true);
+    const onUnlock = () => { onLockChange(false); onExit(); };
+
+    window.addEventListener("keydown", onDown);
+    window.addEventListener("keyup", onUp);
+    gl.domElement.addEventListener("click", onClick);
+    controls.addEventListener("lock", onLock);
+    controls.addEventListener("unlock", onUnlock);
+
+    return () => {
+      window.removeEventListener("keydown", onDown);
+      window.removeEventListener("keyup", onUp);
+      gl.domElement.removeEventListener("click", onClick);
+      controls.removeEventListener("lock", onLock);
+      controls.removeEventListener("unlock", onUnlock);
+      keys.current = {};
+      if (controls.isLocked) controls.unlock();
+    };
+  }, [active, controls, camera, gl, onExit, onLockChange]);
+
+  useFrame((_, dt) => {
+    if (!active || !controls.isLocked) return;
+    const step = 2.6 * Math.min(dt, 0.05);
+    const k = keys.current;
+    if (k["KeyW"] || k["ArrowUp"]) controls.moveForward(step);
+    if (k["KeyS"] || k["ArrowDown"]) controls.moveForward(-step);
+    if (k["KeyA"] || k["ArrowLeft"]) controls.moveRight(-step);
+    if (k["KeyD"] || k["ArrowRight"]) controls.moveRight(step);
+    // keep the guest inside the walls, at eye height
+    camera.position.x = clamp(camera.position.x, -3.6, 3.6);
+    camera.position.z = clamp(camera.position.z, -2.4, 3.3);
+    camera.position.y = 1.6;
+  });
+
+  return null;
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -213,6 +302,8 @@ export default function QuartersRoom() {
   const [hint, setHint] = useState("Click the floor to place · click an item to pick it up");
   const dragRef = useRef<{ idx: number; moved: boolean } | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [mode, setMode] = useState<"edit" | "walk">("edit");
+  const [walkLocked, setWalkLocked] = useState(false);
 
   // hydrate from localStorage on mount (client only)
   useEffect(() => setS(loadStore()), []);
@@ -249,11 +340,12 @@ export default function QuartersRoom() {
 
   const onFloorClick = useCallback(
     (e: ThreeEvent<MouseEvent>) => {
+      if (mode !== "edit") return; // no editing while walking
       if (dragRef.current) return; // a drag just ended
       if (!sel) return;
       placeAt(e.point.x, e.point.z);
     },
-    [sel, placeAt]
+    [mode, sel, placeAt]
   );
 
   const startDrag = useCallback(
@@ -349,6 +441,9 @@ export default function QuartersRoom() {
           <span style={pill}>
             <span style={{ color: "var(--rose)" }}>◆</span> <b>{S.gems}</b> gems
           </span>
+          <button style={btn} onClick={() => setMode((m) => (m === "walk" ? "edit" : "walk"))}>
+            {mode === "walk" ? "Leave the Floor" : "Walk the Chamber"}
+          </button>
           <button style={{ ...btn, ...btnGhost }} onClick={() => { setS((s) => ({ ...s, placed: [] })); flash("The chamber is cleared."); }}>
             Reset room
           </button>
@@ -358,15 +453,23 @@ export default function QuartersRoom() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 16, alignItems: "start" }}>
         {/* ROOM */}
         <div style={{ border: "1px solid rgba(184,146,74,.35)", borderRadius: "var(--radius-tile)", overflow: "hidden", boxShadow: "var(--shadow-tile)", position: "relative", background: "var(--estate-black)" }}>
-          <div style={{ position: "relative", height: 560, cursor: sel ? "copy" : "default", touchAction: "none" }}>
-            {/* hint bar */}
-            <div style={{ position: "absolute", top: 12, left: "50%", transform: "translateX(-50%)", zIndex: 5, fontFamily: "var(--caps)", fontSize: 9, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--gold-pale)", background: "rgba(12,10,8,.78)", border: "1px solid rgba(184,146,74,.4)", borderRadius: "var(--radius-pill)", padding: "6px 14px", pointerEvents: "none", whiteSpace: "nowrap" }}>
-              {hint}
-            </div>
+          <div style={{ position: "relative", height: 560, cursor: mode === "walk" ? "pointer" : sel ? "copy" : "default", touchAction: "none" }}>
+            {/* hint bar (edit mode) */}
+            {mode === "edit" && (
+              <div style={{ position: "absolute", top: 12, left: "50%", transform: "translateX(-50%)", zIndex: 5, fontFamily: "var(--caps)", fontSize: 9, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--gold-pale)", background: "rgba(12,10,8,.78)", border: "1px solid rgba(184,146,74,.4)", borderRadius: "var(--radius-pill)", padding: "6px 14px", pointerEvents: "none", whiteSpace: "nowrap" }}>
+                {hint}
+              </div>
+            )}
             {/* candle glow + vignette */}
             <div style={{ position: "absolute", inset: 0, zIndex: 4, pointerEvents: "none", background: "radial-gradient(52% 40% at 50% 20%, rgba(255,200,110,.14), rgba(255,200,110,0) 70%)" }} />
             <div style={{ position: "absolute", inset: 0, zIndex: 4, pointerEvents: "none", boxShadow: "var(--vignette)" }} />
-            {sel && <div style={{ position: "absolute", inset: 6, zIndex: 4, pointerEvents: "none", outline: "2px dashed rgba(212,181,116,.6)", borderRadius: 8 }} />}
+            {sel && mode === "edit" && <div style={{ position: "absolute", inset: 6, zIndex: 4, pointerEvents: "none", outline: "2px dashed rgba(212,181,116,.6)", borderRadius: 8 }} />}
+            {/* walk-mode instruction (until the pointer is locked) */}
+            {mode === "walk" && !walkLocked && (
+              <div style={{ position: "absolute", inset: 0, zIndex: 6, display: "grid", placeItems: "center", pointerEvents: "none", fontFamily: "var(--caps)", fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--gold-pale)", textAlign: "center", padding: 20, textShadow: "0 2px 12px rgba(0,0,0,.8)" }}>
+                Click to look around · W A S D to walk · Esc to leave
+              </div>
+            )}
 
             <Canvas shadows dpr={[1, 2]} camera={{ position: [0, 3.4, 7], fov: 35 }} style={{ position: "relative", zIndex: 2 }}>
               <ambientLight intensity={0.5} color="#ffe6c0" />
@@ -376,17 +479,21 @@ export default function QuartersRoom() {
 
               <Room />
 
-              {/* floor click-catcher for placement */}
-              <mesh rotation-x={-Math.PI / 2} position={[0, 0, 0]} onClick={onFloorClick}>
-                <planeGeometry args={[8, 6]} />
-                <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-              </mesh>
+              {/* floor click-catcher for placement (edit mode only) */}
+              {mode === "edit" && (
+                <mesh rotation-x={-Math.PI / 2} position={[0, 0, 0]} onClick={onFloorClick}>
+                  <planeGeometry args={[8, 6]} />
+                  <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+                </mesh>
+              )}
 
               {S.placed.map((p, idx) => (
-                <PlacedItem key={`${p.item}-${idx}`} p={p} onPointerDown={startDrag(idx)} />
+                <PlacedItem key={`${p.item}-${idx}`} p={p} interactive={mode === "edit"} onPointerDown={startDrag(idx)} />
               ))}
 
-              <DragController active={dragging} onMove={dragMove} />
+              <DragController active={dragging && mode === "edit"} onMove={dragMove} />
+              <CameraRig mode={mode} />
+              <WalkControls active={mode === "walk"} onExit={() => setMode("edit")} onLockChange={setWalkLocked} />
             </Canvas>
           </div>
         </div>
