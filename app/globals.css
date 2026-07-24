@@ -15,11 +15,11 @@
   --rose:#C8959A; --rose-deep:#a85f6e; --pistache:#A8C4A2;
   --error:#a33;
 
-  /* ---- Type families ---- */
-  --display:'Cormorant Garamond',Georgia,serif;
-  --body:'EB Garamond',Georgia,serif;
-  --caps:'Cinzel',serif;
-  --blackletter:'UnifrakturCook',serif;
+  /* ---- Type families (self-hosted via next/font — see app/layout.tsx) ---- */
+  --display:var(--font-cormorant),'Cormorant Garamond',Georgia,serif;
+  --body:var(--font-ebgaramond),'EB Garamond',Georgia,serif;
+  --caps:var(--font-cinzel),'Cinzel',serif;
+  --blackletter:var(--font-unifraktur),'UnifrakturCook',serif;
   --font-display:var(--display); --font-body:var(--body); --font-label:var(--caps); --font-wordmark:var(--blackletter);
   /* type sizes */
   --text-hero:44px; --text-h1:40px; --text-h2:26px; --text-h3:18px; --text-plaque:34px;

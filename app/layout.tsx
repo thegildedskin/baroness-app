@@ -1,6 +1,15 @@
 import type { Metadata } from "next";
+import { Cinzel, Cormorant_Garamond, EB_Garamond, UnifrakturCook } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "./SmoothScroll";
+
+// Self-hosted at build time (next/font downloads + serves these locally — no
+// runtime request to Google, no layout shift). Each exposes a CSS variable that
+// app/globals.css maps onto the design-system font tokens (--display/--body/etc.).
+const cinzel = Cinzel({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-cinzel", display: "swap" });
+const cormorant = Cormorant_Garamond({ subsets: ["latin"], weight: ["400", "500", "600", "700"], style: ["normal", "italic"], variable: "--font-cormorant", display: "swap" });
+const ebGaramond = EB_Garamond({ subsets: ["latin"], weight: ["400", "500"], style: ["normal", "italic"], variable: "--font-ebgaramond", display: "swap" });
+const unifraktur = UnifrakturCook({ subsets: ["latin"], weight: "700", variable: "--font-unifraktur", display: "swap" });
 
 export const metadata: Metadata = {
   title: "Baroness Tattoo — Wear Your Crown",
@@ -19,15 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:ital,wght@0,400;1,400&family=UnifrakturCook:wght@700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="en" className={`${cinzel.variable} ${cormorant.variable} ${ebGaramond.variable} ${unifraktur.variable}`}>
       <body>
         <SmoothScroll />
         {children}
