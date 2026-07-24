@@ -1,12 +1,64 @@
 :root{
-  --cream:#F5E9D3; --cream-deep:#ece0c6;
-  --gold:#B8924A; --gold-light:#D4B574; --gold-dark:#8B6F35;
-  --black:#1A1A1A; --rose:#C8959A; --pistache:#A8C4A2; --grey:#5A5A5A;
-  --velvet:#161210; --velvet-2:#241c16;
+  /* ==== Baroness design tokens (canonical — from design-system handoff) ==== */
+  /* ---- Gilt ---- */
+  --gold:#B8924A; --gold-light:#D4B574; --gold-dark:#8B6F35; --gold-pale:#f1dc97;
+  /* ---- Cream / parchment ---- */
+  --cream:#F5E9D3; --cream-deep:#ece0c6; --parchment:#fdf6e7; --paper:#fffdf6;
+  /* ---- Ink ---- */
+  --black:#1A1A1A; --grey:#5A5A5A;
+  /* ---- Velvet (dark rooms / stage) ---- */
+  --velvet:#161210; --velvet-2:#241c16; --estate-black:#0c0a08; --entrance-black:#0a0806;
+  /* ---- Quarters nocturne ---- */
+  --quarter-plum:#2b2140; --quarter-umber:#3b2a1a; --quarter-ink:#0d0b12; --quarter-ink-2:#131019;
+  --quarter-tile:#14111b; --quarter-text:#e9e2d4; --quarter-muted:#a5987f;
+  /* ---- Powder-room accents ---- */
+  --rose:#C8959A; --rose-deep:#a85f6e; --pistache:#A8C4A2;
+  --error:#a33;
+
+  /* ---- Type families ---- */
   --display:'Cormorant Garamond',Georgia,serif;
   --body:'EB Garamond',Georgia,serif;
   --caps:'Cinzel',serif;
   --blackletter:'UnifrakturCook',serif;
+  --font-display:var(--display); --font-body:var(--body); --font-label:var(--caps); --font-wordmark:var(--blackletter);
+  /* type sizes */
+  --text-hero:44px; --text-h1:40px; --text-h2:26px; --text-h3:18px; --text-plaque:34px;
+  --text-lead:19px; --text-body:16px; --text-body-sm:15px; --text-small:14px; --text-fine:13px;
+  --text-label:12px; --text-label-sm:11px; --text-label-xs:10px;
+  --weight-body:400; --weight-medium:500; --weight-semibold:600; --weight-display:700;
+  --track-caps:.16em; --track-caps-wide:.20em; --track-caps-wider:.24em; --track-nav:.12em;
+  --leading-tight:1.05; --leading-snug:1.35; --leading-body:1.55;
+
+  /* ---- Radii ---- */
+  --radius-xs:2px; --radius-sm:3px; --radius-md:6px; --radius-lg:8px; --radius-xl:12px;
+  --radius-tile:16px; --radius-pill:999px;
+  /* ---- Borders ---- */
+  --border-gold:1px solid var(--gold); --border-gold-dark:1px solid var(--gold-dark); --hairline:1.5px solid var(--gold);
+  /* ---- Gilt / surface gradients ---- */
+  --gilt:linear-gradient(180deg,var(--gold-light),var(--gold));
+  --gilt-tall:linear-gradient(180deg,var(--gold-pale),var(--gold) 55%,var(--gold-dark));
+  --parchment-face:linear-gradient(180deg,var(--parchment),var(--cream-deep));
+  --velvet-door:linear-gradient(180deg,var(--velvet-2),var(--velvet) 60%,#0d0a08);
+  /* ---- Shadows & glows ---- */
+  --shadow-btn:0 4px 14px rgba(0,0,0,.35);
+  --shadow-tile:0 16px 44px rgba(0,0,0,.55);
+  --glow-gold:0 0 34px rgba(184,146,74,.35);
+  --glow-candle:0 0 26px rgba(255,200,110,.55);
+  --vignette:inset 0 0 240px rgba(40,26,12,.55);
+  --frame-inset:inset 0 0 0 4px rgba(0,0,0,.12),inset 0 0 0 6px var(--gold-dark);
+  /* ---- Motion ---- */
+  --ease-estate:cubic-bezier(.2,.7,.2,1);
+  --ease-tile:cubic-bezier(.2,.9,.3,1.4);
+  --dur-reveal:.8s; --dur-scene:1s; --dur-hover:.18s;
+
+  /* ---- Spacing ---- */
+  --space-1:4px; --space-2:6px; --space-3:8px; --space-4:10px; --space-5:14px; --space-6:18px;
+  --space-7:22px; --space-8:26px; --space-9:32px; --space-10:48px; --space-12:74px;
+  --pad-btn:13px 26px; --pad-btn-sm:8px 14px; --pad-input:11px 13px; --pad-card:32px 34px; --gap-inline:8px;
+  --wrap-max:1080px; --measure:640px; --panel-max:920px;
+
+  /* ---- Signature engraved backgrounds ---- */
+  --damask:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='90'%20height='130'%20viewBox='0%200%2090%20130'%3E%3Cg%20fill='none'%20stroke='%23b8924a'%20stroke-opacity='0.18'%20stroke-width='2'%3E%3Cpath%20d='M45%206C66%2028%2066%2050%2045%2070%2024%2050%2024%2028%2045%206Z'/%3E%3Ccircle%20cx='45'%20cy='38'%20r='7'/%3E%3Cpath%20d='M0%2072C22%2094%2022%20116%200%20130M90%2072C68%2094%2068%20116%2090%20130'/%3E%3C/g%3E%3C/svg%3E");
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{min-height:100%}

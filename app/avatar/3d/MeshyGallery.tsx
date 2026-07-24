@@ -1,18 +1,34 @@
 "use client";
 
-import { Canvas, useFrame, useLoader } from "@react-three/fiber";
+import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import {
   Component,
   Suspense,
   useEffect,
   useMemo,
-  useRef,
   useState,
-  type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from "react";
 import * as THREE from "three";
+
+// ---- design tokens (canonical Baroness values; also in globals.css) ----
+const GOLD = "#B8924A";
+const GOLD_DARK = "#8B6F35";
+const GOLD_PALE = "#f1dc97";
+const ESTATE_BLACK = "#0c0a08";
+
+export type MeshyModel = {
+  id: string;
+  name: string;
+  displayName: string;
+  package: string;
+  status: string;
+  glbUrl: string | null;
+  usdzUrl: string | null;
+  thumbnailUrl: string | null;
+};
 
 // Catches GLB load failures so one bad model doesn't blank the whole page.
 class LoadBoundary extends Component<
@@ -36,47 +52,68 @@ class LoadBoundary extends Component<
   }
 }
 
-// ----- estate palette -----
-const CREAM = "#ece0c4";
-const GOLD = "#caa24e";
-const SLATE = "#1b2330";
+/** Orbit controls with zoom + damping; autorotates only while idle (stately). */
+function StageControls({ target = 1.05, idleMs = 2600 }: { target?: number; idleMs?: number }) {
+  const { camera, gl } = useThree();
+  const controls = useMemo(() => new OrbitControls(camera, gl.domElement), [camera, gl]);
 
-export type MeshyModel = {
-  id: string;
-  name: string;
-  displayName: string;
-  package: string;
-  status: string;
-  glbUrl: string | null;
-  usdzUrl: string | null;
-  thumbnailUrl: string | null;
-};
+  useEffect(() => {
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.enablePan = false;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.55; // slow, courtly
+    controls.minDistance = 2.4;
+    controls.maxDistance = 7;
+    controls.minPolarAngle = Math.PI * 0.12;
+    controls.maxPolarAngle = Math.PI * 0.62;
+    controls.target.set(0, target, 0);
+    controls.update();
 
-type Spin = { y: number; drag: boolean; px: number };
+    let timer: ReturnType<typeof setTimeout>;
+    const pause = () => {
+      controls.autoRotate = false;
+      clearTimeout(timer);
+    };
+    const resume = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => (controls.autoRotate = true), idleMs);
+    };
+    controls.addEventListener("start", pause);
+    controls.addEventListener("end", resume);
+    return () => {
+      controls.removeEventListener("start", pause);
+      controls.removeEventListener("end", resume);
+      clearTimeout(timer);
+      controls.dispose();
+    };
+  }, [controls, target, idleMs]);
 
-/** Loads a GLB, centers + normalizes its size, and turntable-spins it. */
-function Model({
-  url,
-  spin,
-  onReady,
-}: {
-  url: string;
-  spin: React.MutableRefObject<Spin>;
-  onReady: () => void;
-}) {
+  useFrame(() => controls.update());
+  return null;
+}
+
+/** Loads a GLB, normalizes size, and stands it on the y=0 floor to cast a shadow. */
+function Model({ url, onReady }: { url: string; onReady: () => void }) {
   const gltf = useLoader(GLTFLoader, url);
-  const ref = useRef<THREE.Group>(null);
 
   const scene = useMemo(() => {
     const root = gltf.scene.clone(true);
+    root.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (m.isMesh) {
+        m.castShadow = true;
+        m.receiveShadow = false;
+      }
+    });
     const box = new THREE.Box3().setFromObject(root);
     const size = box.getSize(new THREE.Vector3());
     const center = box.getCenter(new THREE.Vector3());
     const maxDim = Math.max(size.x, size.y, size.z) || 1;
-    const scale = 2 / maxDim;
+    const scale = 2.2 / maxDim;
     root.scale.setScalar(scale);
-    // recenter after scaling so the model spins around its own middle
-    root.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
+    // center horizontally, plant feet on the floor plane (y = 0)
+    root.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
     return root;
   }, [gltf]);
 
@@ -84,62 +121,55 @@ function Model({
     onReady();
   }, [scene, onReady]);
 
-  useFrame((_, dt) => {
-    const g = ref.current;
-    if (!g) return;
-    if (!spin.current.drag) spin.current.y += Math.min(dt, 0.05) * 0.45; // slow auto-spin
-    g.rotation.y = spin.current.y;
-  });
-
-  return (
-    <group ref={ref}>
-      <primitive object={scene} />
-    </group>
-  );
+  return <primitive object={scene} />;
 }
 
 function Viewer({ url }: { url: string }) {
-  const spin = useRef<Spin>({ y: 0, drag: false, px: 0 });
   const [busy, setBusy] = useState(true);
   const [failed, setFailed] = useState(false);
 
-  // reset state whenever the model changes
   useEffect(() => {
     setBusy(true);
     setFailed(false);
   }, [url]);
 
-  const onDown = (e: ReactPointerEvent) => {
-    spin.current.drag = true;
-    spin.current.px = e.clientX;
-  };
-  const onMove = (e: ReactPointerEvent) => {
-    if (!spin.current.drag) return;
-    const dx = e.clientX - spin.current.px;
-    spin.current.px = e.clientX;
-    spin.current.y += dx * 0.01;
-  };
-  const onUp = () => {
-    spin.current.drag = false;
-  };
-
   return (
     <div
-      onPointerDown={onDown}
-      onPointerMove={onMove}
-      onPointerUp={onUp}
-      onPointerLeave={onUp}
       style={{
         position: "relative",
         width: "100%",
-        height: "min(60vh, 520px)",
-        borderRadius: 16,
+        height: "min(64vh, 560px)",
+        borderRadius: "var(--radius-xl)",
         overflow: "hidden",
-        background: `radial-gradient(circle at 50% 35%, #2a3547 0%, ${SLATE} 70%)`,
+        background: `radial-gradient(120% 90% at 50% 16%, #201810 0%, ${ESTATE_BLACK} 72%)`,
+        border: "1px solid var(--gold)",
+        boxShadow: "var(--frame-inset), var(--glow-gold)",
         cursor: "grab",
         touchAction: "none",
       }}
     >
+      {/* candle-glow pool (above the canvas, non-interactive) */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "radial-gradient(60% 42% at 50% 22%, rgba(255,200,110,.18), rgba(255,200,110,0) 70%)",
+          pointerEvents: "none",
+          zIndex: 4,
+        }}
+      />
+      {/* heavy vignette (design-system --vignette) */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          boxShadow: "var(--vignette)",
+          pointerEvents: "none",
+          zIndex: 4,
+        }}
+      />
+
       {(busy || failed) && (
         <div
           style={{
@@ -147,22 +177,54 @@ function Viewer({ url }: { url: string }) {
             inset: 0,
             display: "grid",
             placeItems: "center",
-            color: CREAM,
-            font: "500 14px/1.4 ui-sans-serif, system-ui",
-            letterSpacing: 0.4,
-            zIndex: 2,
+            color: GOLD_PALE,
+            fontFamily: "var(--caps)",
+            fontSize: 12,
+            letterSpacing: "var(--track-caps)",
+            textTransform: "uppercase",
+            zIndex: 6,
             pointerEvents: "none",
             textAlign: "center",
-            padding: 16,
+            padding: 20,
           }}
         >
-          {failed ? "Couldn’t load this model. Try Refresh." : "Loading model…"}
+          {failed ? "Her Grace could not be received — try Summon Anew" : "Summoning the likeness…"}
         </div>
       )}
-      <Canvas camera={{ position: [0, 0.2, 4], fov: 35 }} dpr={[1, 2]}>
-        <ambientLight intensity={0.8} />
-        <directionalLight position={[3, 5, 4]} intensity={1.5} />
-        <directionalLight position={[-4, 2, -3]} intensity={0.6} color={GOLD} />
+
+      <Canvas
+        shadows
+        dpr={[1, 2]}
+        camera={{ position: [0, 1.15, 4.6], fov: 32 }}
+        gl={{ antialias: true }}
+        style={{ position: "relative", zIndex: 2 }}
+      >
+        {/* candlelit rig — warm key, gold rim, warm ambient (never neutral grey) */}
+        <ambientLight intensity={0.55} color="#ffe6c0" />
+        <directionalLight
+          castShadow
+          position={[3.2, 5.5, 3]}
+          intensity={2.4}
+          color="#ffb06a"
+          shadow-mapSize-width={1024}
+          shadow-mapSize-height={1024}
+          shadow-camera-near={0.5}
+          shadow-camera-far={20}
+          shadow-camera-left={-3}
+          shadow-camera-right={3}
+          shadow-camera-top={4}
+          shadow-camera-bottom={-1.2}
+          shadow-bias={-0.0005}
+        />
+        <directionalLight position={[-4.5, 3.5, -4]} intensity={1.25} color={GOLD_PALE} />
+        <directionalLight position={[-3, 1.4, 4]} intensity={0.5} color={GOLD} />
+
+        {/* shadow-catching floor */}
+        <mesh rotation-x={-Math.PI / 2} position={[0, 0, 0]} receiveShadow>
+          <circleGeometry args={[6, 48]} />
+          <shadowMaterial transparent opacity={0.4} />
+        </mesh>
+
         <LoadBoundary
           fallback={null}
           onError={() => {
@@ -171,9 +233,11 @@ function Viewer({ url }: { url: string }) {
           }}
         >
           <Suspense fallback={null}>
-            <Model url={url} spin={spin} onReady={() => setBusy(false)} />
+            <Model url={url} onReady={() => setBusy(false)} />
           </Suspense>
         </LoadBoundary>
+
+        <StageControls target={1.05} />
       </Canvas>
     </div>
   );
@@ -206,55 +270,124 @@ export default function MeshyGallery() {
     load();
   }, []);
 
+  const capLabel: React.CSSProperties = {
+    fontFamily: "var(--caps)",
+    textTransform: "uppercase",
+  };
+
   return (
-    <div style={{ maxWidth: 920, margin: "0 auto", padding: "24px 16px", color: "#27201a" }}>
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}>
+    <div
+      style={{
+        maxWidth: "var(--panel-max)",
+        margin: "0 auto",
+        padding: "var(--space-10) var(--space-8)",
+        color: "var(--black)",
+      }}
+    >
+      {/* header — butler voice */}
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16 }}>
         <div>
-          <h1 style={{ margin: 0, font: "600 24px/1.2 ui-serif, Georgia, serif", color: "#3a2a1c" }}>
-            3D Avatar Gallery
+          <div
+            style={{
+              ...capLabel,
+              fontSize: "var(--text-label-sm)",
+              letterSpacing: "var(--track-caps-wide)",
+              color: "var(--gold-dark)",
+            }}
+          >
+            By Appointment of Her Grace · Garland, Texas
+          </div>
+          <h1
+            style={{
+              margin: "6px 0 0",
+              fontFamily: "var(--display)",
+              fontWeight: "var(--weight-display)" as unknown as number,
+              fontSize: "var(--text-hero)",
+              lineHeight: "var(--leading-tight)",
+              color: "var(--black)",
+            }}
+          >
+            The Court in Three Dimensions
           </h1>
-          <p style={{ margin: "4px 0 0", color: "#6b5a48", fontSize: 14 }}>
-            {selected ? selected.displayName : "Your Meshy models"}
-            {selected ? <span style={{ color: "#a08a6e" }}> · {selected.package.replace(/_/g, " ")}</span> : null}
+          <p
+            style={{
+              margin: "6px 0 0",
+              fontFamily: "var(--body)",
+              fontSize: "var(--text-lead)",
+              color: "var(--grey)",
+            }}
+          >
+            {selected ? (
+              <>
+                Now received: <em style={{ color: "var(--gold-dark)" }}>{selected.displayName}</em>
+                <span style={{ color: "var(--gold)" }}> · {selected.package.replace(/_/g, " ")}</span>
+              </>
+            ) : (
+              "The likenesses of the house, presented in full relief."
+            )}
           </p>
         </div>
         <button
           onClick={() => load(true)}
           style={{
-            border: `1px solid ${GOLD}`,
+            ...capLabel,
+            fontSize: "var(--text-label)",
+            letterSpacing: "var(--track-caps)",
+            color: "var(--gold-dark)",
             background: "transparent",
-            color: "#7a5e2a",
-            borderRadius: 999,
-            padding: "6px 14px",
-            fontSize: 13,
+            border: "1px solid var(--gold)",
+            borderRadius: "var(--radius-xs)",
+            padding: "var(--pad-btn-sm)",
             cursor: "pointer",
+            whiteSpace: "nowrap",
           }}
         >
-          ↻ Refresh
+          ❦ Summon Anew
         </button>
       </div>
 
-      <div style={{ marginTop: 16 }}>
+      {/* stage */}
+      <div style={{ marginTop: "var(--space-8)" }}>
         {error ? (
-          <div style={{ padding: 24, borderRadius: 12, background: "#fbeaea", color: "#8a2b2b", fontSize: 14 }}>
-            Couldn’t load models: {error}
+          <div
+            style={{
+              padding: "var(--pad-card)",
+              borderRadius: "var(--radius-lg)",
+              background: "var(--parchment-face)",
+              border: "1px solid var(--gold)",
+              color: "var(--error)",
+              fontFamily: "var(--body)",
+              fontSize: "var(--text-body)",
+            }}
+          >
+            The house could not open its doors: {error}
           </div>
         ) : selected?.glbUrl ? (
           <Viewer url={`/api/meshy/model/${selected.id}`} />
         ) : (
-          <div style={{ padding: 24, borderRadius: 12, background: "#f3ecdd", color: "#6b5a48", fontSize: 14 }}>
-            {loading ? "Loading your models…" : "No 3D models found on your Meshy account."}
+          <div
+            style={{
+              padding: "var(--pad-card)",
+              borderRadius: "var(--radius-lg)",
+              background: "var(--parchment-face)",
+              border: "1px solid var(--gold)",
+              color: "var(--grey)",
+              fontFamily: "var(--body)",
+              fontSize: "var(--text-body)",
+            }}
+          >
+            {loading ? "Rousing the court…" : "No likenesses have yet been sculpted for the court."}
           </div>
         )}
       </div>
 
-      {/* thumbnail picker */}
+      {/* the court — thumbnail register */}
       <div
         style={{
-          marginTop: 16,
+          marginTop: "var(--space-8)",
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(96px, 1fr))",
-          gap: 10,
+          gridTemplateColumns: "repeat(auto-fill, minmax(104px, 1fr))",
+          gap: "var(--space-4)",
         }}
       >
         {models.map((m) => {
@@ -265,21 +398,24 @@ export default function MeshyGallery() {
               onClick={() => setSelected(m)}
               title={m.displayName}
               style={{
-                border: active ? `2px solid ${GOLD}` : "2px solid transparent",
-                background: "#f3ecdd",
-                borderRadius: 12,
-                padding: 6,
+                border: active ? "1.5px solid var(--gold)" : "1px solid var(--gold-dark)",
+                background: "var(--parchment-face)",
+                borderRadius: "var(--radius-lg)",
+                padding: "var(--space-2)",
                 cursor: "pointer",
                 textAlign: "center",
+                boxShadow: active ? "var(--glow-candle)" : "none",
+                transform: active ? "scale(1.03)" : "none",
+                transition: "transform var(--dur-hover) var(--ease-tile), box-shadow var(--dur-hover) var(--ease-estate)",
               }}
             >
               <div
                 style={{
                   width: "100%",
                   aspectRatio: "1 / 1",
-                  borderRadius: 8,
+                  borderRadius: "var(--radius-md)",
                   overflow: "hidden",
-                  background: "#e3d8c2",
+                  background: `linear-gradient(180deg, #221a12, ${ESTATE_BLACK})`,
                 }}
               >
                 {m.thumbnailUrl ? (
@@ -293,9 +429,11 @@ export default function MeshyGallery() {
               </div>
               <div
                 style={{
-                  marginTop: 4,
-                  fontSize: 11,
-                  color: "#5a4a38",
+                  ...capLabel,
+                  marginTop: "var(--space-2)",
+                  fontSize: "var(--text-label-xs)",
+                  letterSpacing: "var(--track-caps)",
+                  color: active ? "var(--gold-dark)" : "var(--grey)",
                   whiteSpace: "nowrap",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
@@ -307,6 +445,19 @@ export default function MeshyGallery() {
           );
         })}
       </div>
+
+      <p
+        style={{
+          marginTop: "var(--space-6)",
+          textAlign: "center",
+          fontFamily: "var(--body)",
+          fontStyle: "italic",
+          fontSize: "var(--text-fine)",
+          color: "var(--grey)",
+        }}
+      >
+        ❧ Drag to turn the figure · scroll to draw near · she resumes her turn when left to herself.
+      </p>
     </div>
   );
 }
