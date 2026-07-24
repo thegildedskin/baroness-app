@@ -94,6 +94,8 @@ export default function ClientQuarters({ userId, email, profile, convos, passpor
     { key: "atelier", label: "Atelier Creations", desc: `${designs.length} design${designs.length === 1 ? "" : "s"}`, icon: "🖋", accent: "#5f9ed4", badge: designs.length ? String(designs.length) : undefined },
     { key: "passport", label: "Ink Passport", desc: "Your tattoo history", icon: "📜", accent: "#4fae8a" },
     { key: "messages", label: "Conversations", desc: `${convos.length} with your artists`, icon: "✉", accent: "#d4788f", badge: convos.length ? String(convos.length) : undefined },
+    { key: "commission", label: "The Commission", desc: "Book a $100 consultation", icon: "✒", accent: "#d4788f" },
+    { key: "kingdom", label: "The Kingdom", desc: "Court, missions & ledger", icon: "♛", accent: "#caa24e" },
     { key: "avatar3d", label: "The Court in 3D", desc: "Inspect a look in relief", icon: "👑", accent: "#caa24e" },
     { key: "quarters3d", label: "My Quarters", desc: "Your chamber, walkable", icon: "🏰", accent: "#8f6fd4" },
     { key: "ball", label: "The Estate Ball", desc: "Take a turn about the room", icon: "🕯", accent: "#d4b574" },
@@ -107,8 +109,12 @@ export default function ClientQuarters({ userId, email, profile, convos, passpor
       subtitle={`${email} · ${tier.name}`}
       tiles={tiles}
       active={panel}
+      topLinks={[{ href: "/artist-hub", label: "Artist Hub" }]}
       onSelect={(key) => {
-        const nav: Record<string, string> = { avatar3d: "/avatar/3d", quarters3d: "/quarters", ball: "/ball" };
+        const nav: Record<string, string> = {
+          commission: "/commission", kingdom: "/kingdom",
+          avatar3d: "/avatar/3d", quarters3d: "/quarters", ball: "/ball",
+        };
         if (nav[key]) { router.push(nav[key]); return; }
         setPanel(key);
       }}
