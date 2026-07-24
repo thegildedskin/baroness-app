@@ -9,8 +9,9 @@ import { Canvas, useFrame, useThree, useLoader } from "@react-three/fiber";
 import { GLTFLoader, setupDracoLoader } from "@/lib/gltf";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
-import { Component, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { Component, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import * as THREE from "three";
+import { createClient } from "@/lib/supabase/client";
 
 const GOLD_PALE = "#f1dc97";
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
@@ -192,10 +193,12 @@ function WalkControls({
   active,
   onExit,
   onLockChange,
+  onReport,
 }: {
   active: boolean;
   onExit: () => void;
   onLockChange: (locked: boolean) => void;
+  onReport?: (x: number, z: number, ry: number) => void;
 }) {
   const { camera, gl } = useThree();
   const controls = useMemo(() => new PointerLockControls(camera, gl.domElement), [camera, gl]);
@@ -236,8 +239,131 @@ function WalkControls({
     camera.position.x = clamp(camera.position.x, -5.2, 5.2);
     camera.position.z = clamp(camera.position.z, -10.5, 3);
     camera.position.y = 1.6;
+    // broadcast our position + facing to other guests (throttled in the hook)
+    if (onReport) {
+      const d = camera.getWorldDirection(new THREE.Vector3());
+      onReport(camera.position.x, camera.position.z, Math.atan2(d.x, d.z));
+    }
   });
   return null;
+}
+
+// ---------------------------------------------------------------------------
+// Live presence — other guests via Supabase Realtime (no table; ephemeral channel)
+// ---------------------------------------------------------------------------
+type Peer = { id: string; name: string; url: string; x: number; z: number; ry: number };
+
+function nameplateTexture(text: string): THREE.CanvasTexture | null {
+  if (typeof document === "undefined") return null;
+  const w = 256, h = 64;
+  const c = document.createElement("canvas");
+  c.width = w; c.height = h;
+  const ctx = c.getContext("2d");
+  if (!ctx) return null;
+  ctx.clearRect(0, 0, w, h);
+  ctx.font = "600 30px Georgia, serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.shadowColor = "rgba(0,0,0,.8)";
+  ctx.shadowBlur = 6;
+  ctx.fillStyle = "#f1dc97";
+  ctx.fillText(text, w / 2, h / 2);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+function Nameplate({ text }: { text: string }) {
+  const tex = useMemo(() => nameplateTexture(text), [text]);
+  if (!tex) return null;
+  return (
+    <sprite position={[0, 2.15, 0]} scale={[1.4, 0.35, 1]}>
+      <spriteMaterial map={tex} transparent depthTest={false} />
+    </sprite>
+  );
+}
+
+function PeerAvatar({ peer }: { peer: Peer }) {
+  const ref = useRef<THREE.Group>(null);
+  useFrame(() => {
+    const g = ref.current;
+    if (!g) return;
+    g.position.x += (peer.x - g.position.x) * 0.15;
+    g.position.z += (peer.z - g.position.z) * 0.15;
+    let dy = peer.ry - g.rotation.y;
+    while (dy > Math.PI) dy -= Math.PI * 2;
+    while (dy < -Math.PI) dy += Math.PI * 2;
+    g.rotation.y += dy * 0.15;
+  });
+  return (
+    <group ref={ref} position={[peer.x, 0, peer.z]}>
+      <LoadBoundary fallback={null}>
+        <Suspense fallback={null}>
+          <Avatar url={peer.url} yaw={0} />
+        </Suspense>
+      </LoadBoundary>
+      <Nameplate text={peer.name} />
+    </group>
+  );
+}
+
+function useBallPresence(models: Guest[]) {
+  const [peers, setPeers] = useState<Peer[]>([]);
+  const [count, setCount] = useState(1);
+  const channelRef = useRef<ReturnType<ReturnType<typeof createClient>["channel"]> | null>(null);
+  const meRef = useRef<{ id: string; name: string; url: string } | null>(null);
+  const posRef = useRef({ x: 0, z: 2.5, ry: Math.PI });
+  const lastSent = useRef(0);
+
+  useEffect(() => {
+    if (!models.length) return;
+    let id = "guest";
+    try {
+      id = localStorage.getItem("baroness-uid") || "";
+      if (!id) { id = "u" + Math.random().toString(36).slice(2, 8); localStorage.setItem("baroness-uid", id); }
+    } catch { id = "u" + Math.random().toString(36).slice(2, 8); }
+    const name = "Guest " + id.slice(-3).toUpperCase();
+    let h = 0; for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+    const url = `/api/meshy/model/${models[h % models.length].id}`;
+    meRef.current = { id, name, url };
+
+    let channel: ReturnType<ReturnType<typeof createClient>["channel"]> | null = null;
+    try {
+      const supabase = createClient();
+      channel = supabase.channel("estate-ball", { config: { presence: { key: id } } });
+      channelRef.current = channel;
+      channel.on("presence", { event: "sync" }, () => {
+        const state = channel!.presenceState() as Record<string, any[]>;
+        const list: Peer[] = [];
+        for (const key of Object.keys(state)) {
+          if (key === id) continue;
+          const m = state[key]?.[0];
+          if (m && m.url) list.push({ id: key, name: m.name || "Guest", url: m.url, x: m.x ?? 0, z: m.z ?? 2.5, ry: m.ry ?? 0 });
+        }
+        setPeers(list);
+        setCount(Object.keys(state).length);
+      });
+      channel.subscribe((status: string) => {
+        if (status === "SUBSCRIBED") {
+          const p = posRef.current;
+          channel!.track({ name, url, x: p.x, z: p.z, ry: p.ry });
+        }
+      });
+    } catch { /* Realtime unavailable → single-player */ }
+
+    return () => { try { channel?.unsubscribe(); } catch { /* noop */ } };
+  }, [models]);
+
+  const report = useCallback((x: number, z: number, ry: number) => {
+    posRef.current = { x, z, ry };
+    const now = Date.now();
+    if (now - lastSent.current < 100) return; // ~10 updates/sec
+    lastSent.current = now;
+    const ch = channelRef.current, me = meRef.current;
+    if (ch && me) { try { ch.track({ name: me.name, url: me.url, x, z, ry }); } catch { /* noop */ } }
+  }, []);
+
+  return { peers, count, report };
 }
 
 // ---------------------------------------------------------------------------
@@ -275,6 +401,9 @@ export default function EstateBall() {
     });
   }, [guests]);
 
+  // live guests via Supabase Realtime presence (falls back to single-player)
+  const { peers, count, report } = useBallPresence(guests);
+
   return (
     <div style={{ maxWidth: "var(--panel-max)", margin: "0 auto", padding: "var(--space-9) var(--space-8) var(--space-12)" }}>
       {/* header */}
@@ -291,7 +420,7 @@ export default function EstateBall() {
               ? "The hall stands ready, though the guests tarry."
               : loading
               ? "The doors are opening; the court assembles…"
-              : `The court is assembled — ${guests.length} in attendance. Take a turn about the room.`}
+              : `The court is assembled — ${guests.length} of the house${count > 1 ? `, and ${count} in the hall tonight` : ""}. Take a turn about the room.`}
           </p>
         </div>
         <button
@@ -339,10 +468,13 @@ export default function EstateBall() {
           {spots.map(({ g, x, z, yaw }) => (
             <GuestSpot key={g.id} url={`/api/meshy/model/${g.id}`} x={x} z={z} yaw={yaw} />
           ))}
+          {peers.map((p) => (
+            <PeerAvatar key={p.id} peer={p} />
+          ))}
 
           <CameraRig mode={mode} />
           <ViewControls active={mode === "view"} />
-          <WalkControls active={mode === "walk"} onExit={() => setMode("view")} onLockChange={setWalkLocked} />
+          <WalkControls active={mode === "walk"} onExit={() => setMode("view")} onLockChange={setWalkLocked} onReport={report} />
         </Canvas>
       </div>
 
