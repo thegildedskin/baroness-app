@@ -7,7 +7,8 @@
 // SPEC_blockchain_token_ledger end-to-end. Shared localStorage keys match the
 // contract (baroness-butler-skins, baroness-curiosities). Kit CSS scoped .kgwrap.
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { loadState, saveState } from "@/lib/state";
 
 type Skin = { id: string; nm: string; free?: number; gems?: number; tier?: string };
 const SKINS: Skin[] = [
@@ -65,7 +66,6 @@ const SAMPLE_ROWS = [
   { item: "Vivienne flash №4 (1/1 skin right)", rarity: "Unique", rare: true, prov: "brn:design:44d7…f0", holder: "@theo", trade: "$180" },
 ];
 
-const SK = "baroness-butler-skins";
 type BS = { owned: string[]; appointed: string };
 
 const CSS = `
@@ -174,21 +174,24 @@ export default function Kingdom() {
     } catch { /* keep samples */ }
   }, []);
 
+  const walletReady = useRef(false);
   useEffect(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem(SK) || "{}");
-      setBs({ owned: stored.owned || ["baroque-dandy"], appointed: stored.appointed || "baroque-dandy" });
-    } catch { /* noop */ }
-    try { setFound(JSON.parse(localStorage.getItem("baroness-curiosities") || "[]")); } catch { /* noop */ }
+    loadState<BS>("butler-skins", { owned: ["baroque-dandy"], appointed: "baroque-dandy" })
+      .then((v) => setBs({ owned: v.owned || ["baroque-dandy"], appointed: v.appointed || "baroque-dandy" }));
+    loadState<string[]>("curiosities", []).then(setFound);
+    loadState<number>("wallet", 250).then((v) => { setGems(v); walletReady.current = true; });
     let id = "";
     try { id = localStorage.getItem("baroness-uid") || ""; if (!id) { id = "u" + Math.random().toString(36).slice(2, 8); localStorage.setItem("baroness-uid", id); } } catch { id = "guest"; }
     setUid(id);
     loadLedger();
   }, [loadLedger]);
 
+  // persist the shared wallet whenever it changes (after the initial load)
+  useEffect(() => { if (walletReady.current) saveState("wallet", gems); }, [gems]);
+
   function persistBs(next: BS) {
     setBs(next);
-    try { localStorage.setItem(SK, JSON.stringify(next)); } catch { /* noop */ }
+    saveState("butler-skins", next);
   }
 
   async function mintLivery(s: Skin) {

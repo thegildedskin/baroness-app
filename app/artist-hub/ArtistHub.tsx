@@ -7,10 +7,10 @@
 // SPEC_vision_classifier end-to-end. Kit CSS scoped under .ahwrap.
 
 import { useEffect, useRef, useState } from "react";
+import { loadState, saveState } from "@/lib/state";
 
 const PSTYLES = ["Traditional", "Neo-Traditional", "Realism", "Fine Line", "Blackwork", "Japanese", "Watercolor", "Geometric", "Chicano", "Dark Fantasy"];
 const PVIBES = ["Delicate", "Bold", "Dark", "Ornate", "Minimal"];
-const WKEY = "baroness-artist-works";
 
 type Book = { t: string; a?: string; st: string[]; vb: string[]; c: string };
 const SEEDBOOK: Book[] = [
@@ -149,8 +149,7 @@ export default function ArtistHub() {
   const [done, setDone] = useState(false);
   const [book, setBook] = useState<Book[]>([]);
 
-  const loadPub = (): Book[] => { try { return JSON.parse(localStorage.getItem(WKEY) || "[]"); } catch { return []; } };
-  useEffect(() => { setBook(loadPub()); }, []);
+  useEffect(() => { loadState<Book[]>("artist-works", []).then((v) => setBook(v || [])); }, []);
 
   function heuristic(text: string) {
     const st = new Set<string>(), vb = new Set<string>();
@@ -191,9 +190,8 @@ export default function ArtistHub() {
 
   function publish() {
     if (!upSt.size) return;
-    const pub = loadPub();
-    pub.push({ t: upTitle.trim() || "Untitled piece", a: "viv", st: [...upSt], vb: [...upVb], c: "#2b2140,#C8959A" });
-    try { localStorage.setItem(WKEY, JSON.stringify(pub)); } catch { /* noop */ }
+    const pub = [...book, { t: upTitle.trim() || "Untitled piece", a: "viv", st: [...upSt], vb: [...upVb], c: "#2b2140,#C8959A" }];
+    saveState("artist-works", pub);
     setBook(pub); setDone(true);
   }
 

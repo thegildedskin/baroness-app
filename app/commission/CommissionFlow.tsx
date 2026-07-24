@@ -7,6 +7,7 @@
 // doll fallback. Tokens come from globals.css; kit CSS is scoped under .cmwrap.
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { loadState } from "@/lib/state";
 
 const QSTYLES = [
   "Traditional", "Neo-Traditional", "Realism", "Fine Line", "Blackwork",
@@ -214,16 +215,14 @@ export default function CommissionFlow() {
 
   // merge classifier-published works + appointed livery; opening line
   useEffect(() => {
-    try {
-      const extra = JSON.parse(localStorage.getItem("baroness-artist-works") || "[]");
+    loadState<any[]>("artist-works", []).then((extra) => {
       const merged: Work[] = [];
-      for (const w of extra) if (w && w.t && Array.isArray(w.st)) merged.push({ t: w.t, a: w.a || "viv", st: w.st, vb: w.vb || [], c: w.c || "#2b2140,#C8959A" });
+      for (const w of extra || []) if (w && w.t && Array.isArray(w.st)) merged.push({ t: w.t, a: w.a || "viv", st: w.st, vb: w.vb || [], c: w.c || "#2b2140,#C8959A" });
       if (merged.length) setWorks([...merged, ...WORKS_BASE]);
-    } catch { /* noop */ }
-    try {
-      const bs = JSON.parse(localStorage.getItem("baroness-butler-skins") || "{}");
-      if (bs.appointed) setLivery("Livery: " + String(bs.appointed).replace(/-/g, " "));
-    } catch { /* noop */ }
+    });
+    loadState<any>("butler-skins", {}).then((bs) => {
+      if (bs && bs.appointed) setLivery("Livery: " + String(bs.appointed).replace(/-/g, " "));
+    });
     speak(LINES[0][0], LINES[0][1]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

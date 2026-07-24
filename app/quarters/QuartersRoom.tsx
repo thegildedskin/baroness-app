@@ -18,6 +18,7 @@ import {
   useState,
 } from "react";
 import * as THREE from "three";
+import { loadState, saveState } from "@/lib/state";
 
 // ---------------------------------------------------------------------------
 // Catalogue (verbatim from the design kit) + shared state contract
@@ -49,29 +50,26 @@ const ITEMS: Item[] = [
 ];
 const byId = (id: string) => ITEMS.find((i) => i.id === id);
 
-const LS = "baroness-my-quarters";
 type Placed = { item: string; x: number; z: number; rotation: number };
-type Store = { gems: number; placed: Placed[]; bought: string[] };
+type Store = { placed: Placed[]; bought: string[] };
 
 // room floor bounds (world units)
 const BX = 3.7, BZ_BACK = -2.6, BZ_FRONT = 2.8;
 
-// migrate old {item,x(0-100),y(56-100)} → world {item,x,z,rotation}
-function loadStore(): Store {
-  const base: Store = { gems: 250, placed: [], bought: [] };
-  if (typeof window === "undefined") return base;
+// migrate old {item,x(0-100),y(56-100)} → world {item,x,z,rotation}. Gems now live
+// in the shared wallet (lib/state), not inside this layout blob.
+function migrateStore(raw: any): Store {
   try {
-    const raw = JSON.parse(localStorage.getItem(LS) || "{}");
-    const placed: Placed[] = (raw.placed || []).map((p: any) => {
+    const placed: Placed[] = (raw?.placed || []).map((p: any) => {
       if (typeof p.z === "number") return { item: p.item, x: p.x, z: p.z, rotation: p.rotation || 0 };
       // old percent shape
       const x = ((Number(p.x) || 50) / 100 - 0.5) * (BX * 2);
       const z = ((Number(p.y) || 78) - 56) / 44 * (BZ_FRONT - BZ_BACK) + BZ_BACK;
       return { item: p.item, x, z, rotation: 0 };
     });
-    return { gems: raw.gems ?? 250, placed, bought: raw.bought || [] };
+    return { placed, bought: raw?.bought || [] };
   } catch {
-    return base;
+    return { placed: [], bought: [] };
   }
 }
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
@@ -296,7 +294,8 @@ function WalkControls({
 // Main
 // ---------------------------------------------------------------------------
 export default function QuartersRoom() {
-  const [S, setS] = useState<Store>(() => ({ gems: 250, placed: [], bought: [] }));
+  const [S, setS] = useState<Store>(() => ({ placed: [], bought: [] }));
+  const [gems, setGems] = useState(250); // the shared wallet
   const [cat, setCat] = useState<Category>("furniture");
   const [sel, setSel] = useState<string | null>(null);
   const [hint, setHint] = useState("Click the floor to place · click an item to pick it up");
@@ -304,13 +303,17 @@ export default function QuartersRoom() {
   const [dragging, setDragging] = useState(false);
   const [mode, setMode] = useState<"edit" | "walk">("edit");
   const [walkLocked, setWalkLocked] = useState(false);
+  const storeReady = useRef(false);
+  const walletReady = useRef(false);
 
-  // hydrate from localStorage on mount (client only)
-  useEffect(() => setS(loadStore()), []);
-  // persist
+  // hydrate layout + shared wallet (server → localStorage → default)
   useEffect(() => {
-    if (typeof window !== "undefined") localStorage.setItem(LS, JSON.stringify(S));
-  }, [S]);
+    loadState<any>("my-quarters", {}).then((raw) => { setS(migrateStore(raw)); storeReady.current = true; });
+    loadState<number>("wallet", 250).then((v) => { setGems(v); walletReady.current = true; });
+  }, []);
+  // persist layout + wallet after the initial load
+  useEffect(() => { if (storeReady.current) saveState("my-quarters", S); }, [S]);
+  useEffect(() => { if (walletReady.current) saveState("wallet", gems); }, [gems]);
 
   const flash = useCallback((m: string) => {
     setHint(m);
@@ -398,8 +401,9 @@ export default function QuartersRoom() {
       const st = stock(i);
       if (st <= 0 && !(i.own || S.bought.includes(i.id))) {
         if (i.gems) {
-          if (S.gems >= i.gems) {
-            setS((s) => ({ ...s, gems: s.gems - i.gems!, bought: [...s.bought, i.id] }));
+          if (gems >= i.gems) {
+            setGems((g) => g - i.gems!);
+            setS((s) => ({ ...s, bought: [...s.bought, i.id] }));
             setSel(i.id);
             flash(`${i.nm} acquired — place it.`);
           } else flash("Not enough gems.");
@@ -439,7 +443,7 @@ export default function QuartersRoom() {
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           <span style={pill}>
-            <span style={{ color: "var(--rose)" }}>◆</span> <b>{S.gems}</b> gems
+            <span style={{ color: "var(--rose)" }}>◆</span> <b>{gems}</b> gems
           </span>
           <button style={btn} onClick={() => setMode((m) => (m === "walk" ? "edit" : "walk"))}>
             {mode === "walk" ? "Leave the Floor" : "Walk the Chamber"}
