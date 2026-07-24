@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { GLTFLoader, setupDracoLoader } from "@/lib/gltf";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import {
   Component,
@@ -95,7 +95,7 @@ function StageControls({ target = 1.05, idleMs = 2600 }: { target?: number; idle
 
 /** Loads a GLB, normalizes size, and stands it on the y=0 floor to cast a shadow. */
 function Model({ url, onReady }: { url: string; onReady: () => void }) {
-  const gltf = useLoader(GLTFLoader, url);
+  const gltf = useLoader(GLTFLoader, url, setupDracoLoader);
 
   const scene = useMemo(() => {
     const root = gltf.scene.clone(true);
