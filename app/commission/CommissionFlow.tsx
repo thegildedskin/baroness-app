@@ -8,6 +8,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { loadState } from "@/lib/state";
+import { applyGems } from "@/lib/wallet";
 
 const QSTYLES = [
   "Traditional", "Neo-Traditional", "Realism", "Fine Line", "Blackwork",
@@ -433,7 +434,7 @@ export default function CommissionFlow() {
                   </div>
                   <div className="nav">
                     <button className="cbtn ghost" onClick={() => go(2)}>← Brief</button>
-                    <button className="cbtn" disabled={!slot} onClick={() => { setReserved(true); speak("Magnifique. I shall have the parlour warmed and the needles blessed. Your Quarters hold every detail.", "pleased"); }}>Reserve with $100 deposit</button>
+                    <button className="cbtn" disabled={!slot} onClick={() => { setReserved(true); applyGems(200, "commission:deposit"); speak("Magnifique. I shall have the parlour warmed and the needles blessed — and two hundred gems for your purse, with the house's compliments.", "pleased"); }}>Reserve with $100 deposit</button>
                   </div>
                 </>
               )}

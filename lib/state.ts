@@ -6,7 +6,7 @@
 // default. saveState() writes localStorage immediately (optimistic) and fires the
 // server write in the background. Worst case (no auth / no DB) === today's localStorage.
 
-export type StateKey = "wallet" | "curiosities" | "butler-skins" | "artist-works" | "my-quarters";
+export type StateKey = "wallet" | "curiosities" | "butler-skins" | "artist-works" | "my-quarters" | "curio-rewards";
 
 const LOCAL: Record<StateKey, string> = {
   wallet: "baroness-wallet",
@@ -14,6 +14,7 @@ const LOCAL: Record<StateKey, string> = {
   "butler-skins": "baroness-butler-skins",
   "artist-works": "baroness-artist-works",
   "my-quarters": "baroness-my-quarters",
+  "curio-rewards": "baroness-curio-rewards",
 };
 
 function readLocal<T>(key: StateKey): T | undefined {

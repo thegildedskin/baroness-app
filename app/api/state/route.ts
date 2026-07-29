@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 // Shared player state — one key-value row per (user, key). See lib/state.ts and
 // supabase/baroness-state.sql. Unauthenticated callers get 401; the client lib
 // then falls back to localStorage, so the prototype works with or without login.
-const KEYS = new Set(["wallet", "curiosities", "butler-skins", "artist-works", "my-quarters"]);
+const KEYS = new Set(["wallet", "curiosities", "butler-skins", "artist-works", "my-quarters", "curio-rewards"]);
 
 export async function GET(req: NextRequest) {
   const key = new URL(req.url).searchParams.get("key") || "";

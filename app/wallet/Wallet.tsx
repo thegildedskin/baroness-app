@@ -16,6 +16,20 @@ function prettyReason(r: string): string {
 }
 const fmtDate = (s: string) => { try { return new Date(s).toLocaleDateString(undefined, { month: "short", day: "numeric" }); } catch { return ""; } };
 
+// group transactions by calendar day, preserving newest-first order
+function groupByDay(txs: GemTx[]): { day: string; net: number; items: GemTx[] }[] {
+  const groups: { day: string; net: number; items: GemTx[] }[] = [];
+  const index = new Map<string, number>();
+  for (const t of txs) {
+    const day = fmtDate(t.created_at) || "Earlier";
+    let g = index.get(day);
+    if (g === undefined) { g = groups.length; index.set(day, g); groups.push({ day, net: 0, items: [] }); }
+    groups[g].items.push(t);
+    groups[g].net += t.delta;
+  }
+  return groups;
+}
+
 export default function Wallet() {
   const [balance, setBalance] = useState<number | null>(null);
   const [txs, setTxs] = useState<GemTx[]>([]);
@@ -52,15 +66,23 @@ export default function Wallet() {
             No entries yet. Sign in and the house will keep your purse across every room and device — earn gems from missions, spend them on liveries and wares. (Signed out, your purse is kept only on this device.)
           </p>
         ) : (
-          <div style={{ display: "grid", gap: 6 }}>
-            {txs.map((t, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, borderBottom: "1px solid rgba(184,146,74,.14)", padding: "8px 2px", fontSize: 14 }}>
-                <span style={{ flex: 1, color: "var(--quarter-text)" }}>{prettyReason(t.reason)}</span>
-                <span style={{ fontSize: 11, color: "var(--quarter-muted)", fontFamily: "var(--caps)", letterSpacing: ".08em" }}>{fmtDate(t.created_at)}</span>
-                <span style={{ fontFamily: "var(--caps)", fontWeight: 700, minWidth: 60, textAlign: "right", color: t.delta >= 0 ? "#9fc48f" : "#e0a06a" }}>
-                  {t.delta >= 0 ? "+" : "−"}◆{Math.abs(t.delta)}
-                </span>
-                <span style={{ minWidth: 54, textAlign: "right", color: "var(--gold-pale)", fontFamily: "var(--caps)", fontSize: 12 }}>{t.balance_after}</span>
+          <div style={{ display: "grid", gap: 14 }}>
+            {groupByDay(txs).map((g) => (
+              <div key={g.day}>
+                {/* day header with net */}
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", borderBottom: "1px solid rgba(184,146,74,.3)", paddingBottom: 4, marginBottom: 4 }}>
+                  <span style={{ fontFamily: "var(--caps)", fontSize: 10, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--gold)" }}>{g.day}</span>
+                  <span style={{ fontFamily: "var(--caps)", fontSize: 11, color: g.net >= 0 ? "#9fc48f" : "#e0a06a" }}>{g.net >= 0 ? "+" : "−"}◆{Math.abs(g.net)} net</span>
+                </div>
+                {g.items.map((t, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 2px", fontSize: 14 }}>
+                    <span style={{ flex: 1, color: "var(--quarter-text)" }}>{prettyReason(t.reason)}</span>
+                    <span style={{ fontFamily: "var(--caps)", fontWeight: 700, minWidth: 60, textAlign: "right", color: t.delta >= 0 ? "#9fc48f" : "#e0a06a" }}>
+                      {t.delta >= 0 ? "+" : "−"}◆{Math.abs(t.delta)}
+                    </span>
+                    <span style={{ minWidth: 54, textAlign: "right", color: "var(--gold-pale)", fontFamily: "var(--caps)", fontSize: 12 }}>{t.balance_after}</span>
+                  </div>
+                ))}
               </div>
             ))}
           </div>

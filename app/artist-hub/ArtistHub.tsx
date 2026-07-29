@@ -8,6 +8,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { loadState, saveState } from "@/lib/state";
+import { getWallet, applyGems } from "@/lib/wallet";
 
 const PSTYLES = ["Traditional", "Neo-Traditional", "Realism", "Fine Line", "Blackwork", "Japanese", "Watercolor", "Geometric", "Chicano", "Dark Fantasy"];
 const PVIBES = ["Delicate", "Bold", "Dark", "Ornate", "Minimal"];
@@ -149,6 +150,18 @@ export default function ArtistHub() {
   const [done, setDone] = useState(false);
   const [book, setBook] = useState<Book[]>([]);
 
+  // shared gem wallet + claimable community earnings
+  const [gems, setGems] = useState<number | null>(null);
+  const [claimed, setClaimed] = useState<Record<string, boolean>>({});
+  useEffect(() => { getWallet().then((w) => setGems(w.balance)); }, []);
+
+  async function collect(key: string, amount: number) {
+    if (claimed[key]) return;
+    setClaimed((c) => ({ ...c, [key]: true }));
+    const bal = await applyGems(amount, `community:${key}`);
+    if (bal !== null) setGems(bal);
+  }
+
   useEffect(() => { loadState<Book[]>("artist-works", []).then((v) => setBook(v || [])); }, []);
 
   function heuristic(text: string) {
@@ -209,7 +222,7 @@ export default function ArtistHub() {
         <div className="ah-id"><div className="ah-pip">V</div><div><div className="ah-eyebrow">Baroness Tattoo · Artist Hub</div><div className="ah-name">Vivienne Duval</div></div></div>
         <div className="ah-right">
           <span className="pill-stat">This week · <b>$1,840</b></span>
-          <span className="pill-stat">◆ 1,210 gems earned</span>
+          <a className="pill-stat" href="/wallet" style={{ textDecoration: "none" }}>◆ {gems ?? "…"} gems</a>
           <a className="abtn ghost" href="/quarters">My Quarters</a>
           <button className="abtn">View my page</button>
         </div>
@@ -395,8 +408,17 @@ export default function ArtistHub() {
           </div>
           <div className="p-title" style={{ marginTop: 16 }}>Community</div>
           <div className="list">
-            <div className="row"><b>4 clients</b> unlocked your Emerald Gold outfit this week <span className="sp" /><span className="chip">◆ 396 gems to you</span></div>
-            <div className="row"><b>Marcus D.</b> wore your design to the 3D estate ball <span className="sp" /><button className="abtn sm ghost">Send a compliment</button></div>
+            <div className="row"><b>4 clients</b> unlocked your Emerald Gold outfit this week <span className="sp" />
+              {claimed["outfit-unlocks"]
+                ? <span className="chip ok">Collected · ◆ 396</span>
+                : <button className="abtn sm" onClick={() => collect("outfit-unlocks", 396)}>Collect ◆ 396</button>}
+            </div>
+            <div className="row"><b>Marcus D.</b> wore your design to the 3D estate ball <span className="sp" />
+              {claimed["ball-royalty"]
+                ? <span className="chip ok">Royalty collected · ◆ 60</span>
+                : <button className="abtn sm" onClick={() => collect("ball-royalty", 60)}>Collect royalty ◆ 60</button>}
+              <button className="abtn sm ghost">Send a compliment</button>
+            </div>
           </div>
         </div>
       </div>

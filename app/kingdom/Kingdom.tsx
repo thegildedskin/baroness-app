@@ -155,6 +155,7 @@ export default function Kingdom() {
   const [bSay, setBSay] = useState("So. Another soul at my gates, wearing borrowed skin. Approach — let me see what you intend to become.");
   const [bs, setBs] = useState<BS>({ owned: ["baroque-dandy"], appointed: "baroque-dandy" });
   const [found, setFound] = useState<string[]>([]);
+  const [collected, setCollected] = useState<string[]>([]);
   const [claimed, setClaimed] = useState<Record<string, boolean>>({});
   const [rows, setRows] = useState<Row[]>(SAMPLE_ROWS);
   const [uid, setUid] = useState("guest");
@@ -179,6 +180,7 @@ export default function Kingdom() {
     loadState<BS>("butler-skins", { owned: ["baroque-dandy"], appointed: "baroque-dandy" })
       .then((v) => setBs({ owned: v.owned || ["baroque-dandy"], appointed: v.appointed || "baroque-dandy" }));
     loadState<string[]>("curiosities", []).then(setFound);
+    loadState<string[]>("curio-rewards", []).then(setCollected);
     getWallet().then((w) => setGems(w.balance)); // server-authoritative balance
     let id = "";
     try { id = localStorage.getItem("baroness-uid") || ""; if (!id) { id = "u" + Math.random().toString(36).slice(2, 8); localStorage.setItem("baroness-uid", id); } } catch { id = "guest"; }
@@ -217,6 +219,16 @@ export default function Kingdom() {
     if (claimed[key]) return;
     setClaimed((c) => ({ ...c, [key]: true }));
     const bal = await applyGems(amount, `mission:${key}`);
+    if (bal !== null) setGems(bal);
+  }
+
+  // reward for each curiosity found in the Estate (collectable once)
+  async function collectCurio(id: string) {
+    if (collected.includes(id)) return;
+    const next = [...collected, id];
+    setCollected(next);
+    saveState("curio-rewards", next);
+    const bal = await applyGems(20, `hunt:${id}`);
     if (bal !== null) setGems(bal);
   }
 
@@ -324,10 +336,14 @@ export default function Kingdom() {
           <div className="list">
             {CURIOS.map(([id, em, hint]) => {
               const got = found.includes(id);
+              const done = collected.includes(id);
               return (
                 <div key={id} className={`hunt-row${got ? " got" : " hidden-c"}`}>
                   <span className="em">{em}</span>
-                  <span>{got ? <><b style={{ color: "var(--cream)" }}>Found</b> — {hint.toLowerCase()}</> : hint + "…"}</span>
+                  <span style={{ flex: 1 }}>{got ? <><b style={{ color: "var(--cream)" }}>Found</b> — {hint.toLowerCase()}</> : hint + "…"}</span>
+                  {got && (done
+                    ? <span className="chip">◆ collected</span>
+                    : <button className="kbtn sm" onClick={() => collectCurio(id)}>Collect ◆ 20</button>)}
                 </div>
               );
             })}

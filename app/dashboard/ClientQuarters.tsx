@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { getWallet } from "@/lib/wallet";
 import QuartersShell, { type QTile } from "./QuartersShell";
 import AvatarBuilder from "./AvatarBuilder";
 import Passport from "./Passport";
@@ -30,6 +31,8 @@ export default function ClientQuarters({ userId, email, profile, convos, passpor
   const supabase = createClient();
   const router = useRouter();
   const [name, setName] = useState(profile?.display_name ?? "");
+  const [gems, setGems] = useState<number | null>(null);
+  useEffect(() => { getWallet().then((w) => setGems(w.balance)); }, []);
 
   async function deleteDesign(id: string) {
     const { error } = await supabase.from("designs").delete().eq("id", id);
@@ -96,6 +99,7 @@ export default function ClientQuarters({ userId, email, profile, convos, passpor
     { key: "messages", label: "Conversations", desc: `${convos.length} with your artists`, icon: "✉", accent: "#d4788f", badge: convos.length ? String(convos.length) : undefined },
     { key: "commission", label: "The Commission", desc: "Book a $100 consultation", icon: "✒", accent: "#d4788f" },
     { key: "kingdom", label: "The Kingdom", desc: "Court, missions & ledger", icon: "♛", accent: "#caa24e" },
+    { key: "wallet", label: "The Purse", desc: gems != null ? `◆ ${gems} gems` : "Your gem balance", icon: "◆", accent: "#d4b574" },
     { key: "avatar3d", label: "The Court in 3D", desc: "Inspect a look in relief", icon: "👑", accent: "#caa24e" },
     { key: "quarters3d", label: "My Quarters", desc: "Your chamber, walkable", icon: "🏰", accent: "#8f6fd4" },
     { key: "ball", label: "The Estate Ball", desc: "Take a turn about the room", icon: "🕯", accent: "#d4b574" },
@@ -112,7 +116,7 @@ export default function ClientQuarters({ userId, email, profile, convos, passpor
       topLinks={[{ href: "/artist-hub", label: "Artist Hub" }]}
       onSelect={(key) => {
         const nav: Record<string, string> = {
-          commission: "/commission", kingdom: "/kingdom",
+          commission: "/commission", kingdom: "/kingdom", wallet: "/wallet",
           avatar3d: "/avatar/3d", quarters3d: "/quarters", ball: "/ball",
         };
         if (nav[key]) { router.push(nav[key]); return; }
