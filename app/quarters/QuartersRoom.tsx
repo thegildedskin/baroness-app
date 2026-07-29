@@ -19,6 +19,7 @@ import {
 } from "react";
 import * as THREE from "three";
 import { loadState, saveState } from "@/lib/state";
+import { getWallet, applyGems } from "@/lib/wallet";
 
 // ---------------------------------------------------------------------------
 // Catalogue (verbatim from the design kit) + shared state contract
@@ -304,16 +305,14 @@ export default function QuartersRoom() {
   const [mode, setMode] = useState<"edit" | "walk">("edit");
   const [walkLocked, setWalkLocked] = useState(false);
   const storeReady = useRef(false);
-  const walletReady = useRef(false);
 
   // hydrate layout + shared wallet (server → localStorage → default)
   useEffect(() => {
     loadState<any>("my-quarters", {}).then((raw) => { setS(migrateStore(raw)); storeReady.current = true; });
-    loadState<number>("wallet", 250).then((v) => { setGems(v); walletReady.current = true; });
+    getWallet().then((w) => setGems(w.balance)); // server-authoritative balance
   }, []);
-  // persist layout + wallet after the initial load
+  // persist layout after the initial load (wallet persistence lives in lib/wallet)
   useEffect(() => { if (storeReady.current) saveState("my-quarters", S); }, [S]);
-  useEffect(() => { if (walletReady.current) saveState("wallet", gems); }, [gems]);
 
   const flash = useCallback((m: string) => {
     setHint(m);
@@ -397,16 +396,16 @@ export default function QuartersRoom() {
 
   // buy or select an inventory slot
   const onSlot = useCallback(
-    (i: Item) => {
+    async (i: Item) => {
       const st = stock(i);
       if (st <= 0 && !(i.own || S.bought.includes(i.id))) {
         if (i.gems) {
-          if (gems >= i.gems) {
-            setGems((g) => g - i.gems!);
-            setS((s) => ({ ...s, bought: [...s.bought, i.id] }));
-            setSel(i.id);
-            flash(`${i.nm} acquired — place it.`);
-          } else flash("Not enough gems.");
+          const bal = await applyGems(-i.gems, `quarters:${i.id}`); // server refuses overspend
+          if (bal === null) { flash("Not enough gems."); return; }
+          setGems(bal);
+          setS((s) => ({ ...s, bought: [...s.bought, i.id] }));
+          setSel(i.id);
+          flash(`${i.nm} acquired — place it.`);
         } else if (i.tier) flash(`Ascend to ${i.tier} tier to own the ${i.nm}.`);
         else if (i.earn) flash(`Earn it: ${i.earn}.`);
         return;

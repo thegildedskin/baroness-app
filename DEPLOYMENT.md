@@ -57,11 +57,15 @@ Node version: Vercel defaults to Node 20, which is correct (the app needs 18+).
 
 ## 4. Post-deploy (one-time)
 
-1. **Create the shared-state table.** In Supabase → SQL Editor, paste and run
-   `supabase/baroness-state.sql`. This adds the `player_state` table (the
-   server-side gem wallet + wardrobe/portfolio/curiosities/layout persistence)
-   with row-level security and a 250-gem starter purse on sign-up.
-   *Skipping this is fine* — the app falls back to per-device `localStorage`.
+1. **Create the tables.** In Supabase → SQL Editor, run these two scripts once:
+   - `supabase/baroness-state.sql` — the `player_state` table (wardrobe,
+     portfolio, curiosities, Quarters layout) with row-level security.
+   - `supabase/baroness-wallet.sql` — the `gem_transactions` ledger + the
+     `apply_gems()` RPC that owns the balance server-side (atomic, no overspend,
+     250-gem starting purse). The `/wallet` page reads this.
+
+   *Skipping these is fine* — the app falls back to per-device `localStorage`
+   (the wallet is then client-side only, not cheat-resistant).
 
 2. **Auth redirect URLs.** In Supabase → Authentication → URL Configuration,
    set **Site URL** to your Vercel URL and add it to **Redirect URLs**, so

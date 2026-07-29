@@ -7,8 +7,9 @@
 // SPEC_blockchain_token_ledger end-to-end. Shared localStorage keys match the
 // contract (baroness-butler-skins, baroness-curiosities). Kit CSS scoped .kgwrap.
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { loadState, saveState } from "@/lib/state";
+import { getWallet, applyGems } from "@/lib/wallet";
 
 type Skin = { id: string; nm: string; free?: number; gems?: number; tier?: string };
 const SKINS: Skin[] = [
@@ -174,20 +175,16 @@ export default function Kingdom() {
     } catch { /* keep samples */ }
   }, []);
 
-  const walletReady = useRef(false);
   useEffect(() => {
     loadState<BS>("butler-skins", { owned: ["baroque-dandy"], appointed: "baroque-dandy" })
       .then((v) => setBs({ owned: v.owned || ["baroque-dandy"], appointed: v.appointed || "baroque-dandy" }));
     loadState<string[]>("curiosities", []).then(setFound);
-    loadState<number>("wallet", 250).then((v) => { setGems(v); walletReady.current = true; });
+    getWallet().then((w) => setGems(w.balance)); // server-authoritative balance
     let id = "";
     try { id = localStorage.getItem("baroness-uid") || ""; if (!id) { id = "u" + Math.random().toString(36).slice(2, 8); localStorage.setItem("baroness-uid", id); } } catch { id = "guest"; }
     setUid(id);
     loadLedger();
   }, [loadLedger]);
-
-  // persist the shared wallet whenever it changes (after the initial load)
-  useEffect(() => { if (walletReady.current) saveState("wallet", gems); }, [gems]);
 
   function persistBs(next: BS) {
     setBs(next);
@@ -204,22 +201,23 @@ export default function Kingdom() {
     } catch { /* noop */ }
   }
 
-  function onSkin(s: Skin) {
+  async function onSkin(s: Skin) {
     const owned = !!s.free || bs.owned.includes(s.id);
     if (owned) { persistBs({ ...bs, appointed: s.id }); return; }
     if (s.gems) {
-      if (gems >= s.gems) {
-        setGems((g) => g - s.gems!);
-        persistBs({ owned: [...bs.owned, s.id], appointed: s.id });
-        mintLivery(s); // minted into the royal record
-      } else setBSay("Not enough gems.");
+      const bal = await applyGems(-s.gems, `livery:${s.id}`); // server refuses overspend
+      if (bal === null) { setBSay("Not enough gems."); return; }
+      setGems(bal);
+      persistBs({ owned: [...bs.owned, s.id], appointed: s.id });
+      mintLivery(s); // minted into the royal record
     } else setBSay(`Ascend to ${s.tier} tier in the Royal Ledger.`);
   }
 
-  function claim(key: string, amount: number) {
+  async function claim(key: string, amount: number) {
     if (claimed[key]) return;
-    setGems((g) => g + amount);
     setClaimed((c) => ({ ...c, [key]: true }));
+    const bal = await applyGems(amount, `mission:${key}`);
+    if (bal !== null) setGems(bal);
   }
 
   const rookGot = found.length >= 7;
@@ -230,7 +228,7 @@ export default function Kingdom() {
       <header className="kg-head">
         <div><div className="kg-eyebrow">Beyond the Estate Walls</div><h1 className="kg-title">The Kingdom of the Gilded Skin</h1></div>
         <div className="purse">
-          <span className="pill"><span className="rose">◆</span> <b>{gems}</b> gems</span>
+          <a className="pill" href="/wallet" style={{ textDecoration: "none" }}><span className="rose">◆</span> <b>{gems}</b> gems</a>
           <span className="pill">♛ <b>3</b> Crowns</span>
           <a className="pill" href="/" style={{ textDecoration: "none" }}>← The Estate</a>
         </div>
