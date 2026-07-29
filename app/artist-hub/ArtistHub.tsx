@@ -9,9 +9,10 @@
 import { useEffect, useRef, useState } from "react";
 import { loadState, saveState } from "@/lib/state";
 import { getWallet, applyGems } from "@/lib/wallet";
+import { STYLES, TEMPERAMENTS } from "@/lib/taxonomy";
 
-const PSTYLES = ["Traditional", "Neo-Traditional", "Realism", "Fine Line", "Blackwork", "Japanese", "Watercolor", "Geometric", "Chicano", "Dark Fantasy"];
-const PVIBES = ["Delicate", "Bold", "Dark", "Ornate", "Minimal"];
+const PSTYLES = STYLES;
+const PVIBES = TEMPERAMENTS;
 
 type Book = { t: string; a?: string; st: string[]; vb: string[]; c: string };
 const SEEDBOOK: Book[] = [

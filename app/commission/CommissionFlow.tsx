@@ -9,12 +9,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { loadState } from "@/lib/state";
 import { applyGems } from "@/lib/wallet";
+import { STYLES, TEMPERAMENTS } from "@/lib/taxonomy";
+import { topMatches } from "@/lib/matcher";
 
-const QSTYLES = [
-  "Traditional", "Neo-Traditional", "Realism", "Fine Line", "Blackwork",
-  "Japanese", "Watercolor", "Geometric", "Chicano", "Dark Fantasy",
-];
-const TEMPERAMENTS = ["Delicate", "Bold", "Dark", "Ornate", "Minimal"];
 
 type Artist = { id: string; n: string; spec: string; c1: string; c2: string; styles: string[] };
 const ARTISTS: Artist[] = [
@@ -246,14 +243,8 @@ export default function CommissionFlow() {
     else speak(`${a.n.split(" ")[0]} — a fine choice. Her book is honest and her linework finer still.`, "pleased");
   }
 
-  // matcher
-  const scoredWorks = (styles.length || vibe)
-    ? works
-        .map((w) => ({ ...w, sc: w.st.filter((s) => styles.includes(s)).length * 2 + (vibe && w.vb.includes(vibe) ? 1 : 0) }))
-        .filter((w) => w.sc > 0)
-        .sort((a, b) => b.sc - a.sc)
-        .slice(0, 6)
-    : [];
+  // matcher (shared scoring rule — see lib/matcher.ts)
+  const scoredWorks = (styles.length || vibe) ? topMatches(works, styles, vibe, 6) : [];
 
   const scoredArtists = ARTISTS
     .map((a) => ({ ...a, score: a.styles.filter((s) => styles.includes(s)).length }))
@@ -322,7 +313,7 @@ export default function CommissionFlow() {
               <div className="p-sub">Choose up to three styles and a temperament — I shall match you to the right hand.</div>
               <div className="lbl">Styles</div>
               <div className="chips">
-                {QSTYLES.map((s) => (
+                {STYLES.map((s) => (
                   <button key={s} className={`chip${styles.includes(s) ? " on" : ""}`} onClick={() => toggleStyle(s)}>{s}</button>
                 ))}
               </div>

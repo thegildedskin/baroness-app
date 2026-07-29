@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { STYLES, TEMPERAMENTS, canonTag } from "@/lib/taxonomy";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -14,19 +15,8 @@ export const maxDuration = 30;
 // Uses OpenAI vision when OPENAI_API_KEY is set; otherwise falls back to the
 // prototype keyword heuristic so the Portfolio flow still works.
 
-const STYLES = [
-  "Traditional", "Neo-Traditional", "Realism", "Fine Line", "Blackwork",
-  "Japanese", "Watercolor", "Geometric", "Chicano", "Dark Fantasy",
-] as const;
-const TEMPERAMENTS = ["Delicate", "Bold", "Dark", "Ornate", "Minimal"] as const;
-
 type Tag = { tag: string; confidence: number };
 
-function canon<T extends readonly string[]>(list: T, v: unknown): string | null {
-  if (typeof v !== "string") return null;
-  const hit = list.find((x) => x.toLowerCase() === v.trim().toLowerCase());
-  return hit || null;
-}
 const pct = (n: unknown) => {
   let v = typeof n === "number" ? n : parseFloat(String(n));
   if (!isFinite(v)) v = 0;
@@ -121,11 +111,11 @@ export async function POST(req: NextRequest) {
     const parsed = JSON.parse(raw);
 
     const styles: Tag[] = (parsed.styles || [])
-      .map((s: any) => ({ tag: canon(STYLES, s.tag), confidence: pct(s.confidence) }))
+      .map((s: any) => ({ tag: canonTag(STYLES, s.tag), confidence: pct(s.confidence) }))
       .filter((s: Tag) => s.tag)
       .slice(0, 2);
     const temperaments: Tag[] = (parsed.temperaments || [])
-      .map((s: any) => ({ tag: canon(TEMPERAMENTS, s.tag), confidence: pct(s.confidence) }))
+      .map((s: any) => ({ tag: canonTag(TEMPERAMENTS, s.tag), confidence: pct(s.confidence) }))
       .filter((s: Tag) => s.tag)
       .slice(0, 2);
 

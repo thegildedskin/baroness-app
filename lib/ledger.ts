@@ -146,7 +146,15 @@ const mockProvider: LedgerProvider = {
   },
 };
 
-/** Returns the active ledger provider. Swap the mock for a real chain impl here. */
+/**
+ * Returns the active ledger provider.
+ *
+ * On-chain seam: implement WalletVendor + ChainClient + LedgerStore (see
+ * lib/ledger-onchain.ts) against a real embedded-wallet vendor + low-fee L2, then:
+ *   if (process.env.LEDGER_PROVIDER === "onchain")
+ *     return createOnchainLedger({ wallet, chain, store });
+ * The UI, API, and record shape stay identical — only this function changes.
+ */
 export function getLedger(): LedgerProvider {
   return mockProvider;
 }
