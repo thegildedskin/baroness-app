@@ -5,29 +5,20 @@
 // (auto-filled by scripts/gallery-classify.mjs via the vision classifier, or
 // edited by hand). Filterable, with a lightbox.
 
-import { useEffect, useMemo, useState } from "react";
-
-type Img = { file: string; category: string };
-type Manifest = { cdn: string; images: Img[]; local?: boolean };
+import { useMemo, useState } from "react";
+import { GALLERY, galleryImg } from "@/lib/gallery";
 
 export default function Gallery() {
-  const [data, setData] = useState<Manifest | null>(null);
   const [cat, setCat] = useState("All");
   const [lightbox, setLightbox] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetch("/gallery/manifest.json").then((r) => r.json()).then(setData).catch(() => setData({ cdn: "", images: [] }));
-  }, []);
+  const cats = useMemo(
+    () => ["All", ...Array.from(new Set(GALLERY.map((i) => i.category))).sort((a, b) => (a === "Uncategorized" ? 1 : b === "Uncategorized" ? -1 : a.localeCompare(b)))],
+    []
+  );
 
-  const cats = useMemo(() => {
-    if (!data) return ["All"];
-    const order = ["All", ...Array.from(new Set(data.images.map((i) => i.category))).sort((a, b) => (a === "Uncategorized" ? 1 : b === "Uncategorized" ? -1 : a.localeCompare(b)))];
-    return order;
-  }, [data]);
-
-  const src = (f: string, w: number) =>
-    !data ? "" : data.local ? `/gallery/img/${f}` : `${data.cdn}/${f}/:/rs=w:${w}`;
-  const shown = data ? data.images.filter((i) => cat === "All" || i.category === cat) : [];
+  const src = (f: string, w: number) => galleryImg(f, w);
+  const shown = GALLERY.filter((i) => cat === "All" || i.category === cat);
 
   return (
     <div style={{ maxWidth: 1180, margin: "0 auto", padding: "48px 24px 80px", color: "var(--black)" }}>
@@ -55,28 +46,24 @@ export default function Gallery() {
               color: cat === c ? "var(--black)" : "var(--gold-dark)",
             }}
           >
-            {c}{data && c !== "All" ? ` · ${data.images.filter((i) => i.category === c).length}` : ""}
+            {c}{c !== "All" ? ` · ${GALLERY.filter((i) => i.category === c).length}` : ""}
           </button>
         ))}
       </div>
 
       {/* masonry grid */}
-      {!data ? (
-        <p style={{ textAlign: "center", color: "var(--grey)", fontStyle: "italic" }}>Unveiling the portraits…</p>
-      ) : (
-        <div style={{ columns: "4 240px", columnGap: 14 }}>
-          {shown.map((img) => (
-            <button
-              key={img.file}
-              onClick={() => setLightbox(src(img.file, 1600))}
-              style={{ display: "block", width: "100%", marginBottom: 14, breakInside: "avoid", padding: 0, border: "1px solid var(--gold)", borderRadius: 8, overflow: "hidden", cursor: "zoom-in", background: "var(--parchment)", boxShadow: "0 6px 18px rgba(20,14,8,.16)" }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={src(img.file, 700)} alt={`${img.category} tattoo by Baroness Tattoo`} loading="lazy" style={{ width: "100%", display: "block" }} />
-            </button>
-          ))}
-        </div>
-      )}
+      <div style={{ columns: "4 240px", columnGap: 14 }}>
+        {shown.map((img) => (
+          <button
+            key={img.file}
+            onClick={() => setLightbox(src(img.file, 1600))}
+            style={{ display: "block", width: "100%", marginBottom: 14, breakInside: "avoid", padding: 0, border: "1px solid var(--gold)", borderRadius: 8, overflow: "hidden", cursor: "zoom-in", background: "var(--parchment)", boxShadow: "0 6px 18px rgba(20,14,8,.16)" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={src(img.file, 700)} alt={`${img.category} tattoo by Baroness Tattoo`} loading="lazy" style={{ width: "100%", display: "block" }} />
+          </button>
+        ))}
+      </div>
 
       {/* lightbox */}
       {lightbox && (

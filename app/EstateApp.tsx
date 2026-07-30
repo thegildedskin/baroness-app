@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import ArtistMessageForm from "./ArtistMessageForm";
 import { AvatarRender, type AvatarConfig } from "./avatar/AvatarRender";
 import ReviewsTicker from "./ReviewsTicker";
+import { GALLERY_FILES, galleryImg } from "@/lib/gallery";
 
 export type Flash = { id: string; image_url: string };
 export type Artist = {
@@ -339,7 +340,10 @@ export default function EstateApp({ artists, gallery = [], settings = {} }: { ar
   }
 
   const galleryPhotos = artists.flatMap((a) => a.flash?.map((f) => f.image_url) ?? []).slice(0, 24);
-  const photos = gallery.length ? gallery : (galleryPhotos.length ? galleryPhotos : FALLBACK_PHOTOS);
+  // Prefer the studio's real gallery photos (served via the CDN proxy); fall back
+  // to Supabase gallery / artist flash / placeholders only if that list is empty.
+  const realPhotos = GALLERY_FILES.map((f) => galleryImg(f, 900));
+  const photos = realPhotos.length ? realPhotos : (gallery.length ? gallery : (galleryPhotos.length ? galleryPhotos : FALLBACK_PHOTOS));
   const initials = (name: string) => (name?.trim()?.[0] ?? "B").toUpperCase();
 
   return (
