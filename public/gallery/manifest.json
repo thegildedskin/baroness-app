@@ -1,0 +1,31 @@
+{
+  "note": "Photos pulled from the live site's gallery (baronesstattoo.com/gallery-1), served from the studio's own GoDaddy CDN. Run scripts/gallery-classify.mjs to auto-fill categories via the vision classifier, or edit `category` by hand.",
+  "cdn": "https://img1.wsimg.com/isteam/ip/b35cdeff-49dc-4837-9cdc-dfead84f5d5f",
+  "images": [
+    { "file": "686041825_18399724834146430_853037633092867592.jpg", "category": "Uncategorized" },
+    { "file": "670986604_18396522550146430_246446864300278330.jpg", "category": "Uncategorized" },
+    { "file": "623303159_18382563034146430_8582173053-b4c50c8.jpg", "category": "Uncategorized" },
+    { "file": "658454530_18082625222612604_424645917561538566.jpg", "category": "Uncategorized" },
+    { "file": "503851914_2187254181712828_2715134008098167425.jpg", "category": "Uncategorized" },
+    { "file": "497726601_1323249775400884_9122255851003204109.jpg", "category": "Uncategorized" },
+    { "file": "546554290_18521409223008293_273714267718836150.jpg", "category": "Uncategorized" },
+    { "file": "588092836_18066942467612604_699870302834145922.jpg", "category": "Uncategorized" },
+    { "file": "538028897_18056320976612604_123637005737758578.jpg", "category": "Uncategorized" },
+    { "file": "671710255_18083559278612604_24374028487981397_.jpg", "category": "Uncategorized" },
+    { "file": "455007184_1034755708197582_4962878596834378915.jpg", "category": "Uncategorized" },
+    { "file": "556418940_18525181426008293_869903640242956146.jpg", "category": "Neo-Traditional" },
+    { "file": "534821312_18055560098612604_119836708961112867.jpg", "category": "Uncategorized" },
+    { "file": "536663602_18056215535612604_327250712805288751.jpg", "category": "Uncategorized" },
+    { "file": "702991302_18088116785612604_339437355282132534.jpg", "category": "Uncategorized" },
+    { "file": "479744947_18482574325008293_481421338128340495.jpg", "category": "Uncategorized" },
+    { "file": "558447269_18061597664612604_583686408384473375.jpg", "category": "Uncategorized" },
+    { "file": "557615201_18061091786612604_849280715376999872.jpg", "category": "Uncategorized" },
+    { "file": "621815837_18073710674612604_150114078648409338.jpg", "category": "Uncategorized" },
+    { "file": "615327931_18072493151612604_5052703443-fb5d96e.jpg", "category": "Uncategorized" },
+    { "file": "660188644_18082763600612604_111145744767646885.jpg", "category": "Uncategorized" },
+    { "file": "653920998_18079641452612604_714892520240684929.jpg", "category": "Uncategorized" },
+    { "file": "547753857_18058339481612604_784351832368976697.jpg", "category": "Uncategorized" },
+    { "file": "599737249_18377530969146430_8218485435-b5bc7fa.jpg", "category": "Uncategorized" },
+    { "file": "670340254_18083733068612604_406010010301107847.jpg", "category": "Uncategorized" }
+  ]
+}
