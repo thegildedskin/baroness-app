@@ -544,6 +544,9 @@ export default function EstateApp({ artists, gallery = [], settings = {} }: { ar
             <button onClick={() => go("boutique")}>Maison Baroness</button>
             <button onClick={() => go("salon")}>Drawing Room</button>
             <div className="bn-div" />
+            <a href="/gallery">The Gallery · Photographs</a>
+            <a href="/prep-guide">Prepare for Your Sitting</a>
+            <a href="/aftercare">Aftercare</a>
             <a href="/explore">Stroll the Grounds · 3D</a>
             <a href="/avatar/create">Create a 3D Avatar</a>
             <a href="/studio">Design a Tattoo</a>

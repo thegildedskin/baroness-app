@@ -8,7 +8,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 type Img = { file: string; category: string };
-type Manifest = { cdn: string; images: Img[] };
+type Manifest = { cdn: string; images: Img[]; local?: boolean };
 
 export default function Gallery() {
   const [data, setData] = useState<Manifest | null>(null);
@@ -25,7 +25,8 @@ export default function Gallery() {
     return order;
   }, [data]);
 
-  const src = (f: string, w: number) => (data ? `${data.cdn}/${f}/:/rs=w:${w}` : "");
+  const src = (f: string, w: number) =>
+    !data ? "" : data.local ? `/gallery/img/${f}` : `${data.cdn}/${f}/:/rs=w:${w}`;
   const shown = data ? data.images.filter((i) => cat === "All" || i.category === cat) : [];
 
   return (
