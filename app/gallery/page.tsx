@@ -1,4 +1,5 @@
 import Gallery from "./Gallery";
+import PublicHeader from "../PublicHeader";
 
 export const metadata = {
   title: "The Gallery · Baroness Tattoo Estate",
@@ -8,6 +9,7 @@ export const metadata = {
 export default function GalleryPage() {
   return (
     <main style={{ minHeight: "100vh", background: "var(--cream)" }}>
+      <PublicHeader />
       <Gallery />
     </main>
   );

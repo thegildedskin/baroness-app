@@ -379,6 +379,8 @@ export default function EstateApp({ artists, gallery = [], settings = {} }: { ar
           <div className="eyebrow">By Appointment of Her Grace · Garland, Texas</div>
           <div className="estate-sub">A Luxury Atelier in the French Rococo</div>
           <div className="tagline">&ldquo;Wear your crown.&rdquo;</div>
+          <a className="entrance-book" href="/book">✦ Book a Consultation</a>
+          <div className="entrance-alt">or ring the bell to wander the estate</div>
         </div>
         <div className="vignette" />
       </section>
@@ -680,6 +682,9 @@ const CSS = `
 @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 .estate .estate-sub{font-family:var(--caps);letter-spacing:.36em;font-size:clamp(11px,2.2vw,16px);color:var(--cream);text-transform:uppercase;margin-top:24px}
 .estate .tagline{font-family:var(--display);font-style:italic;font-size:clamp(17px,3vw,24px);color:var(--gold-light);margin-top:10px}
+.estate .entrance-book{display:inline-block;margin-top:20px;font-family:var(--caps);letter-spacing:.16em;text-transform:uppercase;font-size:13px;color:#1a1208;background:linear-gradient(180deg,#e8cf86,#b8924a);border:1px solid #8b6f35;border-radius:3px;padding:15px 30px;text-decoration:none;box-shadow:0 8px 26px rgba(0,0,0,.5),0 0 34px rgba(184,146,74,.35);transition:filter .18s,transform .18s}
+.estate .entrance-book:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.estate .entrance-alt{margin-top:12px;font-family:var(--body);font-style:italic;font-size:13px;color:rgba(245,233,211,.7)}
 .estate .knock{margin-top:42px}
 .estate .enterhint{margin-top:18px;font-size:30px;color:var(--gold-light);opacity:.7;animation:bob 1.8s ease-in-out infinite}
 @keyframes bob{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(8px);opacity:.9}}

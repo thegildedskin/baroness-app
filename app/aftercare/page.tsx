@@ -1,3 +1,5 @@
+import PublicHeader from "../PublicHeader";
+
 export const metadata = {
   title: "Aftercare · Baroness Tattoo Estate",
   description: "How to care for your new tattoo — washing, moisturising, what to avoid, and the healing timeline.",
@@ -15,6 +17,7 @@ function Card({ children }: { children: React.ReactNode }) {
 export default function AftercarePage() {
   return (
     <main style={{ minHeight: "100vh", background: "var(--cream)" }}>
+      <PublicHeader />
       <article style={{ maxWidth: 720, margin: "0 auto", padding: "48px 24px 80px" }}>
         <div style={{ textAlign: "center" }}>
           <div style={label}>Go Forth, Inked Warrior</div>

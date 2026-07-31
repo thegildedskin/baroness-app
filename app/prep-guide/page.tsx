@@ -1,3 +1,5 @@
+import PublicHeader from "../PublicHeader";
+
 export const metadata = {
   title: "Prepare for Your Sitting · Baroness Tattoo Estate",
   description: "How to prepare for your tattoo — the day before, the day of, what to bring, and how to prime your skin.",
@@ -16,6 +18,7 @@ function Card({ children }: { children: React.ReactNode }) {
 export default function PrepGuidePage() {
   return (
     <main style={{ minHeight: "100vh", background: "var(--cream)" }}>
+      <PublicHeader />
       <article style={{ maxWidth: 720, margin: "0 auto", padding: "48px 24px 80px" }}>
         <div style={{ textAlign: "center" }}>
           <div style={label}>By Appointment of Her Grace</div>
