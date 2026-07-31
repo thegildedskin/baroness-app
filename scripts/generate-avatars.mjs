@@ -40,6 +40,13 @@ const force = args.includes("--force");
 const onlyIds = args.filter((a) => !a.startsWith("--"));
 const jobs = onlyIds.length ? prompts.filter((p) => onlyIds.includes(p.id)) : prompts;
 
+// Appended to every prompt to lift fidelity + keep the set consistent.
+const STYLE_SUFFIX =
+  "Beautiful, refined, symmetrical face with clean natural features and a serene expression; " +
+  "flawless rendering of hands and fabric; exquisite lace, silk and jewellery detail; " +
+  "consistent three-quarter studio portrait framing on a single subject; volumetric candlelit warm lighting; " +
+  "sharp focus, crisp edges, museum-quality finish; no extra limbs, no distortion, no text or watermark.";
+
 let ok = 0, skipped = 0, failed = 0;
 for (const { id, prompt } of jobs) {
   const file = path.join(outDir, `${id}.png`);
@@ -49,7 +56,13 @@ for (const { id, prompt } of jobs) {
     const r = await fetch("https://api.openai.com/v1/images/generations", {
       method: "POST",
       headers: { Authorization: `Bearer ${KEY}`, "content-type": "application/json" },
-      body: JSON.stringify({ model: "gpt-image-1", prompt, size: "1024x1536", n: 1 }),
+      body: JSON.stringify({
+        model: "gpt-image-1",
+        prompt: `${prompt} ${STYLE_SUFFIX}`,
+        size: "1024x1536",
+        quality: "high",
+        n: 1,
+      }),
     });
     const j = await r.json();
     const b64 = j?.data?.[0]?.b64_json;

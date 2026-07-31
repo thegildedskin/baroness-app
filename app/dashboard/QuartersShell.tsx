@@ -4,10 +4,10 @@
 // identity band up top, one row of big glowing menu tiles, the selected
 // panel renders beneath. Arrow keys move tile focus; Enter opens.
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 
-export type QTile = { key: string; label: string; desc: string; icon: string; accent: string; badge?: string };
+export type QTile = { key: string; label: string; desc: string; icon: string; accent: string; badge?: string; group?: string };
 
 export default function QuartersShell({
   eyebrow, title, subtitle, tiles, active, onSelect, children, topLinks,
@@ -33,7 +33,7 @@ export default function QuartersShell({
   }, [tiles, focus, onSelect]);
 
   useEffect(() => {
-    const el = rowRef.current?.children[focus] as HTMLElement | undefined;
+    const el = rowRef.current?.querySelectorAll(".qx-tile")[focus] as HTMLElement | undefined;
     el?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
   }, [focus]);
 
@@ -54,20 +54,25 @@ export default function QuartersShell({
       </header>
 
       <div className="qx-tilerow" ref={rowRef}>
-        {tiles.map((t, i) => (
-          <button
-            key={t.key}
-            className={`qx-tile${active === t.key ? " on" : ""}${focus === i ? " focus" : ""}`}
-            style={{ ["--accent" as string]: t.accent }}
-            onClick={() => { setFocus(i); onSelect(t.key); }}
-            onMouseEnter={() => setFocus(i)}
-          >
-            <span className="qx-tile-icon">{t.icon}</span>
-            <span className="qx-tile-label">{t.label}</span>
-            <span className="qx-tile-desc">{t.desc}</span>
-            {t.badge && <span className="qx-badge">{t.badge}</span>}
-          </button>
-        ))}
+        {tiles.map((t, i) => {
+          const showGroup = !!t.group && t.group !== tiles[i - 1]?.group;
+          return (
+            <Fragment key={t.key}>
+              {showGroup && <span className="qx-group" aria-hidden>{t.group}</span>}
+              <button
+                className={`qx-tile${active === t.key ? " on" : ""}${focus === i ? " focus" : ""}`}
+                style={{ ["--accent" as string]: t.accent }}
+                onClick={() => { setFocus(i); onSelect(t.key); }}
+                onMouseEnter={() => setFocus(i)}
+              >
+                <span className="qx-tile-icon">{t.icon}</span>
+                <span className="qx-tile-label">{t.label}</span>
+                <span className="qx-tile-desc">{t.desc}</span>
+                {t.badge && <span className="qx-badge">{t.badge}</span>}
+              </button>
+            </Fragment>
+          );
+        })}
       </div>
       <div className="qx-hint">◄ ► to browse · Enter to open</div>
 
@@ -89,8 +94,9 @@ const QX_CSS = `
 .qx-nav{display:flex;gap:16px;flex-wrap:wrap}
 .qx-nav a{color:#caa24e;text-decoration:none;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-family:var(--caps,inherit)}
 .qx-nav a:hover{color:#f1dc97}
-.qx-tilerow{display:flex;gap:14px;overflow-x:auto;padding:18px 4px 22px;scrollbar-width:none}
+.qx-tilerow{display:flex;gap:14px;overflow-x:auto;padding:18px 4px 22px;scrollbar-width:none;align-items:stretch}
 .qx-tilerow::-webkit-scrollbar{display:none}
+.qx-group{flex:0 0 auto;align-self:center;writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--caps,inherit);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#8a7448;padding:8px 4px;border-left:1px solid rgba(202,162,78,.25);margin-left:4px}
 .qx-tile{position:relative;flex:0 0 auto;width:198px;min-height:150px;border-radius:16px;border:1.5px solid rgba(202,162,78,.25);cursor:pointer;text-align:left;padding:18px 16px 14px;display:flex;flex-direction:column;gap:6px;color:#e9e2d4;
   background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 26%,#14111b) 0%,#14111b 70%);
   transition:transform .18s cubic-bezier(.2,.9,.3,1.4),box-shadow .18s,border-color .18s;transform:scale(.96)}

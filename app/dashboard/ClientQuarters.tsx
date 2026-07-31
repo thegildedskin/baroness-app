@@ -92,18 +92,21 @@ export default function ClientQuarters({ userId, email, profile, convos, passpor
 
   const [panel, setPanel] = useState("standing");
   const tiles: QTile[] = [
-    { key: "standing", label: "Standing & Honors", desc: `${tier.name} · ${credits} credits`, icon: "🏆", accent: "#caa24e" },
-    { key: "avatar", label: "Your Avatar", desc: "Looks, likeness & ink", icon: "🎭", accent: "#8f6fd4" },
-    { key: "atelier", label: "Atelier Creations", desc: `${designs.length} design${designs.length === 1 ? "" : "s"}`, icon: "🖋", accent: "#5f9ed4", badge: designs.length ? String(designs.length) : undefined },
-    { key: "passport", label: "Ink Passport", desc: "Your tattoo history", icon: "📜", accent: "#4fae8a" },
-    { key: "messages", label: "Conversations", desc: `${convos.length} with your artists`, icon: "✉", accent: "#d4788f", badge: convos.length ? String(convos.length) : undefined },
-    { key: "commission", label: "The Commission", desc: "Book a $100 consultation", icon: "✒", accent: "#d4788f" },
-    { key: "kingdom", label: "The Kingdom", desc: "Court, missions & ledger", icon: "♛", accent: "#caa24e" },
-    { key: "wallet", label: "The Purse", desc: gems != null ? `◆ ${gems} gems` : "Your gem balance", icon: "◆", accent: "#d4b574" },
-    { key: "avatar3d", label: "The Court in 3D", desc: "Inspect a look in relief", icon: "👑", accent: "#caa24e" },
-    { key: "quarters3d", label: "My Quarters", desc: "Your chamber, walkable", icon: "🏰", accent: "#8f6fd4" },
-    { key: "ball", label: "The Estate Ball", desc: "Take a turn about the room", icon: "🕯", accent: "#d4b574" },
-    { key: "settings", label: "Concierge", desc: "Name, notes & account", icon: "⚙", accent: "#7d8aa0" },
+    // — Ink & Booking —
+    { key: "book", label: "Book a Sitting", desc: "$100 deposit · under 2 min", icon: "✦", accent: "#e0b84a", group: "Ink & Booking" },
+    { key: "standing", label: "Standing & Honors", desc: `${tier.name} · ${credits} credits`, icon: "🏆", accent: "#caa24e", group: "Ink & Booking" },
+    { key: "avatar", label: "Your Avatar", desc: "Looks, likeness & ink", icon: "🎭", accent: "#8f6fd4", group: "Ink & Booking" },
+    { key: "atelier", label: "Atelier Creations", desc: `${designs.length} design${designs.length === 1 ? "" : "s"}`, icon: "🖋", accent: "#5f9ed4", badge: designs.length ? String(designs.length) : undefined, group: "Ink & Booking" },
+    { key: "passport", label: "Ink Passport", desc: "Your tattoo history", icon: "📜", accent: "#4fae8a", group: "Ink & Booking" },
+    { key: "messages", label: "Conversations", desc: `${convos.length} with your artists`, icon: "✉", accent: "#d4788f", badge: convos.length ? String(convos.length) : undefined, group: "Ink & Booking" },
+    // — The Kingdom (play) —
+    { key: "kingdom", label: "The Kingdom", desc: "Court, missions & ledger", icon: "♛", accent: "#caa24e", group: "The Kingdom" },
+    { key: "wallet", label: "The Purse", desc: gems != null ? `◆ ${gems} gems` : "Your gem balance", icon: "◆", accent: "#d4b574", group: "The Kingdom" },
+    { key: "avatar3d", label: "The Court in 3D", desc: "Inspect a look in relief", icon: "👑", accent: "#caa24e", group: "The Kingdom" },
+    { key: "quarters3d", label: "My Quarters", desc: "Your chamber, walkable", icon: "🏰", accent: "#8f6fd4", group: "The Kingdom" },
+    { key: "ball", label: "The Estate Ball", desc: "Take a turn about the room", icon: "🕯", accent: "#d4b574", group: "The Kingdom" },
+    // — Account —
+    { key: "settings", label: "Concierge", desc: "Name, notes & account", icon: "⚙", accent: "#7d8aa0", group: "Account" },
   ];
 
   return (
@@ -116,7 +119,7 @@ export default function ClientQuarters({ userId, email, profile, convos, passpor
       topLinks={[{ href: "/artist-hub", label: "Artist Hub" }]}
       onSelect={(key) => {
         const nav: Record<string, string> = {
-          commission: "/commission", kingdom: "/kingdom", wallet: "/wallet",
+          book: "/book", kingdom: "/kingdom", wallet: "/wallet",
           avatar3d: "/avatar/3d", quarters3d: "/quarters", ball: "/ball",
         };
         if (nav[key]) { router.push(nav[key]); return; }
