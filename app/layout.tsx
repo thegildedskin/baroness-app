@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cinzel, Cormorant_Garamond, EB_Garamond, UnifrakturCook } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "./SmoothScroll";
+import BookButton from "./BookButton";
 
 // Self-hosted at build time (next/font downloads + serves these locally — no
 // runtime request to Google, no layout shift). Each exposes a CSS variable that
@@ -32,6 +33,7 @@ export default function RootLayout({
       <body>
         <SmoothScroll />
         {children}
+        <BookButton />
         <script dangerouslySetInnerHTML={{ __html: "if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})})}" }} />
       </body>
     </html>
