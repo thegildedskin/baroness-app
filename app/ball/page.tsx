@@ -1,4 +1,6 @@
 import EstateBall from "./EstateBall";
+import ComingSoon from "../ComingSoon";
+import { EXPERIMENTS_ENABLED } from "@/lib/flags";
 
 export const metadata = {
   title: "The Estate Ball · Baroness Tattoo Estate",
@@ -7,6 +9,7 @@ export const metadata = {
 // A shared-scene first pass (single-player): a candlelit ballroom populated with
 // the court's GLB avatars. Real-time presence is a later backend phase.
 export default function BallPage() {
+  if (!EXPERIMENTS_ENABLED) return <ComingSoon title="The Ballroom is being prepared" />;
   return (
     <main
       style={{

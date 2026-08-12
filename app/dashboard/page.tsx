@@ -28,7 +28,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { id?:
     const { data: artists } = await supabase.from("artists").select("id, display_name, slug, is_published").order("sort_order");
     return (
       <main className="wrap" style={{ maxWidth: 720 }}>
-        <p style={{ marginBottom: 12, display: "flex", gap: 18 }}><Link href="/" className="caps" style={{ fontSize: 11, color: "var(--gold-dark)" }}>← The Estate</Link><Link href="/admin" className="caps" style={{ fontSize: 11, color: "var(--gold-dark)" }}>⚜ House Admin</Link><Link href="/dashboard?me=1" className="caps" style={{ fontSize: 11, color: "var(--gold-dark)" }}>👤 My Quarters &amp; Avatar</Link></p>
+        <p style={{ marginBottom: 12, display: "flex", gap: 18 }}><Link href="/" className="caps" style={{ fontSize: 11, color: "var(--gold-dark)" }}>← The Estate</Link><Link href="/admin" className="caps" style={{ fontSize: 11, color: "var(--gold-dark)" }}>⚜ House Admin</Link><Link href="/dashboard?me=1" className="caps" style={{ fontSize: 11, color: "var(--gold-dark)" }}>👤 My Quarters</Link></p>
         <h1 style={{ fontSize: 44 }}>Artists&rsquo; Quarters</h1>
         <p className="caps" style={{ fontSize: 10, color: "var(--gold-dark)", margin: "6px 0 20px" }}>Signed in as {user.email} · House Owner</p>
         <div className="card">
@@ -80,6 +80,13 @@ export default async function Dashboard({ searchParams }: { searchParams: { id?:
     .eq("artist_id", artistId)
     .order("last_message_at", { ascending: false });
   const { data: products } = await supabase.from("products").select("id, title, description, price_cents, kind, preview_url, is_active").eq("artist_id", artistId).order("created_at", { ascending: false });
+  // The artist's studio-social submissions (RLS: artist reads own / owner reads all).
+  const { data: marketingPosts } = await supabase
+    .from("marketing_posts")
+    .select("id, caption, media_url, status, created_at, scheduled_for, published_at")
+    .eq("artist_id", artistId)
+    .order("created_at", { ascending: false })
+    .limit(25);
   if (!artist) return (<main className="wrap"><p>Artist not found.</p></main>);
-  return (<ProfileEditor artist={artist} flash={flash ?? []} threads={threads ?? []} products={products ?? []} isOwner={!!isOwner} email={user.email!} />);
+  return (<ProfileEditor artist={artist} flash={flash ?? []} threads={threads ?? []} products={products ?? []} marketingPosts={marketingPosts ?? []} isOwner={!!isOwner} email={user.email!} />);
 }

@@ -13,6 +13,7 @@ import { AvatarRender, type AvatarConfig } from "../avatar/AvatarRender";
 import { getLook } from "../avatar/looks";
 import { ACHIEVEMENTS, tierFor, nextTier } from "@/lib/achievements";
 import { claimAchievements } from "@/app/actions";
+import { EXPERIMENTS_ENABLED } from "@/lib/flags";
 
 type Convo = { id: string; artist_id: string; last_message_at: string; artists: { display_name: string } | { display_name: string }[] | null };
 type Profile = { display_name: string | null; avatar: Partial<AvatarConfig> | null; credits: number | null; total_spent_cents: number | null; premium: boolean | null; rpm_url: string | null; avatar_tattoo: string | null };
@@ -32,7 +33,7 @@ export default function ClientQuarters({ userId, email, profile, convos, passpor
   const router = useRouter();
   const [name, setName] = useState(profile?.display_name ?? "");
   const [gems, setGems] = useState<number | null>(null);
-  useEffect(() => { getWallet().then((w) => setGems(w.balance)); }, []);
+  useEffect(() => { if (EXPERIMENTS_ENABLED) getWallet().then((w) => setGems(w.balance)); }, []);
 
   async function deleteDesign(id: string) {
     const { error } = await supabase.from("designs").delete().eq("id", id);
@@ -63,6 +64,7 @@ export default function ClientQuarters({ userId, email, profile, convos, passpor
   const earned = new Set(achievements);
 
   useEffect(() => {
+    if (!EXPERIMENTS_ENABLED) return; // achievements are part of the paused gamification layer
     (async () => { try { const r = await claimAchievements(); if (r?.added) router.refresh(); } catch { /* noop */ } })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -90,21 +92,27 @@ export default function ClientQuarters({ userId, email, profile, convos, passpor
   );
   const pct = next ? Math.min(100, Math.round(((spentCents - tier.min) / (next.min - tier.min)) * 100)) : 100;
 
-  const [panel, setPanel] = useState("standing");
+  const [panel, setPanel] = useState(EXPERIMENTS_ENABLED ? "standing" : "passport");
   const tiles: QTile[] = [
     // — Ink & Booking —
     { key: "book", label: "Book a Sitting", desc: "$100 deposit · under 2 min", icon: "✦", accent: "#e0b84a", group: "Ink & Booking" },
-    { key: "standing", label: "Standing & Honors", desc: `${tier.name} · ${credits} credits`, icon: "🏆", accent: "#caa24e", group: "Ink & Booking" },
-    { key: "avatar", label: "Your Avatar", desc: "Looks, likeness & ink", icon: "🎭", accent: "#8f6fd4", group: "Ink & Booking" },
-    { key: "atelier", label: "Atelier Creations", desc: `${designs.length} design${designs.length === 1 ? "" : "s"}`, icon: "🖋", accent: "#5f9ed4", badge: designs.length ? String(designs.length) : undefined, group: "Ink & Booking" },
+    // Experimental tiles (achievements, avatar creator, Atelier designs) are
+    // paused behind the experiments flag — see lib/flags.ts.
+    ...(EXPERIMENTS_ENABLED ? [
+      { key: "standing", label: "Standing & Honors", desc: `${tier.name} · ${credits} credits`, icon: "🏆", accent: "#caa24e", group: "Ink & Booking" },
+      { key: "avatar", label: "Your Avatar", desc: "Looks, likeness & ink", icon: "🎭", accent: "#8f6fd4", group: "Ink & Booking" },
+      { key: "atelier", label: "Atelier Creations", desc: `${designs.length} design${designs.length === 1 ? "" : "s"}`, icon: "🖋", accent: "#5f9ed4", badge: designs.length ? String(designs.length) : undefined, group: "Ink & Booking" },
+    ] satisfies QTile[] : []),
     { key: "passport", label: "Ink Passport", desc: "Your tattoo history", icon: "📜", accent: "#4fae8a", group: "Ink & Booking" },
     { key: "messages", label: "Conversations", desc: `${convos.length} with your artists`, icon: "✉", accent: "#d4788f", badge: convos.length ? String(convos.length) : undefined, group: "Ink & Booking" },
-    // — The Kingdom (play) —
-    { key: "kingdom", label: "The Kingdom", desc: "Court, missions & ledger", icon: "♛", accent: "#caa24e", group: "The Kingdom" },
-    { key: "wallet", label: "The Purse", desc: gems != null ? `◆ ${gems} gems` : "Your gem balance", icon: "◆", accent: "#d4b574", group: "The Kingdom" },
-    { key: "avatar3d", label: "The Court in 3D", desc: "Inspect a look in relief", icon: "👑", accent: "#caa24e", group: "The Kingdom" },
-    { key: "quarters3d", label: "My Quarters", desc: "Your chamber, walkable", icon: "🏰", accent: "#8f6fd4", group: "The Kingdom" },
-    { key: "ball", label: "The Estate Ball", desc: "Take a turn about the room", icon: "🕯", accent: "#d4b574", group: "The Kingdom" },
+    // — The Kingdom (play) — paused with experiments off
+    ...(EXPERIMENTS_ENABLED ? [
+      { key: "kingdom", label: "The Kingdom", desc: "Court, missions & ledger", icon: "♛", accent: "#caa24e", group: "The Kingdom" },
+      { key: "wallet", label: "The Purse", desc: gems != null ? `◆ ${gems} gems` : "Your gem balance", icon: "◆", accent: "#d4b574", group: "The Kingdom" },
+      { key: "avatar3d", label: "The Court in 3D", desc: "Inspect a look in relief", icon: "👑", accent: "#caa24e", group: "The Kingdom" },
+      { key: "quarters3d", label: "My Quarters", desc: "Your chamber, walkable", icon: "🏰", accent: "#8f6fd4", group: "The Kingdom" },
+      { key: "ball", label: "The Estate Ball", desc: "Take a turn about the room", icon: "🕯", accent: "#d4b574", group: "The Kingdom" },
+    ] satisfies QTile[] : []),
     // — Account —
     { key: "settings", label: "Concierge", desc: "Name, notes & account", icon: "⚙", accent: "#7d8aa0", group: "Account" },
   ];
@@ -116,7 +124,7 @@ export default function ClientQuarters({ userId, email, profile, convos, passpor
       subtitle={`${email} · ${tier.name}`}
       tiles={tiles}
       active={panel}
-      topLinks={[{ href: "/artist-hub", label: "Artist Hub" }]}
+      topLinks={EXPERIMENTS_ENABLED ? [{ href: "/artist-hub", label: "Artist Hub" }] : []}
       onSelect={(key) => {
         const nav: Record<string, string> = {
           book: "/book", kingdom: "/kingdom", wallet: "/wallet",

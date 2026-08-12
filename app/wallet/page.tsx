@@ -1,4 +1,6 @@
 import Wallet from "./Wallet";
+import ComingSoon from "../ComingSoon";
+import { EXPERIMENTS_ENABLED } from "@/lib/flags";
 
 export const metadata = {
   title: "The Purse · Baroness Tattoo Estate",
@@ -6,6 +8,7 @@ export const metadata = {
 
 // The gem wallet view — balance + transaction ledger (server-authoritative).
 export default function WalletPage() {
+  if (!EXPERIMENTS_ENABLED) return <ComingSoon title="The Purse is being prepared" />;
   return (
     <main
       style={{

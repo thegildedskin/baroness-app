@@ -6,6 +6,8 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { createClient } from "@/lib/supabase/client";
 import { EffectComposer, Bloom, Vignette, SMAA } from "@react-three/postprocessing";
+import ComingSoon from "../ComingSoon";
+import { EXPERIMENTS_ENABLED } from "@/lib/flags";
 
 type Keys = Record<string, boolean>;
 type Cam = { yaw: number; pitch: number; dist: number };
@@ -203,7 +205,15 @@ function Player({ keys, cam, rpmUrl }: { keys: MutableRefObject<Keys>; cam: Muta
   </group>);
 }
 
-export default function Explore() {
+// Route entry — gated behind the experiments flag so the 3D grounds can be
+// paused for go-live without deleting the scene. The wrapper keeps Explore's
+// hooks unconditional.
+export default function ExplorePage() {
+  if (!EXPERIMENTS_ENABLED) return <ComingSoon title="The Grounds are closed for the season" />;
+  return <Explore />;
+}
+
+function Explore() {
   const keys = useRef<Keys>({});
   const cam = useRef<Cam>({ yaw: 0, pitch: 0.34, dist: 9.5 });
   const [rpmUrl, setRpmUrl] = useState<string | null>(null);

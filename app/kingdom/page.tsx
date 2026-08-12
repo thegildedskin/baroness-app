@@ -1,4 +1,6 @@
 import Kingdom from "./Kingdom";
+import ComingSoon from "../ComingSoon";
+import { EXPERIMENTS_ENABLED } from "@/lib/flags";
 
 export const metadata = {
   title: "The Kingdom · Baroness Tattoo Estate",
@@ -6,6 +8,7 @@ export const metadata = {
 
 // The gamified layer — court, lore, missions, hunt, achievements, Royal Ledger.
 export default function KingdomPage() {
+  if (!EXPERIMENTS_ENABLED) return <ComingSoon title="The Kingdom is being prepared" />;
   return (
     <main
       style={{

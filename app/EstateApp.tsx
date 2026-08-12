@@ -6,6 +6,7 @@ import ArtistMessageForm from "./ArtistMessageForm";
 import { AvatarRender, type AvatarConfig } from "./avatar/AvatarRender";
 import ReviewsTicker from "./ReviewsTicker";
 import { GALLERY_FILES, galleryImg } from "@/lib/gallery";
+import { EXPERIMENTS_ENABLED } from "@/lib/flags";
 
 export type Flash = { id: string; image_url: string };
 export type Artist = {
@@ -395,7 +396,7 @@ export default function EstateApp({ artists, gallery = [], settings = {} }: { ar
             <div className="section-kicker">Choose a door, and I shall escort you through.</div>
           </div>
           <div className="filigree reveal"><span>❦</span></div>
-          <Mansion3D />
+          {EXPERIMENTS_ENABLED && <Mansion3D />}
           <div className="rooms">
             <div className="room-card reveal" onClick={() => go("artists")}><span className="room-emblem"><svg viewBox="0 0 40 40" width="38" height="38" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="14" y="4" width="12" height="15" rx="4" /><path d="M20 19 V30 M20 30 V37 M14 9 H10 a3 3 0 0 0 -3 3 V15" /><circle cx="20" cy="9" r="1.6" fill="currentColor" /></svg></span><div className="room-name">Portrait Salon</div><div className="room-desc">Her Grace&rsquo;s artists</div></div>
             <div className="room-card reveal" onClick={() => go("gallery")}><span className="room-emblem">🖼</span><div className="room-name">The Gallery</div><div className="room-desc">Works upon the skin</div></div>
@@ -403,7 +404,7 @@ export default function EstateApp({ artists, gallery = [], settings = {} }: { ar
             <div className="room-card reveal" onClick={() => go("boutique")}><span className="room-emblem">👛</span><div className="room-name">The Boudoir</div><div className="room-desc">Maison Baroness</div></div>
             <div className="room-card reveal" onClick={() => go("salon")}><span className="room-emblem">📜</span><div className="room-name">Drawing Room</div><div className="room-desc">The house &amp; how to call</div></div>
           </div>
-          <a className="btn" href="/explore" style={{ marginTop: 26 }}>Stroll the Grounds · 3D (beta)</a>
+          {EXPERIMENTS_ENABLED && <a className="btn" href="/explore" style={{ marginTop: 26 }}>Stroll the Grounds · 3D (beta)</a>}
           <ReviewsTicker />
         </div>
       </section>
@@ -553,9 +554,11 @@ export default function EstateApp({ artists, gallery = [], settings = {} }: { ar
             <a href="/gallery">The Gallery · Photographs</a>
             <a href="/prep-guide">Prepare for Your Sitting</a>
             <a href="/aftercare">Aftercare</a>
-            <a href="/explore">Stroll the Grounds · 3D</a>
-            <a href="/avatar/create">Create a 3D Avatar</a>
-            <a href="/studio">Design a Tattoo</a>
+            {EXPERIMENTS_ENABLED && (<>
+              <a href="/explore">Stroll the Grounds · 3D</a>
+              <a href="/avatar/create">Create a 3D Avatar</a>
+              <a href="/studio">Design a Tattoo</a>
+            </>)}
             <a href="/dashboard">My Quarters · Profile</a>
           </div>
           <div className="avatar"><ButlerAvatar /></div>

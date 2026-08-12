@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import ComingSoon from "../ComingSoon";
+import { EXPERIMENTS_ENABLED } from "@/lib/flags";
 
 const REGIONS = [
   { id: "head", label: "Head", x: 86, y: 8, w: 28, h: 28 },
@@ -22,7 +24,14 @@ const MOTIFS: Record<string, string> = {
   Dagger: "M0,-28 L4,-6 4,16 0,28 -4,16 -4,-6 Z M-10,-6 L10,-6",
 };
 
-export default function Studio() {
+// Route entry — the Tattoo Atelier design lab is paused behind the
+// experiments flag. The wrapper keeps Studio's hooks unconditional.
+export default function StudioPage() {
+  if (!EXPERIMENTS_ENABLED) return <ComingSoon title="The Tattoo Atelier is being prepared" />;
+  return <Studio />;
+}
+
+function Studio() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const drawing = useRef(false);
   const undoStack = useRef<string[]>([]);

@@ -18,15 +18,23 @@ export default function Messages({ threads }: { threads: Thread[] }) {
   const router = useRouter();
   const [reply, setReply] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string>("");
+  const [errs, setErrs] = useState<Record<string, string>>({});
 
   async function send(threadId: string) {
     const body = (reply[threadId] || "").trim();
     if (!body) return;
     setBusy(threadId);
-    const res = await replyToThread(threadId, body);
-    if (!res?.error) {
-      setReply((r) => ({ ...r, [threadId]: "" }));
-      router.refresh();
+    setErrs((e) => ({ ...e, [threadId]: "" }));
+    try {
+      const res = await replyToThread(threadId, body);
+      if (res?.error) {
+        setErrs((e) => ({ ...e, [threadId]: res.error! }));
+      } else {
+        setReply((r) => ({ ...r, [threadId]: "" }));
+        router.refresh();
+      }
+    } catch {
+      setErrs((e) => ({ ...e, [threadId]: "Could not send — check your connection and try again." }));
     }
     setBusy("");
   }
@@ -77,6 +85,7 @@ export default function Messages({ threads }: { threads: Thread[] }) {
                     {busy === t.id ? "…" : "Reply"}
                   </button>
                 </div>
+                {errs[t.id] && <div style={{ fontSize: 13, color: "#a33", marginTop: 6 }}>{errs[t.id]}</div>}
                 {t.client_email && (
                   <div style={{ fontSize: 12, color: "var(--grey)", marginTop: 6 }}>
                     To be sure they see it, you can also email {t.client_email} directly.

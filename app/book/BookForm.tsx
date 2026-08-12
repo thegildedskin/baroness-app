@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { EXPERIMENTS_ENABLED } from "@/lib/flags";
 
 export type BookArtist = { id: string; display_name: string; specialty: string | null; portrait_url: string | null };
 
@@ -106,9 +107,11 @@ export default function BookForm({ artists }: { artists: BookArtist[] }) {
       >
         {busy ? "One moment…" : "Reserve with $100 deposit →"}
       </button>
-      <p style={{ textAlign: "center", fontSize: 12.5, color: "var(--grey)", marginTop: 14 }}>
-        Prefer the scenic route? <a href="/commission" style={{ color: "var(--gold-dark)" }}>The full estate booking →</a>
-      </p>
+      {EXPERIMENTS_ENABLED && (
+        <p style={{ textAlign: "center", fontSize: 12.5, color: "var(--grey)", marginTop: 14 }}>
+          Prefer the scenic route? <a href="/commission" style={{ color: "var(--gold-dark)" }}>The full estate booking →</a>
+        </p>
+      )}
     </div>
   );
 }

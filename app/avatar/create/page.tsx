@@ -3,12 +3,21 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import ComingSoon from "../../ComingSoon";
+import { EXPERIMENTS_ENABLED } from "@/lib/flags";
 
 // Your Avaturn project subdomain (create one free at developer.avaturn.me).
 // Until set, the shared "demo" subdomain is used (limited).
 const SUB = process.env.NEXT_PUBLIC_AVATURN_SUBDOMAIN || "demo";
 
-export default function CreateAvatar() {
+// Route entry — the 3D avatar creator (Avaturn) is paused behind the
+// experiments flag. The wrapper keeps CreateAvatar's hooks unconditional.
+export default function CreateAvatarPage() {
+  if (!EXPERIMENTS_ENABLED) return <ComingSoon title="The Avatar Atelier is being prepared" />;
+  return <CreateAvatar />;
+}
+
+function CreateAvatar() {
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const [saving, setSaving] = useState(false);
