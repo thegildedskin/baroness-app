@@ -15,3 +15,6 @@ SupaBase API.txt
 *service_role*
 *.pem
 *.key
+
+# build cache
+tsconfig.tsbuildinfo

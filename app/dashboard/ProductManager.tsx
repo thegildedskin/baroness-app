@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-type Product = { id: string; title: string; description: string | null; price_cents: number; kind: string; preview_url: string | null; is_active: boolean };
+type Product = { id: string; title: string; description: string | null; price_cents: number; kind: string; preview_url: string | null; is_active: boolean; claimable?: boolean | null };
 
 export default function ProductManager({ artistId, products }: { artistId: string; products: Product[] }) {
   const supabase = createClient();
@@ -13,6 +13,7 @@ export default function ProductManager({ artistId, products }: { artistId: strin
   const [desc, setDesc] = useState("");
   const [price, setPrice] = useState("25");
   const [kind, setKind] = useState("art");
+  const [claimable, setClaimable] = useState(false);
   const [preview, setPreview] = useState<File | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
@@ -32,10 +33,13 @@ export default function ProductManager({ artistId, products }: { artistId: strin
     const fu = await supabase.storage.from("product-files").upload(fp, file, { upsert: true });
     if (fu.error) { setBusy(false); setStatus(`Error: ${fu.error.message}`); return; }
     const cents = Math.max(100, Math.round(parseFloat(price || "0") * 100));
-    const { error } = await supabase.from("products").insert({ artist_id: artistId, title: title.trim(), description: desc.trim() || null, price_cents: cents, kind, preview_url, file_path: fp, is_active: true });
+    const row = { artist_id: artistId, title: title.trim(), description: desc.trim() || null, price_cents: cents, kind, preview_url, file_path: fp, is_active: true };
+    let { error } = await supabase.from("products").insert({ ...row, claimable: kind === "flash" && claimable });
+    // Graceful pre-migration-012 path: retry without the claimable column.
+    if (error && /claimable/i.test(error.message)) ({ error } = await supabase.from("products").insert(row));
     setBusy(false);
     if (error) { setStatus(`Error: ${error.message}`); return; }
-    setTitle(""); setDesc(""); setPrice("25"); setPreview(null); setFile(null); setStatus("Listed.");
+    setTitle(""); setDesc(""); setPrice("25"); setClaimable(false); setPreview(null); setFile(null); setStatus("Listed.");
     router.refresh();
   }
   async function toggle(p: Product) {
@@ -64,7 +68,7 @@ export default function ProductManager({ artistId, products }: { artistId: strin
               ) : <div style={{ aspectRatio: "1", background: "linear-gradient(135deg,#241c16,#161210)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--gold-light)", fontSize: 28 }}>✦</div>}
               <div style={{ padding: 8 }}>
                 <div style={{ fontSize: 13, fontWeight: 600 }}>{p.title}</div>
-                <div style={{ fontSize: 13, color: "var(--gold-dark)" }}>${(p.price_cents / 100).toFixed(2)} · {p.kind}</div>
+                <div style={{ fontSize: 13, color: "var(--gold-dark)" }}>${(p.price_cents / 100).toFixed(2)} · {p.kind}{p.claimable ? " · claimable" : ""}</div>
                 <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
                   <button className="btn ghost" style={{ padding: "5px 8px", fontSize: 9 }} onClick={() => toggle(p)} disabled={busy}>{p.is_active ? "Hide" : "Show"}</button>
                   <button className="btn ghost" style={{ padding: "5px 8px", fontSize: 9 }} onClick={() => remove(p.id)} disabled={busy}>Delete</button>
@@ -81,9 +85,18 @@ export default function ProductManager({ artistId, products }: { artistId: strin
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <label style={{ fontSize: 14 }}>$ <input value={price} onChange={(e) => setPrice(e.target.value)} type="number" min="1" step="1" style={{ ...inp, width: 90, display: "inline-block" }} /></label>
           <select value={kind} onChange={(e) => setKind(e.target.value)} style={{ ...inp, width: "auto" }}>
-            <option value="art">Digital art</option><option value="flash">Flash design</option><option value="stencil">Stencil</option>
+            <option value="art">Digital art</option><option value="flash">Flash design</option><option value="stencil">Stencil</option><option value="aftercare">Aftercare product</option>
           </select>
         </div>
+        {kind === "flash" && (
+          <label style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13.5, color: "var(--grey)", cursor: "pointer" }}>
+            <input type="checkbox" checked={claimable} onChange={(e) => setClaimable(e.target.checked)} style={{ accentColor: "var(--gold-dark)", width: 16, height: 16, marginTop: 2 }} />
+            <span>
+              <strong style={{ color: "var(--black)" }}>Claim this design</strong> — one-off flash: the purchase claims the design
+              and counts as the session deposit. The studio reaches out within 1 business day to schedule. Hide it after it sells.
+            </span>
+          </label>
+        )}
         <label style={{ fontSize: 13, color: "var(--grey)" }}>Preview image (shown publicly): <input type="file" accept="image/*" onChange={(e) => setPreview(e.target.files?.[0] ?? null)} /></label>
         <label style={{ fontSize: 13, color: "var(--grey)" }}>Downloadable file (delivered after purchase): <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} /></label>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>

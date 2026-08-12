@@ -1,9 +1,12 @@
+import ConversionPing from "./ConversionPing";
+
 export const metadata = { title: "The Chair Is Yours · Baroness Tattoo" };
 
 export default function ThanksPage({ searchParams }: { searchParams: { pending?: string } }) {
   const pending = searchParams?.pending === "1";
   return (
     <main style={{ minHeight: "100vh", background: "var(--cream)", display: "grid", placeItems: "center", padding: 24 }}>
+      {!pending && <ConversionPing />}
       <div style={{ maxWidth: 520, textAlign: "center" }}>
         <div style={{ fontFamily: "var(--display)", fontSize: 30, color: "var(--gold-dark)" }}>❦</div>
         <h1 style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 40, color: "var(--black)", margin: "6px 0 0", lineHeight: 1.1 }}>

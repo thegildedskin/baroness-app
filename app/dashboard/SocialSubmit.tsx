@@ -30,8 +30,8 @@ const STATUS_LABEL: Record<string, string> = {
   posted: "Posted",
 };
 
-export default function SocialSubmit({ artistId, artistName, flash, posts }: {
-  artistId: string; artistName: string; flash: Flash[]; posts: MarketingPost[];
+export default function SocialSubmit({ artistId, artistName, flash, posts, userId }: {
+  artistId: string; artistName: string; flash: Flash[]; posts: MarketingPost[]; userId: string;
 }) {
   const supabase = createClient();
   const router = useRouter();
@@ -43,7 +43,8 @@ export default function SocialSubmit({ artistId, artistName, flash, posts }: {
 
   async function uploadPhoto(file: File) {
     setBusy(true); setStatus("Uploading photo…");
-    const path = `${artistId}/social-${Date.now()}-${file.name}`;
+    // Storage RLS scopes writes to the uploader's auth.uid() folder prefix.
+    const path = `${userId}/social-${Date.now()}-${file.name}`;
     const up = await supabase.storage.from("flash").upload(path, file, { upsert: true });
     if (up.error) { setBusy(false); setStatus(`Error: ${up.error.message}`); return; }
     const url = supabase.storage.from("flash").getPublicUrl(path).data.publicUrl;

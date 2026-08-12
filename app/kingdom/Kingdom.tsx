@@ -2,12 +2,12 @@
 
 // The Kingdom (ported from the design kit). Six tabs: Court (Baroness dialogue,
 // court cards, butler-livery shop), Legend, Missions, Hunt (reads the Estate's
-// curiosity finds), Achievements, and the Royal Ledger. The ledger table is
-// wired to /api/ledger, and unlocking a livery mints it as a token — closing
-// SPEC_blockchain_token_ledger end-to-end. Shared localStorage keys match the
-// contract (baroness-butler-skins, baroness-curiosities). Kit CSS scoped .kgwrap.
+// curiosity finds), Achievements, and the Royal Ledger. The ledger table shows
+// static sample provenance rows — the token/NFT backend was removed in Phase 0.
+// Shared localStorage keys match the contract (baroness-butler-skins,
+// baroness-curiosities). Kit CSS scoped .kgwrap.
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { loadState, saveState } from "@/lib/state";
 import { getWallet, applyGems } from "@/lib/wallet";
 
@@ -157,24 +157,7 @@ export default function Kingdom() {
   const [found, setFound] = useState<string[]>([]);
   const [collected, setCollected] = useState<string[]>([]);
   const [claimed, setClaimed] = useState<Record<string, boolean>>({});
-  const [rows, setRows] = useState<Row[]>(SAMPLE_ROWS);
-  const [uid, setUid] = useState("guest");
-
-  const loadLedger = useCallback(async () => {
-    try {
-      const res = await fetch("/api/ledger");
-      const j = await res.json();
-      const minted: Row[] = (j.records || []).map((r: any) => ({
-        item: r.name,
-        rarity: `${r.tier} · ${r.mintNumber}/${r.totalMinted}`,
-        rare: r.tier === "Royal" || r.kind === "design-provenance",
-        prov: `brn:${r.kind === "design-provenance" ? "design" : "item"}:${String(r.txRef).slice(2, 6)}…${String(r.txRef).slice(-2)}`,
-        holder: `@${String(r.owner).slice(2, 8)}`,
-        trade: "— fresh mint",
-      }));
-      setRows([...minted, ...SAMPLE_ROWS]);
-    } catch { /* keep samples */ }
-  }, []);
+  const rows: Row[] = SAMPLE_ROWS; // static demo rows — the token backend is gone
 
   useEffect(() => {
     loadState<BS>("butler-skins", { owned: ["baroque-dandy"], appointed: "baroque-dandy" })
@@ -182,25 +165,11 @@ export default function Kingdom() {
     loadState<string[]>("curiosities", []).then(setFound);
     loadState<string[]>("curio-rewards", []).then(setCollected);
     getWallet().then((w) => setGems(w.balance)); // server-authoritative balance
-    let id = "";
-    try { id = localStorage.getItem("baroness-uid") || ""; if (!id) { id = "u" + Math.random().toString(36).slice(2, 8); localStorage.setItem("baroness-uid", id); } } catch { id = "guest"; }
-    setUid(id);
-    loadLedger();
-  }, [loadLedger]);
+  }, []);
 
   function persistBs(next: BS) {
     setBs(next);
     saveState("butler-skins", next);
-  }
-
-  async function mintLivery(s: Skin) {
-    try {
-      await fetch("/api/ledger", {
-        method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ kind: "livery", name: s.nm, series: "Butler Livery", ownerUserId: uid, tier: s.tier || "Noble", image: `/livery/${s.id}.png` }),
-      });
-      loadLedger();
-    } catch { /* noop */ }
   }
 
   async function onSkin(s: Skin) {
@@ -211,7 +180,6 @@ export default function Kingdom() {
       if (bal === null) { setBSay("Not enough gems."); return; }
       setGems(bal);
       persistBs({ owned: [...bs.owned, s.id], appointed: s.id });
-      mintLivery(s); // minted into the royal record
     } else setBSay(`Ascend to ${s.tier} tier in the Royal Ledger.`);
   }
 

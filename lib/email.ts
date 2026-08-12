@@ -1,5 +1,11 @@
 // Minimal Resend sender. No-ops if RESEND_API_KEY isn't set, so the app
 // works before email is configured.
+
+// Where studio notifications (new deposits, bookings) are sent.
+// Set STUDIO_NOTIFY_EMAIL in the environment; falls back to the public
+// studio address.
+export const STUDIO_EMAIL = process.env.STUDIO_NOTIFY_EMAIL || "baroness@baronesstattoo.com";
+
 export function escHtml(s: string) {
   return (s || "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c] as string));
 }

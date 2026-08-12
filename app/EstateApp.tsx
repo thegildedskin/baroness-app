@@ -27,7 +27,7 @@ const CONTACT = {
   address: "315 Coneflower Drive, Garland, TX",
   mapUrl: "https://maps.google.com/?q=315+Coneflower+Drive+Garland+TX",
   phone: "469-246-7217",
-  email: "thegildedskin@gmail.com",
+  email: "baroness@baronesstattoo.com",
   emailDisplay: "baroness@baronesstattoo.com",
   instagram: "https://www.instagram.com/baronesstattoo",
   facebook: "https://www.facebook.com/baronesstattoo",
@@ -508,6 +508,7 @@ export default function EstateApp({ artists, gallery = [], settings = {} }: { ar
               </div>
             ))}
           </div>
+          <a className="btn reveal" href="/shop" style={{ marginTop: 26 }}>Gift Cards &amp; Aftercare · Visit the Shop →</a>
         </div>
       </section>
 
@@ -551,7 +552,12 @@ export default function EstateApp({ artists, gallery = [], settings = {} }: { ar
             <button onClick={() => go("boutique")}>Maison Baroness</button>
             <button onClick={() => go("salon")}>Drawing Room</button>
             <div className="bn-div" />
+            <a href="/artists">The Artists · Portfolios</a>
+            <a href="/book">Book a Consultation</a>
             <a href="/gallery">The Gallery · Photographs</a>
+            <a href="/shop">The Shop · Gift Cards</a>
+            <a href="/reviews">Reviews</a>
+            <a href="/faq">Questions · FAQ</a>
             <a href="/prep-guide">Prepare for Your Sitting</a>
             <a href="/aftercare">Aftercare</a>
             {EXPERIMENTS_ENABLED && (<>
@@ -716,7 +722,7 @@ const CSS = `
 .estate .room-name{font-family:var(--caps);font-size:15px;letter-spacing:.05em;color:var(--black)}
 .estate .room-desc{font-family:var(--display);font-style:italic;font-size:16px;color:#6a563a;margin-top:6px}
 .estate .roomhead{text-align:center;max-width:760px;margin-bottom:18px}
-.estate .backline{position:absolute;top:30px;left:34px;z-index:40}
+.estate .backline{position:absolute;top:74px;left:34px;z-index:40} /* below the fixed funnel-nav (app/page.tsx) */
 /* ===== PORTRAITS / GALLERY ===== */
 .estate .gallery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;width:100%;max-width:1060px}
 .estate .portrait{position:relative;background:#fdf6e7;border:1px solid var(--gold);border-radius:5px;overflow:hidden;cursor:pointer;transition:transform .35s,box-shadow .35s;box-shadow:0 10px 26px rgba(0,0,0,.2)}

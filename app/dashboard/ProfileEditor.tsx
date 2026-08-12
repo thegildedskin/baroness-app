@@ -23,10 +23,10 @@ type Artist = {
   stripe_account_id?: string | null; payouts_enabled?: boolean | null;
 };
 type Flash = { id: string; image_url: string; caption: string | null; sort_order: number };
-type Product = { id: string; title: string; description: string | null; price_cents: number; kind: string; preview_url: string | null; is_active: boolean };
+type Product = { id: string; title: string; description: string | null; price_cents: number; kind: string; preview_url: string | null; is_active: boolean; claimable?: boolean | null };
 
-export default function ProfileEditor({ artist, flash, threads, products, marketingPosts = [], isOwner, email }: {
-  artist: Artist; flash: Flash[]; threads: Thread[]; products: Product[]; marketingPosts?: MarketingPost[]; isOwner: boolean; email: string;
+export default function ProfileEditor({ artist, flash, threads, products, marketingPosts = [], isOwner, email, userId }: {
+  artist: Artist; flash: Flash[]; threads: Thread[]; products: Product[]; marketingPosts?: MarketingPost[]; isOwner: boolean; email: string; userId: string;
 }) {
   const supabase = createClient();
   const router = useRouter();
@@ -60,7 +60,8 @@ export default function ProfileEditor({ artist, flash, threads, products, market
   }
   async function uploadPortrait(file: File) {
     setBusy(true); setStatus("Uploading portrait…");
-    const path = `${artist.id}/portrait-${Date.now()}-${file.name}`;
+    // Storage RLS scopes writes to the uploader's auth.uid() folder prefix.
+    const path = `${userId}/portrait-${Date.now()}-${file.name}`;
     const up = await supabase.storage.from("portraits").upload(path, file, { upsert: true });
     if (up.error) { setBusy(false); setStatus(`Error: ${up.error.message}`); return; }
     const { data: pub } = supabase.storage.from("portraits").getPublicUrl(path);
@@ -69,7 +70,8 @@ export default function ProfileEditor({ artist, flash, threads, products, market
   }
   async function addFlash(file: File) {
     setBusy(true); setStatus("Uploading image…");
-    const path = `${artist.id}/${Date.now()}-${file.name}`;
+    // Storage RLS scopes writes to the uploader's auth.uid() folder prefix.
+    const path = `${userId}/${Date.now()}-${file.name}`;
     const up = await supabase.storage.from("flash").upload(path, file, { upsert: true });
     if (up.error) { setBusy(false); setStatus(`Error: ${up.error.message}`); return; }
     const { data: pub } = supabase.storage.from("flash").getPublicUrl(path);
@@ -121,7 +123,7 @@ export default function ProfileEditor({ artist, flash, threads, products, market
       )}
 
       {panel === "social" && (
-        <SocialSubmit artistId={artist.id} artistName={artist.display_name} flash={flash} posts={marketingPosts} />
+        <SocialSubmit artistId={artist.id} artistName={artist.display_name} flash={flash} posts={marketingPosts} userId={userId} />
       )}
 
       {panel === "profile" && (<>

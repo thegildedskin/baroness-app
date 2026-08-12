@@ -79,7 +79,9 @@ export default async function Dashboard({ searchParams }: { searchParams: { id?:
     .select("id, client_name, client_email, created_at, last_message_at, messages(id, sender, body, created_at)")
     .eq("artist_id", artistId)
     .order("last_message_at", { ascending: false });
-  const { data: products } = await supabase.from("products").select("id, title, description, price_cents, kind, preview_url, is_active").eq("artist_id", artistId).order("created_at", { ascending: false });
+  // "*" so new columns (e.g. claimable, migration 012) flow through without
+  // breaking environments where the migration hasn't run yet.
+  const { data: products } = await supabase.from("products").select("*").eq("artist_id", artistId).order("created_at", { ascending: false });
   // The artist's studio-social submissions (RLS: artist reads own / owner reads all).
   const { data: marketingPosts } = await supabase
     .from("marketing_posts")
@@ -88,5 +90,5 @@ export default async function Dashboard({ searchParams }: { searchParams: { id?:
     .order("created_at", { ascending: false })
     .limit(25);
   if (!artist) return (<main className="wrap"><p>Artist not found.</p></main>);
-  return (<ProfileEditor artist={artist} flash={flash ?? []} threads={threads ?? []} products={products ?? []} marketingPosts={marketingPosts ?? []} isOwner={!!isOwner} email={user.email!} />);
+  return (<ProfileEditor artist={artist} flash={flash ?? []} threads={threads ?? []} products={products ?? []} marketingPosts={marketingPosts ?? []} isOwner={!!isOwner} email={user.email!} userId={user.id} />);
 }
