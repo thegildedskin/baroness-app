@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import PublicHeader from "../../PublicHeader";
 import { fetchArtistBySlug, fetchPublishedArtists } from "@/lib/artists";
@@ -68,8 +69,7 @@ export default async function ArtistPage({ params }: { params: { slug: string } 
           <div style={{ flex: "0 0 300px", maxWidth: "100%" }}>
             <div style={{ position: "relative", height: 360, background: "linear-gradient(135deg,var(--velvet-2),var(--velvet))", border: "1px solid var(--gold)", borderRadius: 6, overflow: "hidden", boxShadow: "0 14px 34px rgba(0,0,0,.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               {portrait ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={portrait} alt={`${artist.display_name} — ${artist.specialty || "tattoo artist"} at Baroness Tattoo, Garland TX`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <Image src={portrait} alt={`${artist.display_name} — ${artist.specialty || "tattoo artist"} at Baroness Tattoo, Garland TX`} fill priority sizes="(max-width: 640px) 100vw, 300px" style={{ objectFit: "cover" }} />
               ) : (
                 <span style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 84, color: "var(--gold-light)" }}>
                   {(artist.display_name?.trim()?.[0] ?? "B").toUpperCase()}

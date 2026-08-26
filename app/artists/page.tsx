@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import PublicHeader from "../PublicHeader";
 import { fetchPublishedArtists } from "@/lib/artists";
 import { STUDIO } from "@/lib/studio";
@@ -56,8 +57,7 @@ export default async function ArtistsPage() {
                 >
                   <div style={{ height: 280, background: "linear-gradient(135deg,var(--velvet-2),var(--velvet))", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
                     {img ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={img} alt={`${a.display_name} — tattoo artist at Baroness Tattoo, Garland TX`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <Image src={img} alt={`${a.display_name} — tattoo artist at Baroness Tattoo, Garland TX`} fill sizes="(max-width: 640px) 100vw, 300px" style={{ objectFit: "cover" }} />
                     ) : (
                       <span style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 72, color: "var(--gold-light)" }}>
                         {(a.display_name?.trim()?.[0] ?? "B").toUpperCase()}

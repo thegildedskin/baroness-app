@@ -8,7 +8,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { loadState } from "@/lib/state";
-import { applyGems } from "@/lib/wallet";
 import { STYLES, TEMPERAMENTS } from "@/lib/taxonomy";
 import { topMatches } from "@/lib/matcher";
 
@@ -168,7 +167,10 @@ export default function CommissionFlow() {
   const [bust, setBust] = useState<string>("rig-portrait"); // "" => SVG doll
   const [livery, setLivery] = useState("");
   const [works, setWorks] = useState<Work[]>(WORKS_BASE);
-  const [reserved, setReserved] = useState(false);
+  // real reservation — the scenic route ends in the same /api/book deposit flow
+  const [cName, setCName] = useState("");
+  const [cContact, setCContact] = useState("");
+  const [reserveBusy, setReserveBusy] = useState(false);
 
   // Bastien speech + expression
   const [say, setSay] = useState("");
@@ -393,42 +395,56 @@ export default function CommissionFlow() {
             </div>
           </div>
 
-          {/* Step 3 — Reserve */}
+          {/* Step 3 — Reserve (the scenic route ends in the REAL deposit flow:
+              POST /api/book → Stripe Checkout → webhook awards the 200 gems) */}
           <div className={`pane${step === 3 ? " on" : ""}`}>
             <div className="panel">
-              {reserved ? (
-                <>
-                  <div className="confetti">❦ The chair is yours ❦</div>
-                  <p style={{ textAlign: "center", fontSize: 15, color: "var(--quarter-text)" }}>
-                    Consultation with <b style={{ color: "var(--gold-pale)" }}>{artistName}</b> · {slot}<br />
-                    <span style={{ fontSize: 13, color: "var(--quarter-muted)", fontStyle: "italic" }}>Deposit received. Your brief and Atelier design have been delivered to her chambers.</span>
-                  </p>
-                  <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 18 }}>
-                    <a className="cbtn ghost" href="/quarters" style={{ textDecoration: "none" }}>Visit your Quarters</a>
-                    <a className="cbtn" href="/studio" style={{ textDecoration: "none" }}>Refine your design</a>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="p-title">Reserve your consultation</div>
-                  <div className="p-sub">A $100 deposit holds the chair and counts toward your piece. Fully transferable, 48-hour notice.</div>
-                  <div className="lbl">This week with <span style={{ color: "var(--gold-pale)" }}>{artistName}</span></div>
-                  <div className="slots">
-                    {SLOTS.map(([t, ok]) => (
-                      <button key={t} className={`slot${ok ? "" : " gone"}${slot === t ? " on" : ""}`} disabled={!ok} onClick={() => setSlot(t)}>{t}</button>
-                    ))}
-                  </div>
-                  <div className="summary">
-                    <div className="sumrow"><span>Consultation (30 min)</span><span>Included</span></div>
-                    <div className="sumrow"><span>Estimated piece</span><span>{budget}</span></div>
-                    <div className="sumrow"><span>Deposit due today</span><span>$100</span></div>
-                  </div>
-                  <div className="nav">
-                    <button className="cbtn ghost" onClick={() => go(2)}>← Brief</button>
-                    <button className="cbtn" disabled={!slot} onClick={() => { setReserved(true); applyGems(200, "commission:deposit"); speak("Magnifique. I shall have the parlour warmed and the needles blessed — and two hundred gems for your purse, with the house's compliments.", "pleased"); }}>Reserve with $100 deposit</button>
-                  </div>
-                </>
-              )}
+              <div className="p-title">Reserve your consultation</div>
+              <div className="p-sub">A $100 deposit holds the chair and counts toward your piece. Fully transferable, 48-hour notice.</div>
+              <div className="lbl">This week with <span style={{ color: "var(--gold-pale)" }}>{artistName}</span></div>
+              <div className="slots">
+                {SLOTS.map(([t, ok]) => (
+                  <button key={t} className={`slot${ok ? "" : " gone"}${slot === t ? " on" : ""}`} disabled={!ok} onClick={() => setSlot(t)}>{t}</button>
+                ))}
+              </div>
+              <div className="grid2" style={{ marginTop: 14 }}>
+                <label className="fld"><span>Your name</span><input value={cName} onChange={(e) => setCName(e.target.value)} placeholder="So the house may receive you" /></label>
+                <label className="fld"><span>Email or phone</span><input value={cContact} onChange={(e) => setCContact(e.target.value)} placeholder="Where we confirm your hour" /></label>
+              </div>
+              <div className="summary">
+                <div className="sumrow"><span>Consultation (30 min)</span><span>Included</span></div>
+                <div className="sumrow"><span>Estimated piece</span><span>{budget}</span></div>
+                <div className="sumrow"><span>Deposit due today</span><span>$100</span></div>
+              </div>
+              <div className="nav">
+                <button className="cbtn ghost" onClick={() => go(2)}>← Brief</button>
+                <button
+                  className="cbtn"
+                  disabled={!slot || !cName.trim() || !cContact.trim() || reserveBusy}
+                  onClick={async () => {
+                    setReserveBusy(true);
+                    speak("One moment — I shall carry your particulars to the register.", "pleased");
+                    try {
+                      const r = await fetch("/api/book", {
+                        method: "POST", headers: { "content-type": "application/json" },
+                        body: JSON.stringify({
+                          name: cName, contact: cContact, slot: slot || "",
+                          artistName, style: styles.join(", "), budget,
+                          idea: [styles.length && `Styles: ${styles.join(", ")}`, vibe && `Temperament: ${vibe}`, "Via the estate commission chamber"].filter(Boolean).join(" · "),
+                        }),
+                      });
+                      const j = await r.json();
+                      if (j.url) { window.location.href = j.url; return; }
+                      speak(j.error || "The register would not take the entry — do try once more.", "regret");
+                    } catch {
+                      speak("The courier was waylaid — check your connection and try again.", "regret");
+                    }
+                    setReserveBusy(false);
+                  }}
+                >
+                  {reserveBusy ? "Carrying to the register…" : "Reserve with $100 deposit"}
+                </button>
+              </div>
             </div>
           </div>
         </main>

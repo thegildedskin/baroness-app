@@ -165,28 +165,56 @@ this class of product. What "advanced" should mean here:
 
 ## 5 · Phased roadmap
 
-**P0 — ship the funnel (this week)**
+**P0 — ship the funnel** ✅ COMPLETE (code side)
 - [x] Flags off, funnel pages live, SEO layer, qualified `/book`, webhook reconcile.
-- [x] CI lint fixed (this audit). Run the two SQL scripts + migrations in Supabase.
-- [ ] Point DNS at the Vercel deploy; keep GoDaddy site until parity confirmed.
-- [ ] Add funnel tests: `/api/book` validation, honeypot, rate limiter (Vitest).
+- [x] CI lint fixed. Funnel tests: `lib/booking.ts` + `tests/booking.test.ts`
+  (sanitizer, email, rate-limiter window/cap, honeypot, IP parsing).
+- [x] GoDaddy-URL 301s in `next.config.mjs` for the cutover.
+- [ ] **Operator actions**: run migrations 013–015 + the two SQL scripts in
+  Supabase; `npm install` (ESLint devDeps); point DNS at Vercel.
 
-**P1 — retention bridge (next 2 weeks)**
-- [ ] Webhook: paid deposit → `apply_gems(+200, 'commission:deposit')` server-side
-  (move the award out of the client, which can be skipped).
-- [ ] Redemption: gems → one-time Stripe coupon / Poynt discount codes table.
-- [ ] Bookings inbox in `/artist-hub` (status pipeline, notes, venue.ink deep link).
+**P1 — retention bridge** ✅ COMPLETE
+- [x] Webhook: paid deposit → `pending_rewards` (email-keyed, idempotent by
+  Stripe session) → auto-claimed on first authenticated wallet read (013).
+- [x] Redemption: gems → `discount_codes` (015) via `/api/redeem` — atomic
+  spend-first with refund-on-failure; tiers tunable in `lib/rewards.ts`;
+  Purse UI shows tiers + codes. Manual counter redemption (like gift cards).
+- [x] Bookings inbox: `/admin` → Bookings (default tab) — pipeline, intake
+  detail, deposit badge, notes, Venue Ink handoff note. RLS in 014.
 
-**P2 — artist suite hardening**
-- [ ] Role-gate `/artist-hub` on real artist accounts (it's demo data today).
-- [ ] Per-artist Stripe Connect stores (onboard route exists — finish payout UI).
-- [ ] Social scheduler → real Meta/TikTok APIs (currently queue + cron scaffold).
-- [ ] Perf pass: `next/image` for portraits/products, split `EstateApp.tsx`.
+**P2 — artist suite hardening** ✅ COMPLETE (in scope)
+- [x] Artists' real dashboard: `/dashboard` role-routes artists to their own
+  Quarters (profile, flash, shop, payouts, messages); demo `/artist-hub`
+  paused behind the flag with a pointer.
+- [x] Social: real Meta Graph publishing (Standard Access, long-lived tokens in
+  `social_accounts`) + Vercel cron (`CRON_SECRET`-guarded). TikTok stays a
+  manual queue — no publish API at standard access; revisit if that changes.
+- [x] Perf: `next/image` (fill + sizes, priority on the portrait LCP) on
+  `/artists` + `/artists/[slug]`; image `remotePatterns` configured.
+- [~] `EstateApp.tsx` split: deliberately deferred — it works, it's flag-
+  contained, and it's under active parallel edit; refactoring a hot 900-line
+  file mid-flight invites conflicts for zero user-visible gain. Split it when
+  the next real feature touches it.
 
-**P3 — the world, re-lit (when P0 metrics are healthy)**
-- [ ] Flip experiments on for members only; wire `/commission` reserve → `/api/book`.
-- [ ] One avatar record, three renderers; regenerate portraits (`npm run avatars -- --force`).
-- [ ] 3D estate map as loyalty clubhouse (models via `meshy-fetch` pipeline).
+**P3 — the world, re-lit (flip when P0 metrics are healthy)**
+- [x] `/commission` reserve now collects name/contact and POSTs the REAL
+  `/api/book` flow (Stripe deposit; webhook awards the gems — client-side
+  award removed). While flags are off it 301s to `/book`, so nothing is lost.
+- [ ] Members-only experiments: product decision — either flip the env flag
+  globally, or gate per-user (needs a runtime role check replacing the
+  build-time flag; ~1 day when wanted).
+- [ ] Regenerate portraits (`npm run avatars -- --force`, OpenAI credits) and
+  generate the full GLB set (`meshy-fetch/generate-models.mjs`, Meshy credits)
+  — both are operator/content actions; pipelines are built and tested.
+- [ ] One-avatar-record unification + 3D loyalty clubhouse: build after the
+  world re-lights and only if engagement metrics justify it.
+
+**Deliberately not done (with reasons)**
+- Playwright E2E: can't be verified in this environment (needs browser install
+  + a running build); adding unverified CI steps is worse than none. Add it
+  first thing once someone can run `npx playwright install` locally.
+- Redis-backed rate limiting: premature at current traffic; the in-memory
+  limiter is tested and the seam (`createRateLimiter`) makes the swap trivial.
 
 ---
 
