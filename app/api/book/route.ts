@@ -15,8 +15,7 @@ const rateLimited = createRateLimiter({ limit: 5, windowMs: 60 * 60 * 1000 });
 // details, records them best-effort, and (if Stripe is configured) returns a
 // $100 deposit Checkout URL. The paid deposit is what locks the date.
 export async function POST(req: NextRequest) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let b: Record<string, any> = {};
+  let b: Record<string, unknown> = {};
   try { b = await req.json(); } catch { /* noop */ }
   const str = sanitizeStr;
   const name = str(b.name, 120);

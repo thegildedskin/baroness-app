@@ -63,8 +63,7 @@ function openLink(url: string | null | undefined) { if (url) window.open(url, "_
 
 function playChime() {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const AC = window.AudioContext || (window as any).webkitAudioContext;
+    const AC = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!AC) return;
     const ctx = new AC();
     [784, 1175, 1568].forEach((freq, i) => {
