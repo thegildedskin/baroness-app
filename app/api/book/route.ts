@@ -1,26 +1,15 @@
 import Stripe from "stripe";
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { sanitizeStr, isEmail, createRateLimiter, isBot, clientIp } from "@/lib/booking";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const DEPOSIT_CENTS = 10000; // $100 consultation deposit
 
-// Minimal in-memory rate limit: 5 requests per IP per hour. Resets on server
-// restart / per serverless instance — good enough to blunt drive-by spam.
-const RATE_LIMIT = 5;
-const RATE_WINDOW_MS = 60 * 60 * 1000;
-const hits = new Map<string, number[]>();
-function rateLimited(ip: string): boolean {
-  const now = Date.now();
-  const recent = (hits.get(ip) || []).filter((t) => now - t < RATE_WINDOW_MS);
-  if (recent.length >= RATE_LIMIT) { hits.set(ip, recent); return true; }
-  recent.push(now);
-  hits.set(ip, recent);
-  if (hits.size > 5000) hits.clear(); // crude memory cap
-  return false;
-}
+// Rules + limiter live in lib/booking.ts (unit-tested); the route owns the I/O.
+const rateLimited = createRateLimiter({ limit: 5, windowMs: 60 * 60 * 1000 });
 
 // Fast-track booking — NO login required (that's the point). Takes the booking
 // details, records them best-effort, and (if Stripe is configured) returns a
@@ -29,19 +18,18 @@ export async function POST(req: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let b: Record<string, any> = {};
   try { b = await req.json(); } catch { /* noop */ }
-  const str = (v: unknown, max = 200) => (typeof v === "string" ? v.trim().slice(0, max) : "");
+  const str = sanitizeStr;
   const name = str(b.name, 120);
   const contact = str(b.contact, 200);
   const slot = str(b.slot, 120);
   if (!name || !contact) return NextResponse.json({ error: "Please give your name and how to reach you." }, { status: 400 });
 
   const base0 = process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin;
-  // Honeypot: the hidden "website" field is never filled by humans. Pretend
-  // success so bots don't adapt; record nothing.
-  if ((b.website || "").trim()) {
+  // Honeypot: pretend success so bots don't adapt; record nothing.
+  if (isBot(b)) {
     return NextResponse.json({ url: `${base0}/book/thanks?pending=1` });
   }
-  const ip = (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "unknown";
+  const ip = clientIp(req.headers.get("x-forwarded-for"));
   if (rateLimited(ip)) {
     return NextResponse.json({ error: "Too many requests — please try again in a bit, or call us at 469-246-7217." }, { status: 429 });
   }
@@ -102,8 +90,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-    const isEmail = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contact);
-    const customerEmail = intake.email || (isEmail ? contact : undefined);
+    const customerEmail = intake.email || (isEmail(contact) ? contact : undefined);
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       customer_email: customerEmail,

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import MarketingTab, { type MktArtist, type MktSetting, type MktPost, type MktMetric, type MktSocial } from "./MarketingTab";
 import CommerceTab from "./CommerceTab";
+import BookingsTab from "./BookingsTab";
 
 type Gallery = { id: string; image_url: string; caption: string | null };
 type Pending = { id: string; image_url: string; artist_id: string; artists: { display_name: string } | { display_name: string }[] | null };
@@ -19,7 +20,7 @@ function aname(a: { display_name: string } | { display_name: string }[] | null):
   return Array.isArray(a) ? (a[0]?.display_name ?? "—") : a.display_name;
 }
 
-const TABS = ["Marketing", "Commerce", "Gallery", "Approvals", "Suggestions", "People", "Messages"] as const;
+const TABS = ["Bookings", "Marketing", "Commerce", "Gallery", "Approvals", "Suggestions", "People", "Messages"] as const;
 type Tab = (typeof TABS)[number];
 
 export default function AdminPanel({ gallery, pending, suggestions, artists, clients, threads, mktArtists, mktSettings, mktPosts, mktMetrics, mktSocials }: {
@@ -28,7 +29,7 @@ export default function AdminPanel({ gallery, pending, suggestions, artists, cli
 }) {
   const supabase = createClient();
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>("Marketing");
+  const [tab, setTab] = useState<Tab>("Bookings");
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
 
@@ -103,6 +104,8 @@ export default function AdminPanel({ gallery, pending, suggestions, artists, cli
         </header>
 
         <main className="hx-main">
+          {tab === "Bookings" && <BookingsTab />}
+
           {tab === "Marketing" && (
             <MarketingTab artists={mktArtists} settings={mktSettings} posts={mktPosts} metrics={mktMetrics} socials={mktSocials} />
           )}

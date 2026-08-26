@@ -48,6 +48,22 @@ export async function POST(req: NextRequest) {
       }
       const amount = ((session.amount_total ?? 0) / 100).toFixed(2);
       const clientEmail = session.customer_details?.email ?? null;
+      // Server-side loyalty award: a paid deposit earns 200 crown points (gems).
+      // Guests book without accounts, so we record a pending reward keyed by
+      // email — claimed automatically when that email signs in (/api/wallet).
+      // stripe_session UNIQUE makes webhook retries idempotent.
+      const rewardEmail = clientEmail || (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(md.contact || "") ? md.contact : null);
+      if (rewardEmail) {
+        try {
+          const admin = createAdminClient();
+          await admin.from("pending_rewards").insert({
+            email: rewardEmail.toLowerCase(),
+            gems: 200,
+            reason: "commission:deposit",
+            stripe_session: session.id,
+          });
+        } catch { /* table missing (migration 013) or duplicate retry — fine */ }
+      }
       const details = `
         <p><strong>Name:</strong> ${escHtml(md.name || "—")}</p>
         <p><strong>Contact:</strong> ${escHtml(md.contact || clientEmail || "—")}</p>
