@@ -353,34 +353,21 @@ export default function EstateApp({ artists, gallery = [], settings = {} }: { ar
       <a className="quarters" href="/dashboard">My Quarters</a>
       <ContactBar />
 
-      {/* ENTRANCE — iron gates */}
-      <section className={`scene ${scene === "entrance" ? "active" : ""} ${doorsOpen ? "doors-open" : ""} ${ringing ? "ringing" : ""}`} id="entrance">
-        <div className="estate-beyond" />
-        <span className="sconce l" /><span className="sconce r" />
-        <div className="gatewrap">
-          <div className="gate left"><GateHalf /><span className="gate-medallion"><GateMedallion /></span></div>
-          <div className="gate right"><GateHalf /><span className="gate-medallion"><GateMedallion /></span></div>
-        </div>
-        <div className="gate-crest">
-          <span className="crest-emblem"><CrestEmblem /></span>
+      {/* ENTRANCE — clean hero (the gate/bell contraption is retired; the top
+          nav + this hero carry the funnel, "Wander" opens the estate scenes) */}
+      <section className={`scene ${scene === "entrance" ? "active" : ""}`} id="entrance">
+        <div className="estate-beyond hero-bright" />
+        <div className="hero">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="crest-logo" src="/logo.png" alt="Baroness Tattoo" />
-        </div>
-        <button className="bellpull" onClick={ring} aria-label="Ring the bell to enter">
-          <span className="bell-rope" />
-          <svg className="bell" viewBox="0 0 60 70" aria-hidden="true">
-            <defs><linearGradient id="bellg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#e8cf86" /><stop offset="1" stopColor="#b8924a" /></linearGradient></defs>
-            <path d="M30 8 a6 6 0 0 1 6 6 c10 4 13 18 13 30 l3 8 H8 l3 -8 c0 -12 3 -26 13 -30 a6 6 0 0 1 6 -6 Z" fill="url(#bellg)" stroke="#8b6f35" strokeWidth="1.5" />
-            <circle cx="30" cy="60" r="4" fill="#8b6f35" />
-          </svg>
-          <span className="bell-label">Ring to enter</span>
-        </button>
-        <div className="entrance-text">
-          <div className="eyebrow">By Appointment of Her Grace · Garland, Texas</div>
-          <div className="estate-sub">A Luxury Atelier in the French Rococo</div>
-          <div className="tagline">&ldquo;Wear your crown.&rdquo;</div>
-          <a className="entrance-book" href="/book">✦ Book a Consultation</a>
-          <div className="entrance-alt">or ring the bell to wander the estate</div>
+          <img className="hero-logo" src="/logo.png" alt="Baroness Tattoo" />
+          <div className="eyebrow">Fine-Art Tattoo Studio · Firewheel Town Center · Garland, TX</div>
+          <h1 className="hero-title">Wear your crown.</h1>
+          <p className="hero-sub">Fine line, black &amp; grey realism and illustrative work — in a studio dressed like nowhere else in Texas.</p>
+          <div className="hero-ctas">
+            <a className="entrance-book" href="/book">✦ Book a Consultation</a>
+            <button className="hero-ghost" onClick={() => go("foyer")}>Wander the Estate →</button>
+          </div>
+          <div className="hero-trust">★★★★★ 5.0 on Google · $100 deposit applies to your piece · Walk-ins welcome</div>
         </div>
         <div className="vignette" />
       </section>
@@ -566,9 +553,8 @@ export default function EstateApp({ artists, gallery = [], settings = {} }: { ar
             </>)}
             <a href="/dashboard">My Quarters · Profile</a>
           </div>
-          <div className="avatar"><ButlerAvatar /></div>
         </div>
-        <div className="bubble"><div className="who">Reynard · Butler to Her Grace</div><div className="say">{butlerText}</div></div>
+        {/* Reynard the butler retired — the top nav + hero carry wayfinding now. */}
       </div>
 
       {/* MOTES */}
@@ -693,6 +679,19 @@ const CSS = `
 .estate .entrance-book{display:inline-block;margin-top:20px;font-family:var(--caps);letter-spacing:.16em;text-transform:uppercase;font-size:13px;color:#1a1208;background:linear-gradient(180deg,#e8cf86,#b8924a);border:1px solid #8b6f35;border-radius:3px;padding:15px 30px;text-decoration:none;box-shadow:0 8px 26px rgba(0,0,0,.5),0 0 34px rgba(184,146,74,.35);transition:filter .18s,transform .18s}
 .estate .entrance-book:hover{filter:brightness(1.08);transform:translateY(-1px)}
 .estate .entrance-alt{margin-top:12px;font-family:var(--body);font-style:italic;font-size:13px;color:rgba(245,233,211,.7)}
+/* ===== HERO (clean entrance) ===== */
+.estate .hero-bright{filter:brightness(.66) saturate(1.02)}
+.estate .hero{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:72px 24px 96px;gap:0}
+.estate .hero-logo{width:clamp(150px,22vw,240px);height:auto;filter:drop-shadow(0 6px 24px rgba(0,0,0,.55))}
+.estate .hero .eyebrow{margin-top:26px}
+.estate .hero-title{font-family:var(--display);font-weight:700;font-size:clamp(40px,7vw,76px);line-height:1.02;color:var(--cream);margin:14px 0 0;text-shadow:0 4px 30px rgba(0,0,0,.55)}
+.estate .hero-sub{font-family:var(--display);font-style:italic;font-size:clamp(16px,2.4vw,21px);color:rgba(245,233,211,.92);max-width:640px;margin:16px auto 0;line-height:1.45;text-shadow:0 2px 14px rgba(0,0,0,.6)}
+.estate .hero-ctas{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:30px}
+.estate .hero-ctas .entrance-book{margin-top:0}
+.estate .hero-ghost{font-family:var(--caps);letter-spacing:.16em;text-transform:uppercase;font-size:13px;color:var(--cream);background:rgba(12,10,8,.35);border:1px solid rgba(245,233,211,.55);border-radius:3px;padding:15px 26px;cursor:pointer;backdrop-filter:blur(4px);transition:border-color .18s,background .18s}
+.estate .hero-ghost:hover{border-color:var(--gold-light);background:rgba(12,10,8,.55)}
+.estate .hero-trust{margin-top:26px;font-family:var(--caps);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgba(232,207,134,.95);text-shadow:0 2px 10px rgba(0,0,0,.7)}
+@media(max-width:560px){.estate .hero{padding:56px 18px 120px}.estate .hero-trust{font-size:9.5px;letter-spacing:.12em}}
 .estate .knock{margin-top:42px}
 .estate .enterhint{margin-top:18px;font-size:30px;color:var(--gold-light);opacity:.7;animation:bob 1.8s ease-in-out infinite}
 @keyframes bob{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(8px);opacity:.9}}

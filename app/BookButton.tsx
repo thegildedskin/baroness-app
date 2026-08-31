@@ -2,10 +2,15 @@
 
 import { usePathname } from "next/navigation";
 
-// Persistent, unmissable booking CTA on every page — the fast track to the chair.
+// Floating booking CTA for deep pages that lack a persistent header.
+// Hidden where a Book CTA is already on screen: the booking flow itself, the
+// homepage (top nav + hero CTA + it collided with the contact bar), and the
+// public content pages that carry PublicHeader's ✦ Book pill.
+const COVERED = ["/book", "/", "/artists", "/styles", "/gallery", "/shop", "/reviews", "/faq", "/aftercare", "/prep-guide"];
+
 export default function BookButton() {
-  const path = usePathname();
-  if (path?.startsWith("/book")) return null;
+  const path = usePathname() || "/";
+  if (COVERED.some((p) => (p === "/" ? path === "/" : path.startsWith(p)))) return null;
   return (
     <a
       href="/book"
