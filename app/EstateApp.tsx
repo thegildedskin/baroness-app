@@ -537,21 +537,14 @@ export default function EstateApp({ artists, gallery = [], settings = {} }: { ar
             <button onClick={() => go("booking")}>Appointment Parlor</button>
             <button onClick={() => go("boutique")}>Maison Baroness</button>
             <button onClick={() => go("salon")}>Drawing Room</button>
-            <div className="bn-div" />
-            <a href="/artists">The Artists · Portfolios</a>
-            <a href="/book">Book a Consultation</a>
-            <a href="/gallery">The Gallery · Photographs</a>
-            <a href="/shop">The Shop · Gift Cards</a>
-            <a href="/reviews">Reviews</a>
-            <a href="/faq">Questions · FAQ</a>
-            <a href="/prep-guide">Prepare for Your Sitting</a>
-            <a href="/aftercare">Aftercare</a>
+            {/* Page links live in the top nav bar only — this drawer is now
+                purely the estate's in-scene room navigation (one nav, no dupes). */}
             {EXPERIMENTS_ENABLED && (<>
+              <div className="bn-div" />
               <a href="/explore">Stroll the Grounds · 3D</a>
               <a href="/avatar/create">Create a 3D Avatar</a>
               <a href="/studio">Design a Tattoo</a>
             </>)}
-            <a href="/dashboard">My Quarters · Profile</a>
           </div>
         </div>
         {/* Reynard the butler retired — the top nav + hero carry wayfinding now. */}

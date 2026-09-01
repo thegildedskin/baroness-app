@@ -39,11 +39,20 @@ export default function StylesIndexPage() {
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(270px,1fr))", gap: 22, marginTop: 44 }}>
           {STYLE_PAGES.map((s) => (
-            <Link key={s.slug} href={`/styles/${s.slug}`} style={{ display: "block", textDecoration: "none", background: "var(--parchment)", border: "1px solid var(--gold)", borderRadius: 8, padding: "26px 24px 24px", boxShadow: "0 10px 24px rgba(0,0,0,.1)" }}>
-              <div style={{ ...label, fontSize: 10 }}>{s.kicker}</div>
-              <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 24, color: "var(--black)", margin: "6px 0 8px" }}>{s.name}</div>
-              <p style={{ fontFamily: "var(--body)", fontSize: 14.5, fontStyle: "italic", lineHeight: 1.6, color: "var(--grey)", margin: 0 }}>{s.intro}</p>
-              <div style={{ ...label, fontSize: 10, marginTop: 16 }}>Read the counsel →</div>
+            <Link key={s.slug} href={`/styles/${s.slug}`} style={{ display: "block", textDecoration: "none", background: "var(--parchment)", border: "1px solid var(--gold)", borderRadius: 8, overflow: "hidden", boxShadow: "0 10px 24px rgba(0,0,0,.1)" }}>
+              {s.galleryImage && (
+                <div style={{ height: 190, overflow: "hidden", borderBottom: "1px solid var(--gold)", background: "var(--velvet)" }}>
+                  {/* real work from the studio's gallery, via the CDN proxy */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={`/api/gallery-img/${encodeURIComponent(s.galleryImage)}?w=520`} alt={`${s.name} tattoo by Baroness Tattoo, Garland TX`} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                </div>
+              )}
+              <div style={{ padding: "22px 24px 24px" }}>
+                <div style={{ ...label, fontSize: 10 }}>{s.kicker}</div>
+                <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 24, color: "var(--black)", margin: "6px 0 8px" }}>{s.name}</div>
+                <p style={{ fontFamily: "var(--body)", fontSize: 14.5, fontStyle: "italic", lineHeight: 1.6, color: "var(--grey)", margin: 0 }}>{s.intro}</p>
+                <div style={{ ...label, fontSize: 10, marginTop: 16 }}>Read the counsel →</div>
+              </div>
             </Link>
           ))}
         </div>

@@ -2,30 +2,565 @@
   "note": "Photos pulled from the live site's gallery (baronesstattoo.com/gallery-1), served from the studio's own GoDaddy CDN. Run scripts/gallery-classify.mjs to auto-fill categories via the vision classifier, or edit `category` by hand.",
   "cdn": "https://img1.wsimg.com/isteam/ip/b35cdeff-49dc-4837-9cdc-dfead84f5d5f",
   "images": [
-    { "file": "686041825_18399724834146430_853037633092867592.jpg", "category": "Uncategorized" },
-    { "file": "670986604_18396522550146430_246446864300278330.jpg", "category": "Uncategorized" },
-    { "file": "623303159_18382563034146430_8582173053-b4c50c8.jpg", "category": "Uncategorized" },
-    { "file": "658454530_18082625222612604_424645917561538566.jpg", "category": "Uncategorized" },
-    { "file": "503851914_2187254181712828_2715134008098167425.jpg", "category": "Uncategorized" },
-    { "file": "497726601_1323249775400884_9122255851003204109.jpg", "category": "Uncategorized" },
-    { "file": "546554290_18521409223008293_273714267718836150.jpg", "category": "Uncategorized" },
-    { "file": "588092836_18066942467612604_699870302834145922.jpg", "category": "Uncategorized" },
-    { "file": "538028897_18056320976612604_123637005737758578.jpg", "category": "Uncategorized" },
-    { "file": "671710255_18083559278612604_24374028487981397_.jpg", "category": "Uncategorized" },
-    { "file": "455007184_1034755708197582_4962878596834378915.jpg", "category": "Uncategorized" },
-    { "file": "556418940_18525181426008293_869903640242956146.jpg", "category": "Neo-Traditional" },
-    { "file": "534821312_18055560098612604_119836708961112867.jpg", "category": "Uncategorized" },
-    { "file": "536663602_18056215535612604_327250712805288751.jpg", "category": "Uncategorized" },
-    { "file": "702991302_18088116785612604_339437355282132534.jpg", "category": "Uncategorized" },
-    { "file": "479744947_18482574325008293_481421338128340495.jpg", "category": "Uncategorized" },
-    { "file": "558447269_18061597664612604_583686408384473375.jpg", "category": "Uncategorized" },
-    { "file": "557615201_18061091786612604_849280715376999872.jpg", "category": "Uncategorized" },
-    { "file": "621815837_18073710674612604_150114078648409338.jpg", "category": "Uncategorized" },
-    { "file": "615327931_18072493151612604_5052703443-fb5d96e.jpg", "category": "Uncategorized" },
-    { "file": "660188644_18082763600612604_111145744767646885.jpg", "category": "Uncategorized" },
-    { "file": "653920998_18079641452612604_714892520240684929.jpg", "category": "Uncategorized" },
-    { "file": "547753857_18058339481612604_784351832368976697.jpg", "category": "Uncategorized" },
-    { "file": "599737249_18377530969146430_8218485435-b5bc7fa.jpg", "category": "Uncategorized" },
-    { "file": "670340254_18083733068612604_406010010301107847.jpg", "category": "Uncategorized" }
+    {
+      "file": "343626665_1582825222197500_808564849178591027_.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "359794007_228190706784398_3533588462422971955_.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "364194065_617884487142266_3004719864535702228_.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "364937998_1281269112505797_5645795191029749426.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "378031220_9908100949260431_1669428697603398027.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "378565536_6715577548509728_4198722277749185277.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "382728910_996606628229848_190557185661387571_n.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "387266533_612672404414229_8671792084073368625_.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "438602871_404718468975024_4331572590186287139_.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "448420605_458618123568580_6761068762298709006_.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "449636987_3812492109073388_4366445404949761331.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "450924750_1025336002334151_934230322705603695_.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "452118149_1002395937860591_1995578770039380927.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "454144887_1035761288169852_1408584270829520819.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "455007184_1034755708197582_4962878596834378915.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "458265493_864076118998516_2829050383417421381_.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "462049201_1052667936121372_6314253661139548141.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "462139337_508187745458589_3774777793868407900_.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "462505744_455433320262254_2436677583715810971_.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "463992544_1461977191143782_5842263631770248348.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "464018557_3812933525637388_5597735082012206608.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "467344433_1742273696564221_2566911455708634405.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "467555598_845161124481631_1108038237541720537_.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "469011580_17912322669025199_830296624861166833.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "469090457_1105325541256407_8086587626657772501.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "469680473_557351167143775_6569256068544404200_.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "469726407_923763386395469_787300668467788317_n.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "470186444_17913657312025199_505927984199709188.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "470476109_9027728193930449_7878150913432265739.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "472102317_1515388825818235_6917009151281286959.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "472421829_585941414186815_6550970707533492359_.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "474318895_910860764409806_4440505488140933698_.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "475325189_18484248022008293_704307879038015090.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "479744947_18482574325008293_481421338128340495.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "481444032_18484251973008293_933770289511524423.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "482716474_17923464156025199_348150874554041247.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "483213437_18487382020008293_103562535992636960.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "483492401_18487591864008293_1910760889-5a6c24f.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "483584231_18486532111008293_283357802326532790.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "484880315_18488485153008293_108770608317175305.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "486189520_18489978070008293_196253547585756297.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "486328141_18490473268008293_286362945183216102.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "486637347_18492653623014020_627826660422539214.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "486681717_18490612012008293_615860552978184795.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "487050158_17886605439235349_696033590840755382.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "487328679_17887319862235349_432197374162636081.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "495723022_18498314947008293_706215042331926001.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "496153144_18498022786008293_803989074701853914.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "497726601_1323249775400884_9122255851003204109.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "499199098_1402583784275558_6289061689947516284.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "502684293_1748183699119247_6063221110970619239.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "503022969_1493981154917730_1958913389453265178.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "503807520_1216859686174456_7633550364947325191.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "503851914_2187254181712828_2715134008098167425.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "503901460_18505681306014020_276944953413156491.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "504462158_4097816563785039_4483262771600303815.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "505446681_18507025606014020_849891664421414460.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "505464638_17896110504235349_380646745794172067.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "509948118_18507538858008293_387508815745157959.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "515865224_18509594953008293_119647266976663427.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "519381588_18510569413008293_595129297488286150.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "520002563_18513647023014020_540165316660387608.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "520299901_18357739168146430_852701704931236993.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "521459472_18358056772146430_296521132647046613.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "521946421_18511615717008293_593228686741816907.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "523373366_18514675102014020_432178299313645761.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "523484772_18512714182008293_653923580901241462.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "523521699_18513329422008293_810818813632505525.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "523937829_18513329431008293_165460962166010897.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "524355249_18512914819008293_886302166345278470.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "524608973_18513326347008293_657263666186619441.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "527634858_18516944899014020_5530819950-071cef3.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "533358929_17903431059235349_165393206376130605.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "534821312_18055560098612604_119836708961112867.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "536663602_18056215535612604_327250712805288751.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "537039231_18517672177008293_286524570045447975.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "537492855_18055664765612604_237397500835496440.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "538028897_18056320976612604_123637005737758578.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "541839615_18057484124612604_690289333008220716.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "543411989_18057899549612604_725236042913757371.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "544046649_641276942029163_4331455745856680012_.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "546554290_18521409223008293_273714267718836150.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "546617760_1337696567914382_2710004253511946324.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "547753857_18058339481612604_784351832368976697.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "550215965_18058989884612604_943530819889572128.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "556418940_18525181426008293_869903640242956146.jpg",
+      "category": "Neo-Traditional"
+    },
+    {
+      "file": "557615201_18061091786612604_849280715376999872.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "558447269_18061597664612604_583686408384473375.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "560045063_18526871143008293_411452687760730160.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "564919041_18369892411146430_723718768172188664.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "566243253_18368589526146430_565048120785466405.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "567415195_18368973751146430_587561130369658790.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "569442938_806002552405803_9056408441534375110_.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "570249071_18531291649008293_445489424377681402.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "581391762_18371470645146430_752261095071322017.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "582002459_18371846893146430_276696793890793008.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "582134545_18372446635146430_898340265730025555.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "587478116_824072430543984_6980348271412583736_.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "587961505_18375886090146430_827191992749477091.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "588092836_18066942467612604_699870302834145922.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "590814685_18376976437146430_105072255105518846.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "598424678_18377424781146430_202967426177098054.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "598550158_18377424760146430_154282240299285165.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "599737249_18377530969146430_821848543522248162.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "601776448_18378075451146430_119466819096532938.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "601793323_18545211121014020_423099325869311667.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "608756852_18379571380146430_120263582874651059.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "610897935_18547942213014020_854202124051278423.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "613043690_18380758318146430_309808539138844550.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "615327931_18072493151612604_5052703443-fb5d96e.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "619798128_18550399285014020_755481030213820362.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "621799668_18382143193146430_312207231298233243.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "621815837_18073710674612604_150114078648409338.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "623303159_18382563034146430_858217305364265534.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "626457159_18383266255146430_220052626357127948.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "639750395_18077375786612604_880349748968346043.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "640306160_18388366060146430_126221886822033680.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "640406157_18387997294146430_904097478743245501.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "651209389_18390445591146430_557016331895747354.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "653524144_18391073311146430_727099827497234546.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "653920998_18079641452612604_714892520240684929.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "658454530_18082625222612604_424645917561538566.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "660188644_18082763600612604_111145744767646885.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "670300586_18396522559146430_324781346800836841.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "670340254_18083733068612604_406010010301107847.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "670891913_18087679982612604_569143648709621151.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "670986604_18396522550146430_246446864300278330.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "671246083_18397304911146430_470416839511966219.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "671710255_18083559278612604_24374028487981397_.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "684694065_18399187339146430_872076379113470368.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "686041825_18399724834146430_853037633092867592.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "694926608_18087063107612604_181920614199819748.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "700285152_18087942971612604_448566079817695670.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "700871168_18400951294146430_215619990259239034.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "702991302_18088116785612604_339437355282132534.jpg",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "Screenshot 2025-08-12 103437.png",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "Screenshot 2025-08-12 103515.png",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "Screenshot 2025-08-12 103536.png",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "Screenshot 2025-08-12 103619.png",
+      "category": "Uncategorized"
+    },
+    {
+      "file": "fb_122232079646062657_1440x1658.jpg",
+      "category": "Uncategorized"
+    }
   ]
 }

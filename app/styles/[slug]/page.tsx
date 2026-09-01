@@ -117,6 +117,17 @@ export default async function StylePageRoute({ params }: { params: { slug: strin
           <a href={bookHref} className="btn" style={{ marginTop: 22 }}>Book {style.name} Work</a>
         </div>
 
+        {/* full-size example of the style, from the studio's real gallery */}
+        {style.galleryImage && (
+          <figure style={{ maxWidth: 620, margin: "40px auto 0", border: "3px solid var(--gold)", borderRadius: 6, overflow: "hidden", background: "var(--velvet)", boxShadow: "0 16px 38px rgba(0,0,0,.18), inset 0 0 0 1px var(--gold-dark)" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={`/api/gallery-img/${encodeURIComponent(style.galleryImage)}?w=1000`} alt={`${style.name} tattoo — real work by Baroness Tattoo, Garland TX`} style={{ display: "block", width: "100%", height: "auto" }} />
+            <figcaption style={{ fontFamily: "var(--caps)", fontSize: 10, letterSpacing: ".18em", textTransform: "uppercase", color: "var(--gold-dark)", textAlign: "center", padding: "10px 12px", background: "var(--parchment)" }}>
+              {style.name} · done in this house
+            </figcaption>
+          </figure>
+        )}
+
         {/* the essay */}
         <div style={{ maxWidth: 680, margin: "44px auto 0" }}>
           {style.paragraphs.map((p, i) => (

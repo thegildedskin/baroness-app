@@ -25,12 +25,19 @@ export type StylePage = {
   /** Body copy — 250–400 words per page across these paragraphs. */
   paragraphs: string[];
   faqs: StyleFaq[];
+  /**
+   * Example piece from the studio's real gallery (public/gallery/manifest.json
+   * filename, served via /api/gallery-img). Thumbnail on the /styles cards,
+   * full-size hero on the style page. Swap freely for a better example.
+   */
+  galleryImage?: string;
 };
 
 export const STYLE_PAGES: StylePage[] = [
   {
     slug: "fine-line-tattoos-garland-tx",
     name: "Fine Line",
+    galleryImage: "640306160_18388366060146430_126221886822033680.jpg", // micro-realism pigeon
     h1: "Fine Line Tattoos in Garland, TX",
     kicker: "The Thin Gold Thread",
     metaTitle: "Fine Line Tattoos in Garland, TX | Baroness Tattoo — Firewheel",
@@ -64,6 +71,7 @@ export const STYLE_PAGES: StylePage[] = [
   {
     slug: "black-and-grey-realism-garland-tx",
     name: "Black & Grey Realism",
+    galleryImage: "686041825_18399724834146430_853037633092867592.jpg", // realist scorpion
     h1: "Black & Grey Realism Tattoos in Garland, TX",
     kicker: "Portraits in Smoke and Silver",
     metaTitle: "Black & Grey Realism Tattoos in Garland, TX | Baroness Tattoo",
@@ -97,6 +105,7 @@ export const STYLE_PAGES: StylePage[] = [
   {
     slug: "illustrative-tattoos-garland-tx",
     name: "Illustrative",
+    galleryImage: "497726601_1323249775400884_9122255851003204109.jpg", // fire dragon sleeve
     h1: "Illustrative Tattoos in Garland, TX",
     kicker: "Drawn, Not Photographed",
     metaTitle: "Illustrative Tattoos in Garland, TX | Baroness Tattoo — Fine Art on Skin",
@@ -130,6 +139,7 @@ export const STYLE_PAGES: StylePage[] = [
   {
     slug: "floral-tattoos-garland-tx",
     name: "Floral",
+    galleryImage: "520299901_18357739168146430_852701704931236993.jpg", // b&g roses + butterflies
     h1: "Floral Tattoos in Garland, TX",
     kicker: "The Eternal Garden",
     metaTitle: "Floral & Botanical Tattoos in Garland, TX | Baroness Tattoo",
@@ -163,6 +173,7 @@ export const STYLE_PAGES: StylePage[] = [
   {
     slug: "cover-up-tattoos-garland-tx",
     name: "Cover-Ups",
+    galleryImage: "Screenshot 2025-08-12 103515.png", // blast-over black cuff + mandala
     h1: "Cover-Up Tattoos in Garland, TX",
     kicker: "The Second Draft",
     metaTitle: "Cover-Up Tattoos in Garland, TX | Baroness Tattoo — Honest Assessments",
@@ -197,6 +208,7 @@ export const STYLE_PAGES: StylePage[] = [
   {
     slug: "script-lettering-tattoos-garland-tx",
     name: "Script & Lettering",
+    galleryImage: "486189520_18489978070008293_196253547585756297.jpg", // acorn · "think happy thoughts"
     h1: "Script & Lettering Tattoos in Garland, TX",
     kicker: "The Written Word, Kept",
     metaTitle: "Script & Lettering Tattoos in Garland, TX | Baroness Tattoo",
