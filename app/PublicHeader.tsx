@@ -33,6 +33,7 @@ export default function PublicHeader() {
         <Link href="/shop" style={link}>Shop</Link>
         <Link href="/reviews" style={link}>Reviews</Link>
         <Link href="/faq" style={link}>FAQ</Link>
+        <Link href="/restorative" style={link}>Restorative</Link>
         <Link href="/aftercare" style={link}>Aftercare</Link>
         <Link href="/careers" style={link}>Careers</Link>
         <Link href="/book" style={{ ...link, color: "var(--black)", background: "linear-gradient(180deg,var(--gold-light),var(--gold))", border: "1px solid var(--gold-dark)", borderRadius: 999, padding: "9px 16px" }}>✦ Book</Link>
