@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import PublicHeader from "../PublicHeader";
 
 type Mode = "signin" | "signup" | "magic";
 
@@ -54,6 +55,8 @@ export default function LoginPage() {
   const sub = mode === "signup" ? "Create your account" : "Members & artists of the house";
 
   return (
+    <>
+    <PublicHeader />
     <main className="wrap" style={{ maxWidth: 460 }}>
       <h1 style={{ fontSize: 40 }}>{mode === "signup" ? "Join the House" : "Enter the House"}</h1>
       <p className="caps" style={{ fontSize: 10, color: "var(--gold-dark)", margin: "6px 0 18px" }}>{sub}</p>
@@ -101,5 +104,6 @@ export default function LoginPage() {
         </form>
       )}
     </main>
+    </>
   );
 }

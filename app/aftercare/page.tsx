@@ -43,7 +43,7 @@ export default function AftercarePage() {
         <Card>
           <p style={li}>• <strong>Wash gently 2–3 times a day</strong> — lukewarm water, fragrance-free mild soap, clean hands only. No cloths, sponges or loofahs.</p>
           <p style={li}>• <strong>Pat dry</strong> with a clean paper towel; never rub, never share a bath towel with a fresh tattoo.</p>
-          <p style={li}>• <strong>Moisturise thinly</strong> once dry — a whisper-thin layer of fragrance-free lotion or healing balm, 2–3 times a day. Too much suffocates the skin; too little lets it crack.</p>
+          <p style={li}>• <strong>Moisturise thinly</strong> once dry — a whisper-thin layer of fragrance-free, <strong>petroleum-free</strong> lotion or healing balm, 2–3 times a day. Too much suffocates the skin; too little lets it crack. (Never petroleum products — see the house rule below.)</p>
           <p style={li}>• Around days 3–6 it will <strong>peel and itch</strong> like a sunburn. This is the skin turning over. <strong>Do not pick, do not scratch</strong> — slap lightly around it if the itch maddens you. Pulled flakes take ink with them.</p>
           <p style={li}>• <strong>No soaking</strong> — no baths, pools, hot tubs, lakes or ocean until fully closed (2–3 weeks). Quick showers are fine; don&rsquo;t let the stream pound the piece.</p>
           <p style={li}>• <strong>No sun</strong> on the healing skin, and no sunscreen yet either — cover it loosely instead.</p>
@@ -73,9 +73,9 @@ export default function AftercarePage() {
         <h2 style={h2}>What to Use — The House Recommendations</h2>
         <Card>
           <p style={li}>• <strong>Wash:</strong> any fragrance-free, antibacterial or mild liquid soap (unscented Dial, Dr. Bronner&rsquo;s Baby Unscented, or similar).</p>
-          <p style={li}>• <strong>Moisturiser:</strong> a fragrance-free lotion (Aveeno, Lubriderm, Eucerin) or a dedicated tattoo balm — thin layers only.</p>
-          <p style={li}>• <strong>First days (optional):</strong> a bland ointment like Aquaphor, applied nearly invisibly thin, for the first 2–3 days before switching to lotion.</p>
-          <p style={li}>• <strong>Avoid:</strong> petroleum jelly slathered thick, alcohol, hydrogen peroxide, Neosporin, scented lotions, and anything with exfoliants.</p>
+          <p style={li}>• <strong>Moisturiser — petroleum-free, always:</strong> a fragrance-free <strong>water-based</strong> lotion or a dedicated petroleum-free tattoo balm, in whisper-thin layers. Look for skin-repair ingredients the house trusts: <strong>panthenol</strong> (pro-vitamin B5), <strong>hyaluronic acid</strong>, <strong>centella asiatica (CICA)</strong>, allantoin, bisabolol.</p>
+          <p style={li}>• <strong>The house rule — no petroleum on ink, ever:</strong> no Vaseline, no Aquaphor, no A+D, no mineral-oil or beeswax-heavy ointments, fresh or healed. Heavy occlusives suffocate the healing skin, trap bacteria, and can pull ink out with them — they are the reason so many tattoos heal patchy.</p>
+          <p style={li}>• <strong>Also avoid:</strong> alcohol, hydrogen peroxide, Neosporin, scented lotions, and anything with exfoliants (AHAs/BHAs, retinoids) on or near the piece while it heals.</p>
           <p style={{ ...p, marginTop: 8 }}>
             The house keeps its chosen wash, balm and second-skin film in-studio and in <a href="/shop" style={{ color: "var(--gold-dark)" }}>the shop</a> — ask your artist at the sitting.
           </p>

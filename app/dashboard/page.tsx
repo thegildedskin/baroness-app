@@ -46,49 +46,52 @@ export default async function Dashboard({ searchParams }: { searchParams: { id?:
   }
 
   if (!artistId) {
-    // Client Quarters (clients + any not-yet-linked user)
-    const { data: cprofile } = await supabase
-      .from("profiles")
-      .select("display_name, avatar, credits, total_spent_cents, premium, rpm_url, avatar_tattoo")
-      .eq("id", user.id)
-      .single();
-    let convos: Convo[] = [];
-    try {
-      const admin = createAdminClient();
-      const { data } = await admin
-        .from("threads")
-        .select("id, artist_id, last_message_at, artists(display_name)")
-        .eq("client_email", user.email)
-        .order("last_message_at", { ascending: false })
-        .limit(20);
-      convos = (data ?? []) as unknown as Convo[];
-    } catch {
-      /* threads optional */
-    }
-    const { data: passport } = await supabase.from("ink_passport").select("id, title, artist_name, inked_on, notes, image_url").eq("user_id", user.id).order("created_at", { ascending: false });
-    const { data: achRows } = await supabase.from("user_achievements").select("key").eq("user_id", user.id);
+    // Client Quarters (clients + any not-yet-linked user).
+    // All five reads are independent — run them in PARALLEL. Sequential awaits
+    // here were the "My Quarters is slow" bug: 5 stacked round trips.
+    const fetchConvos = async (): Promise<Convo[]> => {
+      try {
+        const admin = createAdminClient();
+        const { data } = await admin
+          .from("threads")
+          .select("id, artist_id, last_message_at, artists(display_name)")
+          .eq("client_email", user.email)
+          .order("last_message_at", { ascending: false })
+          .limit(20);
+        return (data ?? []) as unknown as Convo[];
+      } catch { return []; /* threads optional */ }
+    };
+    const [{ data: cprofile }, convos, { data: passport }, { data: achRows }, { data: designs }] = await Promise.all([
+      supabase.from("profiles").select("display_name, avatar, credits, total_spent_cents, premium, rpm_url, avatar_tattoo").eq("id", user.id).single(),
+      fetchConvos(),
+      supabase.from("ink_passport").select("id, title, artist_name, inked_on, notes, image_url").eq("user_id", user.id).order("created_at", { ascending: false }),
+      supabase.from("user_achievements").select("key").eq("user_id", user.id),
+      supabase.from("designs").select("id, title, placement, image_url, created_at, exported").eq("user_id", user.id).order("created_at", { ascending: false }),
+    ]);
     const achievements = (achRows ?? []).map((r: { key: string }) => r.key);
-    const { data: designs } = await supabase.from("designs").select("id, title, placement, image_url, created_at, exported").eq("user_id", user.id).order("created_at", { ascending: false });
     return <ClientQuarters userId={user.id} email={user.email!} profile={cprofile ?? null} convos={convos} passport={passport ?? []} achievements={achievements} designs={designs ?? []} />;
   }
 
-  const { data: artist } = await supabase.from("artists").select("*").eq("id", artistId).single();
-  const { data: flash } = await supabase.from("flash").select("id, image_url, caption, sort_order").eq("artist_id", artistId).order("sort_order");
-  const { data: threads } = await supabase
-    .from("threads")
-    .select("id, client_name, client_email, created_at, last_message_at, messages(id, sender, body, created_at)")
-    .eq("artist_id", artistId)
-    .order("last_message_at", { ascending: false });
-  // "*" so new columns (e.g. claimable, migration 012) flow through without
-  // breaking environments where the migration hasn't run yet.
-  const { data: products } = await supabase.from("products").select("*").eq("artist_id", artistId).order("created_at", { ascending: false });
-  // The artist's studio-social submissions (RLS: artist reads own / owner reads all).
-  const { data: marketingPosts } = await supabase
-    .from("marketing_posts")
-    .select("id, caption, media_url, status, created_at, scheduled_for, published_at")
-    .eq("artist_id", artistId)
-    .order("created_at", { ascending: false })
-    .limit(25);
+  // Independent reads → PARALLEL (same slow-quarters fix as the client path).
+  // products uses "*" so new columns (e.g. claimable, migration 012) flow
+  // through without breaking environments where the migration hasn't run yet;
+  // marketing_posts is the artist's studio-social submissions (RLS-scoped).
+  const [{ data: artist }, { data: flash }, { data: threads }, { data: products }, { data: marketingPosts }] = await Promise.all([
+    supabase.from("artists").select("*").eq("id", artistId).single(),
+    supabase.from("flash").select("id, image_url, caption, sort_order").eq("artist_id", artistId).order("sort_order"),
+    supabase
+      .from("threads")
+      .select("id, client_name, client_email, created_at, last_message_at, messages(id, sender, body, created_at)")
+      .eq("artist_id", artistId)
+      .order("last_message_at", { ascending: false }),
+    supabase.from("products").select("*").eq("artist_id", artistId).order("created_at", { ascending: false }),
+    supabase
+      .from("marketing_posts")
+      .select("id, caption, media_url, status, created_at, scheduled_for, published_at")
+      .eq("artist_id", artistId)
+      .order("created_at", { ascending: false })
+      .limit(25),
+  ]);
   if (!artist) return (<main className="wrap"><p>Artist not found.</p></main>);
   return (<ProfileEditor artist={artist} flash={flash ?? []} threads={threads ?? []} products={products ?? []} marketingPosts={marketingPosts ?? []} isOwner={!!isOwner} email={user.email!} userId={user.id} />);
 }

@@ -15,7 +15,7 @@ const nextConfig = {
       { source: "/gallery-1", destination: "/gallery", permanent: true },
       { source: "/prep-guide-1", destination: "/prep-guide", permanent: true },
       { source: "/contact", destination: "/book", permanent: true },
-      { source: "/employee", destination: "/login", permanent: true },
+      { source: "/employee", destination: "/careers", permanent: true },
       { source: "/m/login", destination: "/login", permanent: true },
       { source: "/m/bookings", destination: "/book", permanent: true },
     ];
