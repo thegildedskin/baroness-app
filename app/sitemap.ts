@@ -25,6 +25,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     page("/gallery", 0.7, "weekly"),
     page("/faq", 0.6, "monthly"),
     page("/aftercare", 0.6, "monthly"),
+    page("/restorative", 0.9, "monthly"), // high priority: owns an uncontested DFW search space
+    page("/careers", 0.4, "monthly"),
+    page("/edu", 0.5, "monthly"),
     page("/prep-guide", 0.6, "monthly"),
     page("/styles", 0.7, "monthly"),
   ];

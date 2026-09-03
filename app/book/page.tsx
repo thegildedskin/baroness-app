@@ -42,6 +42,20 @@ export default async function BookPage({ searchParams }: { searchParams: { artis
       {/* Server-rendered deposit policy + NAP so the page carries real,
           crawlable content beyond the client form. */}
       <section style={{ maxWidth: 640, margin: "0 auto", padding: "0 22px 70px", textAlign: "center" }}>
+        {/* Concierge alternative for the unsure — the Eden lesson: some clients
+            need a human voice before a form. Keeps the instant flow primary. */}
+        <div style={{ background: "var(--parchment)", border: "1px solid var(--gold)", borderRadius: 10, padding: "18px 22px", marginBottom: 22 }}>
+          <p style={{ fontFamily: "var(--display)", fontStyle: "italic", fontSize: 18, color: "var(--black)", margin: 0 }}>
+            Rather talk it through first?
+          </p>
+          <p style={{ fontFamily: "var(--body)", fontSize: 15, color: "#3a2f22", lineHeight: 1.6, margin: "6px 0 10px" }}>
+            Call or text us for a free 10-minute consult — we&rsquo;ll talk through your idea,
+            match you with the right artist, and give you an honest estimate before you put anything down.
+          </p>
+          <a href={`tel:${STUDIO.phone.replace(/[^\d+]/g, "")}`} style={{ fontFamily: "var(--caps)", fontSize: 12, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--gold-dark)", border: "1px solid var(--gold)", borderRadius: 3, padding: "11px 20px", textDecoration: "none", display: "inline-block" }}>
+            ☏ {STUDIO.phone}
+          </a>
+        </div>
         <p style={{ fontFamily: "var(--body)", fontSize: 14, fontStyle: "italic", color: "var(--grey)", lineHeight: 1.6 }}>
           {STUDIO.depositPolicy}
           <br />

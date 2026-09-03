@@ -43,7 +43,10 @@ export default function CareersPage() {
 
         <CareersForm />
 
-        <p style={{ ...p, textAlign: "center", fontSize: 13.5, fontStyle: "italic", color: "var(--grey)", marginTop: 22 }}>
+        <p style={{ ...p, textAlign: "center", marginTop: 26 }}>
+          Not applying yet, but want to grow? <a href="/edu" style={{ color: "var(--gold-dark)" }}><strong>The Baroness Academy</strong></a> — seminars in fine-art technique, restorative artistry, and the business of being an artist.
+        </p>
+        <p style={{ ...p, textAlign: "center", fontSize: 13.5, fontStyle: "italic", color: "var(--grey)", marginTop: 10 }}>
           Prefer to talk in person? {STUDIO.name} · {STUDIO.address.full} · {STUDIO.phone}
         </p>
       </article>

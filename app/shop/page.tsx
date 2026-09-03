@@ -152,7 +152,7 @@ export default async function ShopPage() {
                   <div style={{ fontFamily: "var(--display)", fontStyle: "italic", fontSize: 15, color: "var(--grey)" }}>by {p.artist_name}</div>
                   {p.description && <p style={{ fontFamily: "var(--body)", fontSize: 14.5, color: "var(--grey)", margin: "6px 16px 8px" }}>{p.description}</p>}
                   {p.claimable && (
-                    <div style={{ ...label, fontSize: 9.5, margin: "6px 0 0", color: "var(--gold-dark)" }}>✦ Claim it — includes the design + your session deposit</div>
+                    <div style={{ ...label, fontSize: 9.5, margin: "6px 0 0", color: "var(--gold-dark)" }}>✦ One-of-one — claim it like a painting; includes the design + your session deposit. Once inked, it retires forever.</div>
                   )}
                   <div style={{ ...label, fontSize: 12, margin: "6px 0 12px" }}>${(p.price_cents / 100).toFixed(2)}</div>
                   <div style={{ display: "flex", justifyContent: "center" }}><BuyProductButton productId={p.id} /></div>

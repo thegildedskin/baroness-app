@@ -130,6 +130,9 @@ export default function RestorativePage() {
         <p style={{ ...p, textAlign: "center", fontSize: 12.5, color: "var(--grey)", fontStyle: "italic", marginTop: 26 }}>
           {STUDIO.name} · {STUDIO.address.full} · Surgeons and breast-care navigators: we welcome
           your referrals — reach us at {STUDIO.phone} to talk about your patients&rsquo; options.
+          <br />
+          Artists and medical professionals interested in learning this work:{" "}
+          <a href="/edu" style={{ color: "var(--gold-dark)" }}>the Baroness Academy</a>.
         </p>
       </article>
     </main>
