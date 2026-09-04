@@ -18,12 +18,22 @@ export default function LoginPage() {
 
   function go(m: Mode) { setMode(m); setError(""); setSent(""); }
 
+  // Artists sign in with just a USERNAME + password — no email account needed
+  // anywhere (their comms live in Venue Ink / Instagram). Anything typed
+  // without an "@" is treated as an artist username and mapped to the
+  // synthetic identifier their account was created with (create-artist-accounts.mjs).
+  const ARTIST_DOMAIN = "artists.baronesstattoo.com";
+  const toIdentifier = (v: string) => {
+    const t = v.trim().toLowerCase();
+    return t.includes("@") ? t : `${t.replace(/[^a-z0-9._-]/g, "")}@${ARTIST_DOMAIN}`;
+  };
+
   async function signIn(e: React.FormEvent) {
     e.preventDefault(); setLoading(true); setError("");
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({ email: toIdentifier(email), password });
     setLoading(false);
-    if (error) setError(error.message); else router.push("/dashboard");
+    if (error) setError(/invalid/i.test(error.message) ? "Wrong username/email or password." : error.message); else router.push("/dashboard");
   }
 
   async function signUp(e: React.FormEvent) {
@@ -73,8 +83,8 @@ export default function LoginPage() {
         </div>
       ) : mode === "signin" ? (
         <form className="card" onSubmit={signIn}>
-          <label className="field"><span>Email</span>
-            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@email.com" /></label>
+          <label className="field"><span>Email — or artist username</span>
+            <input type="text" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@email.com · artists: just your username" autoCapitalize="none" autoCorrect="off" /></label>
           <label className="field"><span>Password</span>
             <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" /></label>
           {error && <p style={{ color: "#a33", marginBottom: 12 }}>{error}</p>}
