@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import MarketingTab, { type MktArtist, type MktSetting, type MktPost, type MktMetric, type MktSocial } from "./MarketingTab";
 import CommerceTab from "./CommerceTab";
 import BookingsTab from "./BookingsTab";
+import ApplicationsTab from "./ApplicationsTab";
 
 type Gallery = { id: string; image_url: string; caption: string | null };
 type Pending = { id: string; image_url: string; artist_id: string; artists: { display_name: string } | { display_name: string }[] | null };
@@ -20,7 +21,7 @@ function aname(a: { display_name: string } | { display_name: string }[] | null):
   return Array.isArray(a) ? (a[0]?.display_name ?? "—") : a.display_name;
 }
 
-const TABS = ["Bookings", "Marketing", "Commerce", "Gallery", "Approvals", "Suggestions", "People", "Messages"] as const;
+const TABS = ["Bookings", "Marketing", "Commerce", "Gallery", "Approvals", "Applications", "Suggestions", "People", "Messages"] as const;
 type Tab = (typeof TABS)[number];
 
 export default function AdminPanel({ gallery, pending, suggestions, artists, clients, threads, mktArtists, mktSettings, mktPosts, mktMetrics, mktSocials }: {
@@ -105,6 +106,8 @@ export default function AdminPanel({ gallery, pending, suggestions, artists, cli
 
         <main className="hx-main">
           {tab === "Bookings" && <BookingsTab />}
+
+          {tab === "Applications" && <ApplicationsTab />}
 
           {tab === "Marketing" && (
             <MarketingTab artists={mktArtists} settings={mktSettings} posts={mktPosts} metrics={mktMetrics} socials={mktSocials} />
